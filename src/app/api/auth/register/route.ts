@@ -67,7 +67,11 @@ export async function POST(req: Request) {
       },
     });
 
-    await sendVerificationEmail(email, token);
+      try {
+        await sendVerificationEmail(email, token);
+      } catch (e) {
+        console.error('Email sending failed, but continuing:', e);
+      }
 
     return NextResponse.json({
       message: 'Registration successful. Please check your email to verify your account.',
