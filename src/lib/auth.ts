@@ -32,10 +32,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             where: { email },
           });
 
+          // If user doesn't exist or has no password (e.g. Google only user)
           if (!user || !user.password) {
             return null;
           }
 
+          // Check if email is verified
           if (!user.active) {
             console.warn(`Login attempt for unverified user: ${email}`);
             return null; 
@@ -65,6 +67,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account }) {
+      // Handle Google Sign-In: Create user if not exists
       if (account?.provider === 'google') {
         try {
           const email = user.email;
@@ -77,7 +80,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               data: {
                 email,
                 name: user.name ?? undefined,
-                active: true,
+                active: true, // Google users are auto-verified
                 emailVerified: new Date(),
                 googleId: account.providerAccountId,
                 role: 'USER',
