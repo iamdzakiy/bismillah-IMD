@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { transporter } from '@/lib/mailTransporter';
 
+// 🟢 FORCE NEXT.JS TO TREAT THIS API AS DYNAMIC
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     await transporter.verify();

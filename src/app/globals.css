@@ -1,98 +1,86 @@
+/* src/app/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 
 @layer base {
   html {
     scroll-behavior: smooth;
   }
-  
   body {
-    @apply bg-space-900 text-white antialiased overflow-x-hidden;
-    background-image: 
-      radial-gradient(at 20% 30%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
-      radial-gradient(at 80% 70%, rgba(0, 245, 255, 0.1) 0px, transparent 50%),
-      radial-gradient(at 50% 100%, rgba(0, 255, 157, 0.08) 0px, transparent 50%);
-  }
-
-  ::selection {
-    @apply bg-bio-cyan/30 text-white;
+    @apply bg-[#0a0514] text-white antialiased overflow-x-hidden selection:bg-purple-500/30 selection:text-white;
+    /* Deep Purple Background */
+    background-image:
+      radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.1) 0px, transparent 50%),
+      radial-gradient(at 50% 50%, rgba(192, 132, 252, 0.05) 0px, transparent 60%);
+    background-attachment: fixed;
   }
 }
 
 @layer components {
+  /* Refined Glass Effect - Purple Tint */
   .glass {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+    @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-lg;
   }
   
   .glass-strong {
-    @apply bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl;
+    @apply bg-[#130c24]/80 backdrop-blur-2xl border border-purple-500/20 shadow-2xl;
   }
 
   .glass-dark {
-    @apply bg-space-800/60 backdrop-blur-xl border border-white/10 shadow-2xl;
-  }
-  
-  .glass-card {
-    @apply relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-500 hover:border-bio-cyan/50 hover:bg-white/10 hover:shadow-bio-cyan/20;
-  }
-  
-  .text-gradient {
-    @apply bg-gradient-to-r from-bio-cyan via-bio-emerald to-bio-teal bg-clip-text text-transparent;
-  }
-  
-  .text-gradient-purple {
-    @apply bg-gradient-to-r from-bio-purple via-bio-pink to-bio-cyan bg-clip-text text-transparent;
+    @apply bg-[#0f0720]/60 backdrop-blur-xl border border-white/[0.05] shadow-lg;
   }
 
+  /* Purple Gradient Text */
+  .text-gradient {
+    @apply bg-gradient-to-r from-purple-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent;
+  }
+
+  /* Buttons */
   .btn-glass {
-    @apply relative px-6 py-3 bg-white/5 backdrop-blur-xl border border-white/20 rounded-full font-medium transition-all duration-300 hover:bg-white/10 hover:border-bio-cyan/50 hover:scale-105 hover:shadow-lg hover:shadow-bio-cyan/20;
+    @apply relative px-6 py-3 bg-white/[0.05] backdrop-blur-md border border-white/[0.1] rounded-full font-medium transition-all duration-500 hover:bg-purple-500/20 hover:border-purple-500/50 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(168,85,247,0.3)];
   }
-  
+
   .btn-glow {
-    @apply relative px-8 py-3 bg-gradient-to-r from-bio-cyan to-bio-emerald text-space-900 font-bold rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-bio-cyan/50;
-  }
-  
-  .btn-glow::before {
-    content: '';
-    @apply absolute inset-0 rounded-full bg-gradient-to-r from-bio-cyan to-bio-emerald blur-xl opacity-50 transition-opacity;
-    z-index: -1;
-  }
-  
-  .btn-glow:hover::before {
-    @apply opacity-100;
+    @apply relative px-8 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-bold rounded-full transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] hover:brightness-110;
   }
 
   .input-glass {
-    @apply w-full px-4 py-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder:text-white/40 outline-none transition-all duration-300 focus:border-bio-cyan/50 focus:bg-white/10 focus:shadow-lg focus:shadow-bio-cyan/20;
+    @apply w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(168,85,247,0.2)];
   }
 }
 
 @layer utilities {
+  /* Custom Scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
-  
   ::-webkit-scrollbar-track {
-    @apply bg-space-900;
+    @apply bg-[#0a0514];
   }
-  
   ::-webkit-scrollbar-thumb {
-    @apply bg-gradient-to-b from-bio-cyan/50 to-bio-purple/50 rounded-full;
+    @apply bg-purple-900/50 rounded-full hover:bg-purple-500/50;
+  }
+
+  /* Smooth Animations */
+  .animate-float {
+    animation: float 8s ease-in-out infinite;
   }
   
-  .noise-overlay::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    opacity: 0.02;
-    z-index: 100;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  .animate-blob {
+    animation: blob 20s infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes blob {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
   }
 }

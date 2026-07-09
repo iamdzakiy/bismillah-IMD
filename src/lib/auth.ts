@@ -21,22 +21,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        const email = (credentials.email as string).toLowerCase().trim();
+        
         try {
-          if (!credentials?.email || !credentials?.password) {
+          const user = await prisma.user.findUnique({
+            where: { email },
+          });
+
+          if (!user || !user.password) {
             return null;
           }
 
-          const user = await prisma.user.findUnique({
-            where: { email: credentials.email as string },
-          });
-
-          if (!user || !user.password) return null;
           if (!user.active) {
-            throw new Error('Please verify your email before logging in.');
+            console.warn(`Login attempt for unverified user: ${email}`);
+            return null; 
           }
-          const isValid = await bcrypt.compare(credentials.password as string, user.password);
 
-          if (!isValid) return null;
+          const isValid = await bcrypt.compare(credentials.password as string, user.password);
+          
+          if (!isValid) {
+            return null;
+          }
 
           return {
             id: user.id,
@@ -47,7 +56,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             institution: user.institution,
             educationLevel: user.educationLevel,
           };
-        } catch {
+        } catch (error) {
+          console.error('Authorize error:', error);
           return null;
         }
       },
@@ -55,14 +65,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account }) {
-      // Ensure DB row exists and matches our activation policy
       if (account?.provider === 'google') {
         try {
           const email = user.email;
           if (!email) return false;
 
           const dbUser = await prisma.user.findUnique({ where: { email } });
-
+          
           if (!dbUser) {
             await prisma.user.create({
               data: {
@@ -70,8 +79,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 name: user.name ?? undefined,
                 active: true,
                 emailVerified: new Date(),
-                // googleId is optional but will help prevent duplicate signups
-                googleId: (account.providerAccountId as string) ?? undefined,
+                googleId: account.providerAccountId,
                 role: 'USER',
               },
             });
@@ -86,12 +94,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return false;
         }
       }
-
       return true;
     },
-
     async jwt({ token, user }) {
-      // On first sign-in, NextAuth passes `user`.
       if (user) {
         token.sub = user.id;
         token.active = (user as any).active ?? true;
@@ -99,13 +104,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.institution = (user as any).institution ?? null;
         token.educationLevel = (user as any).educationLevel ?? null;
       }
-
       return token;
     },
-
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.sub;
+        session.user.id = token.sub as string;
         session.user.active = (token.active ?? false) as boolean;
         session.user.role = (token.role ?? 'USER') as string;
         session.user.institution = (token.institution ?? null) as any;

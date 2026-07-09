@@ -44,6 +44,10 @@ prisma/
   migrations/
     20260709115948_add_email_verified/
       migration.sql
+    20260709120000_add_password_reset_tokens/
+      migration.sql
+    20260709130105_password_reset/
+      migration.sql
     migration_lock.toml
   schema.prisma
   seed.ts
@@ -58,6 +62,10 @@ src/
       login/
         page.tsx
       register/
+        page.tsx
+      request-password-reset/
+        page.tsx
+      reset-password/
         page.tsx
       verify-email/
         page.tsx
@@ -99,7 +107,11 @@ src/
           route.ts
         register/
           route.ts
+        request-password-reset/
+          route.ts
         resend-activation/
+          route.ts
+        reset-password/
           route.ts
       competitions/
         register/
@@ -176,6 +188,7 @@ next.config.js
 package.json
 postcss.config.js
 tailwind.config.ts
+TODO.md
 tsconfig.json
 </directory_structure>
 
@@ -349,6 +362,37 @@ ALTER TABLE "Submission" ADD CONSTRAINT "Submission_reviewedById_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "ActivateToken" ADD CONSTRAINT "ActivateToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+</file>
+
+<file path="prisma/migrations/20260709120000_add_password_reset_tokens/migration.sql">
+-- This migration adds password reset tokens.
+-- If you prefer a different naming scheme, adjust accordingly.
+
+CREATE TABLE "PasswordResetToken" (
+  "id" TEXT NOT NULL,
+  "token" TEXT NOT NULL,
+  "userId" TEXT NOT NULL,
+  "expiresAt" TIMESTAMP(3) NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT "PasswordResetToken_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "PasswordResetToken_token_unique" UNIQUE ("token"),
+  CONSTRAINT "PasswordResetToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE
+);
+
+CREATE INDEX "PasswordResetToken_token_idx" ON "PasswordResetToken"("token");
+CREATE INDEX "PasswordResetToken_userId_idx" ON "PasswordResetToken"("userId");
+</file>
+
+<file path="prisma/migrations/20260709130105_password_reset/migration.sql">
+-- DropForeignKey
+ALTER TABLE "PasswordResetToken" DROP CONSTRAINT "PasswordResetToken_userId_fkey";
+
+-- AddForeignKey
+ALTER TABLE "PasswordResetToken" ADD CONSTRAINT "PasswordResetToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- RenameIndex
+ALTER INDEX "PasswordResetToken_token_unique" RENAME TO "PasswordResetToken_token_key";
 </file>
 
 <file path="prisma/migrations/migration_lock.toml">
@@ -676,6 +720,202 @@ export function TimelineSection() {
 }
 </file>
 
+<file path="src/app/(auth)/request-password-reset/page.tsx">
+'use client';
+
+import { useState, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
+
+function RequestResetContent() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const res = await fetch('/api/auth/request-password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Request failed');
+
+      setMessage('✅ If the account exists, a reset link has been sent to your email.');
+      setTimeout(() => router.push('/login'), 1200);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Request failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-space-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md glass-strong rounded-2xl p-8">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-gradient">Request Password Reset</h1>
+          <p className="text-white/60 mt-2 text-sm">We’ll send you a link to reset your password</p>
+        </div>
+
+        {error && (
+          <div className="mb-4 bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
+        {message && (
+          <div className="mb-4 bg-bio-emerald/10 border border-bio-emerald/50 text-bio-emerald px-4 py-3 rounded-lg text-sm">
+            {message}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Email</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input-glass"
+              placeholder="you@example.com"
+            />
+          </div>
+
+          <button type="submit" disabled={loading} className="btn-glow w-full">
+            {loading ? 'Sending...' : 'Send Reset Link'}
+          </button>
+        </form>
+
+        <p className="text-center text-white/60 text-sm mt-6">
+          <a href="/login" className="text-bio-cyan hover:text-bio-emerald font-medium">
+            Back to login
+          </a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default function RequestResetPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-white">Loading...</div>}>
+      <RequestResetContent />
+    </Suspense>
+  );
+}
+</file>
+
+<file path="src/app/(auth)/reset-password/page.tsx">
+'use client';
+
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+
+function ResetPasswordContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const token = searchParams.get('token') || '';
+
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setMessage('');
+
+    try {
+      if (!token) throw new Error('Reset token missing');
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Reset failed');
+
+      setMessage('✅ Password reset successful. You can now login.');
+      setTimeout(() => router.push('/login'), 800);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Reset failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-space-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md glass-strong rounded-2xl p-8">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-gradient">Reset Password</h1>
+          <p className="text-white/60 mt-2 text-sm">Enter your new password to complete the reset</p>
+        </div>
+
+        {error && (
+          <div className="mb-4 bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
+        {message && (
+          <div className="mb-4 bg-bio-emerald/10 border border-bio-emerald/50 text-bio-emerald px-4 py-3 rounded-lg text-sm">
+            {message}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1">New Password</label>
+            <input
+              type="password"
+              required
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-glass"
+              placeholder="Minimum 8 characters"
+            />
+          </div>
+
+          <button type="submit" disabled={loading} className="btn-glow w-full">
+            {loading ? 'Updating...' : 'Update Password'}
+          </button>
+        </form>
+
+        <p className="text-center text-white/60 text-sm mt-6">
+          Remembered your password?{' '}
+          <a href="/login" className="text-bio-cyan hover:text-bio-emerald font-medium">
+            Login
+          </a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-white">Loading...</div>}>
+      <ResetPasswordContent />
+    </Suspense>
+  );
+}
+</file>
+
 <file path="src/app/admin/dashboard/page.tsx">
 import { prisma } from '@/lib/db';
 
@@ -943,9 +1183,128 @@ import { handlers } from '@/lib/auth';
 export const { GET, POST } = handlers;
 </file>
 
+<file path="src/app/api/auth/request-password-reset/route.ts">
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+
+import { prisma } from '@/lib/db';
+import { sendPasswordResetEmail } from '@/lib/email';
+import { rateLimit } from '@/lib/rate-limit';
+
+const requestSchema = z.object({
+  email: z.string().email().transform((v) => v.toLowerCase().trim()),
+});
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json().catch(() => null);
+    const parsed = requestSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
+    }
+
+    const email = parsed.data.email;
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const { success } = rateLimit(`reset-request:${email}:${ip}`, 3, 60 * 1000);
+    if (!success) {
+      return NextResponse.json({ error: 'Please wait before requesting another reset.' }, { status: 429 });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    // Avoid account enumeration
+    if (!user) {
+      return NextResponse.json({ message: 'If the account exists, a reset link has been sent.' });
+    }
+
+    const token = crypto.randomUUID();
+    await prisma.passwordResetToken.create({
+      data: {
+        token,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes
+      },
+    });
+
+    await sendPasswordResetEmail(user.email, token, user.name ?? undefined);
+
+    return NextResponse.json({ message: 'If the account exists, a reset link has been sent.' });
+  } catch (error) {
+    console.error('request-password-reset error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+</file>
+
+<file path="src/app/api/auth/reset-password/route.ts">
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+
+import { prisma } from '@/lib/db';
+import { rateLimit } from '@/lib/rate-limit';
+
+const resetSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8),
+});
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json().catch(() => null);
+    const parsed = resetSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    }
+
+    const { token, password } = parsed.data;
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const { success } = rateLimit(`reset:${token}:${ip}`, 5, 60 * 1000);
+    if (!success) {
+      return NextResponse.json({ error: 'Too many attempts. Please try again later.' }, { status: 429 });
+    }
+
+    const resetToken = await prisma.passwordResetToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+
+    if (!resetToken) {
+      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 });
+    }
+
+    if (resetToken.expiresAt < new Date()) {
+      await prisma.passwordResetToken.delete({ where: { token } });
+      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.passwordResetToken.delete({ where: { token } });
+      await tx.user.update({
+        where: { id: resetToken.userId },
+        data: { password: hashedPassword, active: true },
+      });
+    });
+
+    return NextResponse.json({ message: 'Password reset successful' });
+  } catch (error) {
+    console.error('reset-password error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+</file>
+
 <file path="src/app/api/test-email/route.ts">
 import { NextResponse } from 'next/server';
 import { transporter } from '@/lib/mailTransporter';
+
+// 🟢 FORCE NEXT.JS TO TREAT THIS API AS DYNAMIC
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
@@ -2567,51 +2926,6 @@ export default function AuthProvider({
 }
 </file>
 
-<file path="src/middleware.ts">
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
-
-export async function middleware(request: NextRequest) {
-  const token = await getToken({ req: request });
-  const { pathname } = request.nextUrl;
-
-  const publicPaths = [
-    '/',
-    '/login',
-    '/register',
-    '/verify-email',
-    '/api/auth',
-    '/api/webhooks',
-    '/_next',
-    '/favicon.ico',
-    '/competitions',
-  ];
-
-  if (publicPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
-    return NextResponse.next();
-  }
-
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  if (!token.active && pathname !== '/verify-email') {
-    return NextResponse.redirect(new URL('/verify-email', request.url));
-  }
-
-  if (pathname.startsWith('/admin') && token.role !== 'ADMIN') {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
-
-  return NextResponse.next();
-}
-
-export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
-};
-</file>
-
 <file path=".gitignore">
 # Environment variables
 .env
@@ -2727,6 +3041,32 @@ const config: Config = {
 };
 
 export default config;
+</file>
+
+<file path="TODO.md">
+# IMD-2026 Auth Troubleshooting - TODO
+
+- [ ] Step 1: Fix Google OAuth onboarding in `src/lib/auth.ts`
+  - [ ] Create user row when missing
+  - [ ] Auto-activate and mark emailVerified for Google users
+- [ ] Step 2: Harden NextAuth JWT/session callbacks in `src/lib/auth.ts`
+  - [ ] Ensure `token.active`, `token.role`, etc always set from DB or user
+  - [ ] Avoid silent failures
+- [ ] Step 3: Fix middleware issues in `src/middleware.ts`
+  - [ ] Ensure `/api/auth/*` and NextAuth endpoints are public in middleware
+  - [ ] Keep verify-email redirect logic but avoid breaking sign-in
+- [ ] Step 4: Add full password reset flow
+  - [ ] Add Prisma model + migration (ResetToken or reuse existing table)
+  - [ ] Add `request-password-reset` API route
+  - [ ] Add `reset-password` API route
+  - [ ] Add email templates in `src/lib/email.ts`
+  - [ ] Add UI pages/forms under `src/app/(auth)/`
+- [ ] Step 5: Improve debugging
+  - [ ] Add development-only logs for middleware + auth errors
+- [ ] Step 6: Run verification checklist
+  - [ ] Register -> verify-email -> login (credentials)
+  - [ ] Google OAuth signup -> login
+  - [ ] Password reset request -> reset -> login
 </file>
 
 <file path="tsconfig.json">
@@ -2941,170 +3281,6 @@ export function HeroSection() {
         </div>
       </div>
     </section>
-  );
-}
-</file>
-
-<file path="src/app/(auth)/login/page.tsx">
-'use client';
-
-import { motion } from 'framer-motion';
-import { useState, Suspense } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-
-function LoginContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const verified = searchParams.get('verified');
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError('Invalid email or password');
-        setLoading(false);
-      } else if (result?.ok) {
-        router.push('/dashboard');
-        router.refresh();
-      } else {
-        setError('Login failed. Please try again.');
-        setLoading(false);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during login');
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = () => {
-    signIn('google', { callbackUrl: '/dashboard' });
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-bio-cyan/20 rounded-full blur-[120px] animate-blob" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-bio-purple/20 rounded-full blur-[120px] animate-blob" style={{ animationDelay: '3s' }} />
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.6 }}
-        className="relative w-full max-w-md glass-strong rounded-3xl p-8 shadow-2xl"
-      >
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-
-        <div className="flex justify-center mb-6">
-          <div className="relative">
-            <div className="absolute inset-0 bg-bio-cyan/30 rounded-full blur-xl animate-pulse-glow" />
-            <div className="relative w-16 h-16 glass-strong rounded-full flex items-center justify-center text-3xl">
-              🧬
-            </div>
-          </div>
-        </div>
-
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-black mb-2">
-            <span className="text-gradient">Welcome Back</span>
-          </h1>
-          <p className="text-white/60 text-sm">Continue your microbial odyssey</p>
-        </div>
-
-        {verified && (
-          <div className="mb-6 bg-bio-emerald/10 border border-bio-emerald/50 text-bio-emerald px-4 py-3 rounded-lg text-sm">
-            ✅ Email verified successfully! You can now login.
-          </div>
-        )}
-
-        {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="input-glass"
-            placeholder="you@example.com"
-          />
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="input-glass"
-            placeholder="••••••••"
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-glow w-full"
-          >
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/10" />
-          </div>
-          <div className="relative flex justify-center">
-            <span className="bg-space-900/50 px-3 text-xs text-white/40 uppercase tracking-wider">
-              Or
-            </span>
-          </div>
-        </div>
-
-        <button
-          onClick={handleGoogleLogin}
-          className="btn-glass w-full flex items-center justify-center gap-2"
-        >
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-          </svg>
-          Sign in with Google
-        </button>
-
-        <p className="text-center text-white/60 text-sm mt-6">
-          Don't have an account?{' '}
-          <Link href="/register" className="text-bio-cyan hover:text-bio-emerald font-medium transition-colors">
-            Register here
-          </Link>
-        </p>
-      </motion.div>
-    </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-white">Loading...</div>}>
-      <LoginContent />
-    </Suspense>
   );
 }
 </file>
@@ -5290,102 +5466,91 @@ export default async function DashboardPage() {
 </file>
 
 <file path="src/app/globals.css">
+/* src/app/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 
 @layer base {
   html {
     scroll-behavior: smooth;
   }
-  
   body {
-    @apply bg-space-900 text-white antialiased overflow-x-hidden;
-    background-image: 
-      radial-gradient(at 20% 30%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
-      radial-gradient(at 80% 70%, rgba(0, 245, 255, 0.1) 0px, transparent 50%),
-      radial-gradient(at 50% 100%, rgba(0, 255, 157, 0.08) 0px, transparent 50%);
-  }
-
-  ::selection {
-    @apply bg-bio-cyan/30 text-white;
+    @apply bg-space-900 text-white antialiased overflow-x-hidden selection:bg-bio-cyan/30 selection:text-white;
+    /* More subtle background gradient */
+    background-image:
+      radial-gradient(at 10% 10%, rgba(168, 85, 247, 0.08) 0px, transparent 40%),
+      radial-gradient(at 90% 90%, rgba(0, 245, 255, 0.05) 0px, transparent 40%),
+      radial-gradient(at 50% 50%, rgba(0, 255, 157, 0.03) 0px, transparent 50%);
+    background-attachment: fixed;
   }
 }
 
 @layer components {
+  /* Refined Glass Effect - Less opaque, more blur */
   .glass {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+    @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-lg;
   }
   
   .glass-strong {
-    @apply bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl;
+    @apply bg-white/[0.07] backdrop-blur-2xl border border-white/[0.12] shadow-xl;
   }
 
   .glass-dark {
-    @apply bg-space-800/60 backdrop-blur-xl border border-white/10 shadow-2xl;
+    @apply bg-space-800/40 backdrop-blur-xl border border-white/[0.05] shadow-lg;
   }
-  
-  .glass-card {
-    @apply relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-500 hover:border-bio-cyan/50 hover:bg-white/10 hover:shadow-bio-cyan/20;
-  }
-  
+
+  /* Subtle Gradient Text */
   .text-gradient {
     @apply bg-gradient-to-r from-bio-cyan via-bio-emerald to-bio-teal bg-clip-text text-transparent;
   }
-  
-  .text-gradient-purple {
-    @apply bg-gradient-to-r from-bio-purple via-bio-pink to-bio-cyan bg-clip-text text-transparent;
+
+  /* Refined Buttons - Less glow, more solid feel */
+  .btn-glass {
+    @apply relative px-6 py-3 bg-white/[0.05] backdrop-blur-md border border-white/[0.1] rounded-full font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-bio-cyan/30 hover:scale-[1.02];
   }
 
-  .btn-glass {
-    @apply relative px-6 py-3 bg-white/5 backdrop-blur-xl border border-white/20 rounded-full font-medium transition-all duration-300 hover:bg-white/10 hover:border-bio-cyan/50 hover:scale-105 hover:shadow-lg hover:shadow-bio-cyan/20;
-  }
-  
   .btn-glow {
-    @apply relative px-8 py-3 bg-gradient-to-r from-bio-cyan to-bio-emerald text-space-900 font-bold rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-bio-cyan/50;
-  }
-  
-  .btn-glow::before {
-    content: '';
-    @apply absolute inset-0 rounded-full bg-gradient-to-r from-bio-cyan to-bio-emerald blur-xl opacity-50 transition-opacity;
-    z-index: -1;
-  }
-  
-  .btn-glow:hover::before {
-    @apply opacity-100;
+    @apply relative px-8 py-3 bg-gradient-to-r from-bio-cyan to-bio-emerald text-space-900 font-bold rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-bio-cyan/20;
   }
 
   .input-glass {
-    @apply w-full px-4 py-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder:text-white/40 outline-none transition-all duration-300 focus:border-bio-cyan/50 focus:bg-white/10 focus:shadow-lg focus:shadow-bio-cyan/20;
+    @apply w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-bio-cyan/40 focus:bg-white/[0.05];
   }
 }
 
 @layer utilities {
+  /* Custom Scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
-  
   ::-webkit-scrollbar-track {
     @apply bg-space-900;
   }
-  
   ::-webkit-scrollbar-thumb {
-    @apply bg-gradient-to-b from-bio-cyan/50 to-bio-purple/50 rounded-full;
+    @apply bg-white/10 rounded-full hover:bg-white/20;
+  }
+
+  /* Smoother Animations */
+  .animate-float {
+    animation: float 8s ease-in-out infinite;
   }
   
-  .noise-overlay::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    opacity: 0.02;
-    z-index: 100;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  .animate-blob {
+    animation: blob 15s infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+  }
+
+  @keyframes blob {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(20px, -30px) scale(1.05); }
+    50% { transform: translate(-20px, 20px) scale(0.95); }
+    75% { transform: translate(10px, 10px) scale(1.02); }
   }
 }
 </file>
@@ -5859,6 +6024,64 @@ declare module 'next-auth/jwt' {
 }
 </file>
 
+<file path="src/middleware.ts">
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
+
+export async function middleware(request: NextRequest) {
+  const token = await getToken({ req: request });
+  const { pathname } = request.nextUrl;
+
+  const publicPaths = [
+    '/',
+    '/login',
+    '/register',
+    '/verify-email',
+    '/api/auth',
+    '/api/auth/',
+    '/api/auth/callback',
+    '/api/auth/providers',
+    '/api/auth/session',
+    '/api/auth/csrf',
+    '/api/auth/error',
+    '/api/webhooks',
+    '/_next',
+    '/favicon.ico',
+    '/competitions',
+    '/dashboard',
+    '/dashboard/',
+  ];
+
+  // Always allow NextAuth internal endpoints
+  if (pathname.startsWith('/api/auth/')) {
+    return NextResponse.next();
+  }
+
+  if (publicPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+    return NextResponse.next();
+  }
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  if (!token.active && pathname !== '/verify-email') {
+    return NextResponse.redirect(new URL('/verify-email', request.url));
+  }
+
+  if (pathname.startsWith('/admin') && token.role !== 'ADMIN') {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+};
+</file>
+
 <file path="next.config.js">
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -5875,58 +6098,163 @@ const nextConfig = {
 module.exports = nextConfig;
 </file>
 
-<file path="package.json">
-{
-  "name": "imd-itb-2026",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "next start",
-    "lint": "next lint",
-    "typecheck": "tsc --noEmit",
-    "postinstall": "prisma generate",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio",
-    "db:seed": "prisma db seed",
-    "db:migrate": "prisma migrate dev"
-  },
-  "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
-  },
-  "dependencies": {
-    "@auth/prisma-adapter": "^2.0.0",
-    "@prisma/client": "^5.10.0",
-    "@supabase/supabase-js": "^2.39.0",
-    "bcryptjs": "^2.4.3",
-    "clsx": "^2.1.0",
-    "framer-motion": "^11.0.0",
-    "googleapis": "^134.0.0",
-    "next": "14.1.0",
-    "next-auth": "^5.0.0-beta.31",
-    "nodemailer": "^7.0.7",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "tailwind-merge": "^2.2.0",
-    "zod": "^3.22.4"
-  },
-  "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/node": "^20",
-    "@types/nodemailer": "^7.0.0",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "autoprefixer": "^10.0.1",
-    "dotenv-cli": "^11.0.0",
-    "eslint": "^8",
-    "eslint-config-next": "14.1.0",
-    "postcss": "^8",
-    "prisma": "^5.10.0",
-    "tailwindcss": "^3.3.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5"
-  }
+<file path="src/app/(auth)/login/page.tsx">
+'use client';
+import { motion } from 'framer-motion';
+import { useState, Suspense } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+
+function LoginContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const verified = searchParams.get('verified');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setLoading(true);
+      setError('');
+      
+      try {
+        const result = await signIn('credentials', {
+          email: email.trim().toLowerCase(),
+          password,
+          redirect: false,
+        });
+
+        if (result?.error) {
+          // NextAuth v5 might return 'CredentialsSignin' for any failure
+          setError('Invalid email or password. Please check your credentials.');
+        } else if (result?.ok) {
+          router.push('/dashboard');
+          router.refresh();
+        } else {
+          setError('Login failed. Please try again.');
+        }
+      } catch (err) {
+        console.error(err);
+        setError('An unexpected error occurred.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  const handleGoogleLogin = () => {
+    signIn('google', { callbackUrl: '/dashboard' });
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Subtle Background Orbs */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-bio-cyan/10 rounded-full blur-[100px] animate-blob" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-bio-purple/10 rounded-full blur-[100px] animate-blob" style={{ animationDelay: '5s' }} />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="relative w-full max-w-md glass-strong rounded-3xl p-8 shadow-2xl border border-white/10"
+      >
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-2 text-white">
+            Welcome Back
+          </h1>
+          <p className="text-white/60 text-sm">Continue your microbial odyssey</p>
+        </div>
+
+        {verified && (
+          <div className="mb-6 bg-bio-emerald/10 border border-bio-emerald/30 text-bio-emerald px-4 py-3 rounded-lg text-sm text-center">
+            ✅ Email verified! You can now log in.
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-6 bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm text-center">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-white/50 mb-1 ml-1">Email</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input-glass"
+              placeholder="you@example.com"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-white/50 mb-1 ml-1">Password</label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-glass"
+              placeholder="••••••••"
+            />
+          </div>
+          
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-glow w-full mt-2"
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-white/5" />
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-space-900/50 px-3 text-xs text-white/30 uppercase tracking-wider">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleGoogleLogin}
+          className="btn-glass w-full flex items-center justify-center gap-2 hover:bg-white/10"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+          </svg>
+          <span className="text-white/90">Google</span>
+        </button>
+
+        <div className="mt-6 text-center text-sm text-white/50">
+          Don't have an account?{' '}
+          <Link href="/register" className="text-bio-cyan hover:text-bio-emerald font-medium transition-colors">
+            Register here
+          </Link>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-white">Loading...</div>}>
+      <LoginContent />
+    </Suspense>
+  );
 }
 </file>
 
@@ -6096,109 +6424,127 @@ export async function POST(req: Request) {
 }
 </file>
 
-<file path="src/lib/auth.ts">
-// src/lib/auth.ts
-import NextAuth from 'next-auth';
-import Google from 'next-auth/providers/google';
-import Credentials from 'next-auth/providers/credentials';
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import { prisma } from './db';
-import bcrypt from 'bcryptjs';
+<file path="src/lib/supabase.ts">
+// src/lib/supabase.ts
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: 'jwt' },
-  providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    Credentials({
-      name: 'Credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+let supabaseClient: SupabaseClient | null = null;
+
+function getSupabaseClient() {
+  if (supabaseClient) return supabaseClient;
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Supabase storage is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_KEY.');
+  }
+
+  supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
+  return supabaseClient;
+}
+
+export function getSupabaseBucket() {
+  return process.env.SUPABASE_STORAGE_BUCKET || 'submissions';
+}
+
+export async function getPresignedUrl(fileName: string, fileType: string, userId: string) {
+  const supabase = getSupabaseClient();
+  const fileExt = fileName.split('.').pop()?.toLowerCase()?.replace(/[^a-z0-9]/g, '') || 'bin';
+  const safePath = `${userId}/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${fileExt}`;
+  const bucket = getSupabaseBucket();
+
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .createSignedUploadUrl(safePath);
+
+  if (error) throw error;
+
+  const publicUrl = supabase.storage
+    .from(bucket)
+    .getPublicUrl(safePath).data.publicUrl;
+
+  return {
+    presignedUrl: data.signedUrl,
+    token: data.token,
+    publicUrl,
+    path: safePath,
+    contentType: fileType,
+  };
+}
+</file>
+
+<file path="src/app/api/admin/registrations/[id]/approve/route.ts">
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/db';
+import { sendApprovalEmail }  from '@/lib/email';
+import { syncRegistrationToSheet } from '@/lib/google-sheets';
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const registration = await prisma.registration.findUnique({
+      where: { id: params.id },
+      include: {
+        team: {
+          include: {
+            captain: true,
+          },
+        },
       },
-      async authorize(credentials) {
-        try {
-          if (!credentials?.email || !credentials?.password) {
-            return null;
-          }
+    });
 
-          const user = await prisma.user.findUnique({
-            where: { email: credentials.email as string },
-          });
+    if (!registration?.team) {
+      return NextResponse.json({ error: 'Registration not found' }, { status: 404 });
+    }
 
-          if (!user || !user.password) return null;
+    if (registration.status !== 'DOCUMENT_SUBMITTED') {
+      return NextResponse.json(
+        { error: 'Only submitted documents can be approved.' },
+        { status: 400 }
+      );
+    }
 
-          const isValid = await bcrypt.compare(
-            credentials.password as string,
-            user.password
-          );
-
-          if (!isValid) return null;
-
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            active: user.active,
-            role: user.role,
-            institution: user.institution,
-            educationLevel: user.educationLevel,
-          };
-        } catch {
-          return null;
-        }
+    await prisma.registration.update({
+      where: { id: params.id },
+      data: {
+        status: 'DOCUMENT_APPROVED',
+        adminNote: null,
       },
-    }),
-  ],
-  callbacks: {
-    async signIn({ user, account }) {
-      if (account?.provider === 'google') {
-        try {
-          const dbUser = await prisma.user.findUnique({
-            where: { email: user.email! },
-          });
-          if (dbUser && !dbUser.active) {
-            await prisma.user.update({
-              where: { id: dbUser.id },
-              data: { active: true },
-            });
-          }
-        } catch (error) {
-          console.error('Google signIn error:', error);
-        }
-      }
-      return true;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.sub = user.id;
-        token.active = user.active;
-        token.role = user.role;
-        token.institution = user.institution;
-        token.educationLevel = user.educationLevel;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.sub;
-        session.user.active = token.active;
-        session.user.role = token.role;
-        session.user.institution = token.institution;
-        session.user.educationLevel = token.educationLevel;
-      }
-      return session;
-    },
-  },
-  pages: {
-    signIn: '/login',
-    error: '/login',
-  },
-  debug: process.env.NODE_ENV === 'development',
-});
+    });
+
+    await syncRegistrationToSheet({
+      id: registration.teamId,
+      teamName: registration.team.teamName,
+      competitionType: registration.team.competitionType,
+      captainEmail: registration.team.captain.email,
+      captainName: registration.team.captain.name,
+      institution: registration.team.captain.institution,
+      status: 'DOCUMENT_APPROVED',
+    });
+
+    await sendApprovalEmail(
+      registration.team.captain.email,
+      registration.team.captain.name || 'Participant',
+      registration.team.competitionType,
+      'Registration'
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Approve registration error:', error);
+    return NextResponse.json({ error: 'Approval failed' }, { status: 500 });
+  }
+}
 </file>
 
 <file path="src/lib/email.ts">
@@ -6299,56 +6645,82 @@ export async function sendRejectionEmail(
   `;
   await sendMailSafe(email, `📝 Update on your ${phase}`, html);
 }
+
+// 5. Password reset emails
+export async function sendPasswordResetEmail(email: string, token: string, name?: string) {
+  const url = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${encodeURIComponent(token)}`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h1 style="color: #06b6d4;">Reset your password</h1>
+      <p>Hi ${name || 'there'},</p>
+      <p>You requested a password reset for your account.</p>
+      <a href="${url}" style="display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0;">
+        Reset Password
+      </a>
+      <p style="color: #666; font-size: 14px;">If the button doesn't work, copy and paste this link:</p>
+      <p style="color: #06b6d4; word-break: break-all;">${url}</p>
+      <p style="color: #999; font-size: 12px;">This link will expire in 30 minutes.</p>
+    </div>
+  `;
+
+  await sendMailSafe(email, '🔐 Reset your IMD 2026 password', html);
+}
 </file>
 
-<file path="src/lib/supabase.ts">
-// src/lib/supabase.ts
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import crypto from 'crypto';
-
-let supabaseClient: SupabaseClient | null = null;
-
-function getSupabaseClient() {
-  if (supabaseClient) return supabaseClient;
-
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Supabase storage is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_KEY.');
+<file path="package.json">
+{
+  "name": "imd-itb-2026",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:seed": "prisma db seed",
+    "db:migrate": "prisma migrate dev"
+  },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
+  "dependencies": {
+    "@auth/core": "0.34.3",
+    "@auth/prisma-adapter": "^2.11.2",
+    "@prisma/client": "^5.10.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "bcryptjs": "^2.4.3",
+    "clsx": "^2.1.0",
+    "framer-motion": "^11.0.0",
+    "googleapis": "^134.0.0",
+    "next": "14.1.0",
+    "next-auth": "^5.0.0-beta.31",
+    "nodemailer": "^7.0.7",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^2.2.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/nodemailer": "^7.0.0",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "dotenv-cli": "^11.0.0",
+    "eslint": "^8",
+    "eslint-config-next": "14.1.0",
+    "postcss": "^8",
+    "prisma": "^5.10.0",
+    "tailwindcss": "^3.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
   }
-
-  supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
-  return supabaseClient;
-}
-
-export function getSupabaseBucket() {
-  return process.env.SUPABASE_STORAGE_BUCKET || 'submissions';
-}
-
-export async function getPresignedUrl(fileName: string, fileType: string, userId: string) {
-  const supabase = getSupabaseClient();
-  const fileExt = fileName.split('.').pop()?.toLowerCase()?.replace(/[^a-z0-9]/g, '') || 'bin';
-  const safePath = `${userId}/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${fileExt}`;
-  const bucket = getSupabaseBucket();
-
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .createSignedUploadUrl(safePath);
-
-  if (error) throw error;
-
-  const publicUrl = supabase.storage
-    .from(bucket)
-    .getPublicUrl(safePath).data.publicUrl;
-
-  return {
-    presignedUrl: data.signedUrl,
-    token: data.token,
-    publicUrl,
-    path: safePath,
-    contentType: fileType,
-  };
 }
 </file>
 
@@ -6408,8 +6780,10 @@ model User {
 
   teams           TeamMember[]
   activations     ActivateToken[]
+  passwordResets PasswordResetToken[]
   reviews         Submission[] @relation("ReviewedBy")
   captainedTeams  Team[]       @relation("TeamCaptain")
+  
   
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -6499,78 +6873,157 @@ model ActivateToken {
 
   @@index([token])
 }
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+}
 </file>
 
-<file path="src/app/api/admin/registrations/[id]/approve/route.ts">
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/db';
-import { sendApprovalEmail }  from '@/lib/email';
-import { syncRegistrationToSheet } from '@/lib/google-sheets';
+<file path="src/lib/auth.ts">
+// src/lib/auth.ts
+import NextAuth from 'next-auth';
+import Google from 'next-auth/providers/google';
+import Credentials from 'next-auth/providers/credentials';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import { prisma } from './db';
+import bcrypt from 'bcryptjs';
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const registration = await prisma.registration.findUnique({
-      where: { id: params.id },
-      include: {
-        team: {
-          include: {
-            captain: true,
-          },
-        },
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: PrismaAdapter(prisma) as any,
+  session: { strategy: 'jwt' },
+  providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    Credentials({
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
       },
-    });
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
 
-    if (!registration?.team) {
-      return NextResponse.json({ error: 'Registration not found' }, { status: 404 });
-    }
+        const email = (credentials.email as string).toLowerCase().trim();
+        
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email },
+          });
 
-    if (registration.status !== 'DOCUMENT_SUBMITTED') {
-      return NextResponse.json(
-        { error: 'Only submitted documents can be approved.' },
-        { status: 400 }
-      );
-    }
+          // If user doesn't exist or has no password (e.g. Google only user)
+          if (!user || !user.password) {
+            return null;
+          }
 
-    await prisma.registration.update({
-      where: { id: params.id },
-      data: {
-        status: 'DOCUMENT_APPROVED',
-        adminNote: null,
+          // Check if email is verified
+          if (!user.active) {
+            // In NextAuth v5, we can throw a specific error message 
+            // but it's safer to return null and handle UI on client side 
+            // OR throw a standard Error if you want to catch it in signIn callback.
+            // However, returning null is the standard way to say "Invalid Credentials".
+            // To distinguish, we will rely on the client checking 'active' status if possible,
+            // but for now, let's prevent login.
+            console.warn(`Login attempt for unverified user: ${email}`);
+            return null; 
+          }
+
+          const isValid = await bcrypt.compare(credentials.password as string, user.password);
+          
+          if (!isValid) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            active: user.active,
+            role: user.role,
+            institution: user.institution,
+            educationLevel: user.educationLevel,
+          };
+        } catch (error) {
+          console.error('Authorize error:', error);
+          return null;
+        }
       },
-    });
+    }),
+  ],
+  callbacks: {
+    async signIn({ user, account }) {
+      // Handle Google Sign-In: Create user if not exists
+      if (account?.provider === 'google') {
+        try {
+          const email = user.email;
+          if (!email) return false;
 
-    await syncRegistrationToSheet({
-      id: registration.teamId,
-      teamName: registration.team.teamName,
-      competitionType: registration.team.competitionType,
-      captainEmail: registration.team.captain.email,
-      captainName: registration.team.captain.name,
-      institution: registration.team.captain.institution,
-      status: 'DOCUMENT_APPROVED',
-    });
-
-    await sendApprovalEmail(
-      registration.team.captain.email,
-      registration.team.captain.name || 'Participant',
-      registration.team.competitionType,
-      'Registration'
-    );
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Approve registration error:', error);
-    return NextResponse.json({ error: 'Approval failed' }, { status: 500 });
-  }
-}
+          const dbUser = await prisma.user.findUnique({ where: { email } });
+          
+          if (!dbUser) {
+            await prisma.user.create({
+              data: {
+                email,
+                name: user.name ?? undefined,
+                active: true, // Google users are auto-verified
+                emailVerified: new Date(),
+                googleId: account.providerAccountId,
+                role: 'USER',
+              },
+            });
+          } else if (!dbUser.active) {
+            // If user existed but wasn't active (e.g. from failed credential reg), activate them
+            await prisma.user.update({
+              where: { id: dbUser.id },
+              data: { active: true, emailVerified: dbUser.emailVerified ?? new Date() },
+            });
+          }
+        } catch (error) {
+          console.error('Google signIn error:', error);
+          return false;
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.sub = user.id;
+        token.active = (user as any).active ?? true;
+        token.role = (user as any).role ?? 'USER';
+        token.institution = (user as any).institution ?? null;
+        token.educationLevel = (user as any).educationLevel ?? null;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.sub as string;
+        session.user.active = (token.active ?? false) as boolean;
+        session.user.role = (token.role ?? 'USER') as string;
+        session.user.institution = (token.institution ?? null) as any;
+        session.user.educationLevel = (token.educationLevel ?? null) as any;
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: '/login',
+    error: '/login', // Redirect errors to login page to avoid 500 page
+  },
+  debug: process.env.NODE_ENV === 'development',
+});
 </file>
 
 </files>
