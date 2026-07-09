@@ -31,11 +31,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
 
           if (!user || !user.password) return null;
-
-          const isValid = await bcrypt.compare(
-            credentials.password as string,
-            user.password
-          );
+          if (!user.active) {
+            throw new Error('Please verify your email before logging in.');
+          }
+          const isValid = await bcrypt.compare(credentials.password as string, user.password);
 
           if (!isValid) return null;
 
