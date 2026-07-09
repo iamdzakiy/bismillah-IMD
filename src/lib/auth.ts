@@ -1,10 +1,10 @@
+// src/lib/auth.ts
 import NextAuth from 'next-auth';
 import Google from 'next-auth/providers/google';
 import Credentials from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from './db';
 import bcrypt from 'bcryptjs';
-import type { NextAuthConfig } from 'next-auth';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -20,10 +20,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials, request) {
+      async authorize(credentials) {
         try {
           if (!credentials?.email || !credentials?.password) {
-            console.log('❌ Missing credentials');
             return null;
           }
 
@@ -31,29 +30,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             where: { email: credentials.email as string },
           });
 
-          if (!user) {
-            console.log('❌ User not found:', credentials.email);
-            return null;
-          }
-
-          if (!user.password) {
-            console.log('❌ User has no password (maybe Google OAuth)');
-            return null;
-          }
+          if (!user || !user.password) return null;
 
           const isValid = await bcrypt.compare(
             credentials.password as string,
             user.password
           );
 
-          if (!isValid) {
-            console.log('❌ Invalid password for:', credentials.email);
-            return null;
-          }
+          if (!isValid) return null;
 
-          console.log('✅ Login successful:', user.email);
-
-          // Kembalikan object yang sesuai dengan tipe User NextAuth
           return {
             id: user.id,
             email: user.email,
@@ -63,8 +48,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             institution: user.institution,
             educationLevel: user.educationLevel,
           };
-        } catch (error) {
-          console.error('❌ Authorize error:', error);
+        } catch {
           return null;
         }
       },
@@ -84,7 +68,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             });
           }
         } catch (error) {
-          console.error('❌ Google signIn error:', error);
+          console.error('Google signIn error:', error);
         }
       }
       return true;
@@ -92,20 +76,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
-        token.active = (user as any).active;
-        token.role = (user as any).role;
-        token.institution = (user as any).institution;
-        token.educationLevel = (user as any).educationLevel;
+        token.active = user.active;
+        token.role = user.role;
+        token.institution = user.institution;
+        token.educationLevel = user.educationLevel;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.sub as string;
-        (session.user as any).active = token.active as boolean;
-        (session.user as any).role = token.role as string;
-        (session.user as any).institution = token.institution as string;
-        (session.user as any).educationLevel = token.educationLevel as string;
+        session.user.id = token.sub;
+        session.user.active = token.active;
+        session.user.role = token.role;
+        session.user.institution = token.institution;
+        session.user.educationLevel = token.educationLevel;
       }
       return session;
     },

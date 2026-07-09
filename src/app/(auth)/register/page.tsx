@@ -36,8 +36,8 @@ export default function RegisterPage() {
       if (!res.ok) throw new Error(data.error || 'Registration failed');
 
       router.push('/verify-email?email=' + encodeURIComponent(formData.email));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
       setLoading(false);
     }

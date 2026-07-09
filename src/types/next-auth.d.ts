@@ -1,3 +1,4 @@
+// src/types/next-auth.d.ts
 import 'next-auth';
 import 'next-auth/jwt';
 
@@ -6,8 +7,8 @@ declare module 'next-auth' {
     id: string;
     active: boolean;
     role: string;
-    institution?: string;
-    educationLevel?: string;
+    institution?: string | null;
+    educationLevel?: string | null;
   }
 
   interface Session {
@@ -18,8 +19,8 @@ declare module 'next-auth' {
       image?: string | null;
       active: boolean;
       role: string;
-      institution?: string;
-      educationLevel?: string;
+      institution?: string | null;
+      educationLevel?: string | null;
     };
   }
 }
@@ -29,7 +30,7 @@ declare module 'next-auth/jwt' {
     sub: string;
     active: boolean;
     role: string;
-    institution?: string;
-    educationLevel?: string;
+    institution?: string | null;
+    educationLevel?: string | null;
   }
 }

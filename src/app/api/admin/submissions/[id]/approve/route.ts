@@ -3,6 +3,13 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { sendApprovalEmail } from '@/lib/email';
 import { syncSubmissionToSheet } from '@/lib/google-sheets';
+import type { Phase } from '@prisma/client';
+
+function nextPhaseAfterApproval(phase: Phase): Phase | null {
+  if (phase === 'PRELIMINARY') return 'SEMIFINAL';
+  if (phase === 'SEMIFINAL') return 'FINAL';
+  return null;
+}
 
 export async function POST(
   req: NextRequest,
@@ -10,7 +17,7 @@ export async function POST(
 ) {
   try {
     const session = await auth();
-    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') {
+    if (!session?.user?.id || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -20,6 +27,7 @@ export async function POST(
         team: {
           include: {
             captain: true,
+            registration: true,
           },
         },
       },
@@ -29,28 +37,45 @@ export async function POST(
       return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
     }
 
-    await prisma.submission.update({
-      where: { id: params.id },
-      data: {
-        status: 'APPROVED',
-        reviewedById: session.user.id,
-        reviewedAt: new Date(),
-      },
+    if (submission.status !== 'PENDING') {
+      return NextResponse.json(
+        { error: 'Only pending submissions can be approved.' },
+        { status: 400 }
+      );
+    }
+
+    const nextPhase = nextPhaseAfterApproval(submission.phase);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.submission.update({
+        where: { id: params.id },
+        data: {
+          status: 'APPROVED',
+          reviewedById: session.user.id,
+          reviewedAt: new Date(),
+        },
+      });
+
+      if (nextPhase && submission.team.registration) {
+        await tx.registration.update({
+          where: { id: submission.team.registration.id },
+          data: { currentPhase: nextPhase },
+        });
+      }
     });
 
-    // Sync ke Google Sheets
     await syncSubmissionToSheet({
       id: submission.id,
-      teamName: submission.team?.teamName,
+      teamName: submission.team.teamName,
       phase: submission.phase,
       status: 'APPROVED',
-      fileUrl: submission.proposalUrl || submission.fullPaperUrl || '',
+      fileUrl: submission.proposalUrl || submission.fullPaperUrl || submission.pitchDeckUrl || '',
     });
 
     await sendApprovalEmail(
-      submission.team!.captain.email,
-      submission.team!.captain.name || 'Participant',
-      submission.team!.competitionType,
+      submission.team.captain.email,
+      submission.team.captain.name || 'Participant',
+      submission.team.competitionType,
       submission.phase
     );
 

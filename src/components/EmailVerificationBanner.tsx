@@ -6,7 +6,7 @@ import Link from 'next/link';
 export function EmailVerificationBanner() {
   const { data: session } = useSession();
 
-  if (!session || (session.user as any).active) return null;
+  if (!session || session.user.active) return null;
 
   return (
     <div className="bg-yellow-500/10 border-l-4 border-yellow-500 px-4 py-3">
@@ -15,7 +15,7 @@ export function EmailVerificationBanner() {
           ⚠️ Please verify your email to access all features.
         </p>
         <Link
-          href="/verify-email"
+          href={`/verify-email?email=${encodeURIComponent(session.user.email || '')}`}
           className="text-yellow-400 hover:text-yellow-300 text-sm font-medium underline"
         >
           Verify Now

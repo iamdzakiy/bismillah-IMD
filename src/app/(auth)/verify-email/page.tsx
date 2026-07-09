@@ -6,7 +6,8 @@ import { useState, Suspense } from 'react';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
-  const email = searchParams.get('email') || 'your email';
+  const email = searchParams.get('email') || '';
+  const displayEmail = email || 'your email';
   const [resending, setResending] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -16,12 +17,14 @@ function VerifyEmailContent() {
     try {
       const res = await fetch('/api/auth/resend-activation', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setMessage('✅ Verification email sent! Please check your inbox.');
-    } catch (err: any) {
-      setMessage('❌ ' + err.message);
+    } catch (err) {
+      setMessage('❌ ' + (err instanceof Error ? err.message : 'Failed to resend email'));
     } finally {
       setResending(false);
     }
@@ -39,7 +42,7 @@ function VerifyEmailContent() {
         <h1 className="text-2xl font-bold text-white mb-2">Verify Your Email</h1>
         <p className="text-white/60 mb-6">
           We've sent a verification link to{' '}
-          <span className="text-bio-emerald font-semibold break-all">{email}</span>.
+          <span className="text-bio-emerald font-semibold break-all">{displayEmail}</span>.
           Please check your inbox and click the link to activate your account.
         </p>
 
@@ -70,10 +73,10 @@ function VerifyEmailContent() {
         <div className="flex flex-col gap-3">
           <button
             onClick={handleResend}
-            disabled={resending}
+            disabled={resending || !email}
             className="btn-glass w-full"
           >
-            {resending ? 'Sending...' : '📧 Resend Verification Email'}
+            {resending ? 'Sending...' : email ? '📧 Resend Verification Email' : 'Email address missing'}
           </button>
 
           <Link

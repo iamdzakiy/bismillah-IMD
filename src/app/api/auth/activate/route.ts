@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 
     await prisma.user.update({
       where: { id: activationToken.userId },
-      data: { active: true },
+      data: { active: true, emailVerified: new Date() },
     });
 
     await prisma.activateToken.delete({ where: { id: activationToken.id } });

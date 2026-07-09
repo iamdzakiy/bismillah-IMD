@@ -38,8 +38,8 @@ function LoginContent() {
         setError('Login failed. Please try again.');
         setLoading(false);
       }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during login');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during login');
       setLoading(false);
     }
   };

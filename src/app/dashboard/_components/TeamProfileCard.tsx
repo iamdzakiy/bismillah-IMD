@@ -1,7 +1,9 @@
 'use client';
 
+import type { DashboardTeam } from './types';
+
 interface TeamProfileCardProps {
-  team: any;
+  team: DashboardTeam;
 }
 
 export function TeamProfileCard({ team }: TeamProfileCardProps) {
@@ -51,7 +53,7 @@ export function TeamProfileCard({ team }: TeamProfileCardProps) {
       <div className="border-t border-white/5 pt-4">
         <p className="text-xs text-white/40 uppercase tracking-wider mb-3">Team Members</p>
         <div className="flex flex-wrap gap-2">
-          {team.members.map((member: any) => (
+          {team.members.map((member) => (
             <div
               key={member.id}
               className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-lg text-sm text-white/70"

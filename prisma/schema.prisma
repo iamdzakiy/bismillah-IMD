@@ -1,9 +1,10 @@
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "postgres"
   url      = env("DATABASE_URL")
 }
 
@@ -31,31 +32,33 @@ enum SubmissionStatus {
 }
 
 enum RegistrationStatus {
-  PENDING_DOCS   // menunggu upload dokumen
+  PENDING_DOCS
   DOCUMENT_SUBMITTED
   DOCUMENT_APPROVED
   DOCUMENT_REJECTED
-  REGISTERED      // siap ikut lomba
+  REGISTERED
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  password      String?
-  googleId      String?   @unique
-  active        Boolean   @default(false)
-  role          Role      @default(USER)
-  institution   String?
-  educationLevel String?  // "SMA", "S1", "S2" dll
+  id              String    @id @default(cuid())
+  name            String?
+  email           String    @unique
+  password        String?
+  googleId        String?   @unique
+  active          Boolean   @default(false)
+  role            Role      @default(USER)
+  institution     String?
+  educationLevel  String?   // "SMA", "S1", "S2" dll
 
-  teams            TeamMember[]
-  activations      ActivateToken[]
-  reviews          Submission[] @relation("ReviewedBy")
-  captainedTeams   Team[]       @relation("TeamCaptain")
+  teams           TeamMember[]
+  activations     ActivateToken[]
+  reviews         Submission[] @relation("ReviewedBy")
+  captainedTeams  Team[]       @relation("TeamCaptain")
   
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([email])
 }
 
 model Team {
@@ -76,48 +79,56 @@ model TeamMember {
   id      String @id @default(cuid())
   teamId  String
   team    Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  userId  String @unique
+  userId  String
   user    User   @relation(fields: [userId], references: [id])
+
+  @@unique([teamId, userId])
+  @@index([userId])
+  @@index([teamId])
 }
 
 model Registration {
   id              String   @id @default(cuid())
   teamId          String   @unique
   team            Team     @relation(fields: [teamId], references: [id])
-  ktmUrl          String?  // URL KTM (PNG/JPG)
-  pdfMergeUrl     String?  // URL PDF Merge
+  ktmUrl          String?
+  pdfMergeUrl     String?
   status          RegistrationStatus @default(PENDING_DOCS)
   adminNote       String?
-  paymentStatus   String   @default("FREE") // gratis
+  paymentStatus   String   @default("FREE")
   currentPhase    Phase    @default(PRELIMINARY)
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([teamId])
 }
 
 model Submission {
-  id            String           @id @default(cuid())
-  teamId        String
-  team          Team             @relation(fields: [teamId], references: [id])
-  phase         Phase
+  id              String           @id @default(cuid())
+  teamId          String
+  team            Team             @relation(fields: [teamId], references: [id])
+  phase           Phase
   
-  // SPC requirements
-  proposalUrl   String?
-  videoPitchUrl String?
+  proposalUrl     String?
+  videoPitchUrl   String?
+  fullPaperUrl    String?
+  posterUrl       String?
+  pitchDeckUrl    String?
   
-  // NEC requirements
-  fullPaperUrl  String?
-  posterUrl     String?
-  pitchDeckUrl  String?
+  status          SubmissionStatus @default(PENDING)
+  notes           String?
+  reviewedById    String?
+  reviewedBy      User?            @relation("ReviewedBy", fields: [reviewedById], references: [id])
+  reviewedAt      DateTime?
   
-  status        SubmissionStatus @default(PENDING)
-  notes         String?
-  reviewedById  String?
-  reviewedBy    User?            @relation("ReviewedBy", fields: [reviewedById], references: [id])
-  reviewedAt    DateTime?
-  
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([teamId])
+  @@index([phase])
+  @@index([status])
 }
 
 model ActivateToken {
@@ -128,4 +139,6 @@ model ActivateToken {
   expiresAt DateTime
   
   createdAt DateTime @default(now())
+
+  @@index([token])
 }

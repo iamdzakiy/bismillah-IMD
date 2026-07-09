@@ -6,10 +6,12 @@ import Link from 'next/link';
 import { TeamProfileCard } from './TeamProfileCard';
 import { SubmissionForm } from './SubmissionForm';
 import { StatusBanner } from './StatusBanner';
+import { TeamRegistrationForm } from './TeamRegistrationForm';
+import type { DashboardTeam } from './types';
 
 interface DashboardClientProps {
   session: Session;
-  teams: any[];
+  teams: DashboardTeam[];
 }
 
 export function DashboardClient({ session, teams }: DashboardClientProps) {
@@ -33,7 +35,7 @@ export function DashboardClient({ session, teams }: DashboardClientProps) {
       </nav>
 
       <main className="max-w-6xl mx-auto px-4 py-12">
-        <StatusBanner active={(session.user as any).active} />
+        <StatusBanner active={session.user.active} />
 
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">
@@ -53,9 +55,7 @@ export function DashboardClient({ session, teams }: DashboardClientProps) {
             <p className="text-white/60 mb-6">
               Register for a competition to start your microbial odyssey!
             </p>
-            <Link href="/register" className="btn-glow inline-block">
-              Register for Competition
-            </Link>
+            <TeamRegistrationForm session={session} />
           </div>
         ) : (
           <div className="space-y-8">
@@ -65,6 +65,15 @@ export function DashboardClient({ session, teams }: DashboardClientProps) {
                 <SubmissionForm team={team} />
               </div>
             ))}
+
+            <details className="glass-dark rounded-2xl p-6">
+              <summary className="cursor-pointer text-lg font-semibold text-white">
+                Register for another eligible competition
+              </summary>
+              <div className="mt-6">
+                <TeamRegistrationForm session={session} />
+              </div>
+            </details>
           </div>
         )}
       </main>

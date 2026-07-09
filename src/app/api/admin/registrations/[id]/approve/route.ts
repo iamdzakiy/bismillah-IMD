@@ -10,7 +10,7 @@ export async function POST(
 ) {
   try {
     const session = await auth();
-    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') {
+    if (!session?.user?.id || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -25,32 +25,39 @@ export async function POST(
       },
     });
 
-    if (!registration) {
+    if (!registration?.team) {
       return NextResponse.json({ error: 'Registration not found' }, { status: 404 });
+    }
+
+    if (registration.status !== 'DOCUMENT_SUBMITTED') {
+      return NextResponse.json(
+        { error: 'Only submitted documents can be approved.' },
+        { status: 400 }
+      );
     }
 
     await prisma.registration.update({
       where: { id: params.id },
       data: {
         status: 'DOCUMENT_APPROVED',
+        adminNote: null,
       },
     });
 
-    // Sync ke Google Sheets
     await syncRegistrationToSheet({
       id: registration.teamId,
-      teamName: registration.team?.teamName,
-      competitionType: registration.team?.competitionType,
-      captainEmail: registration.team?.captain.email,
-      captainName: registration.team?.captain.name,
-      institution: registration.team?.captain.institution,
+      teamName: registration.team.teamName,
+      competitionType: registration.team.competitionType,
+      captainEmail: registration.team.captain.email,
+      captainName: registration.team.captain.name,
+      institution: registration.team.captain.institution,
+      status: 'DOCUMENT_APPROVED',
     });
 
-    // Kirim email
     await sendApprovalEmail(
-      registration.team!.captain.email,
-      registration.team!.captain.name || 'Participant',
-      registration.team!.competitionType,
+      registration.team.captain.email,
+      registration.team.captain.name || 'Participant',
+      registration.team.competitionType,
       'Registration'
     );
 

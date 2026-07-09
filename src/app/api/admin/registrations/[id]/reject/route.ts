@@ -5,8 +5,24 @@ import { sendRejectionEmail } from '@/lib/email';
 import { z } from 'zod';
 
 const rejectSchema = z.object({
-  notes: z.string().min(10, 'Notes must be at least 10 characters'),
+  notes: z.string().trim().min(10, 'Notes must be at least 10 characters'),
 });
+
+
+async function parseRequestBody(req: NextRequest) {
+  const contentType = req.headers.get('content-type') || '';
+
+  if (contentType.includes('application/json')) {
+    return req.json().catch(() => ({}));
+  }
+
+  if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
+    const formData = await req.formData();
+    return Object.fromEntries(formData.entries());
+  }
+
+  return {};
+}
 
 export async function POST(
   req: NextRequest,
@@ -14,11 +30,11 @@ export async function POST(
 ) {
   try {
     const session = await auth();
-    if (!session?.user?.id || (session.user as any).role !== 'ADMIN') {
+    if (!session?.user?.id || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await parseRequestBody(req);
     const parsed = rejectSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
@@ -38,8 +54,15 @@ export async function POST(
       },
     });
 
-    if (!registration) {
+    if (!registration?.team) {
       return NextResponse.json({ error: 'Registration not found' }, { status: 404 });
+    }
+
+    if (registration.status !== 'DOCUMENT_SUBMITTED') {
+      return NextResponse.json(
+        { error: 'Only submitted documents can be rejected.' },
+        { status: 400 }
+      );
     }
 
     await prisma.registration.update({
@@ -51,9 +74,9 @@ export async function POST(
     });
 
     await sendRejectionEmail(
-      registration.team!.captain.email,
-      registration.team!.captain.name || 'Participant',
-      registration.team!.competitionType,
+      registration.team.captain.email,
+      registration.team.captain.name || 'Participant',
+      registration.team.competitionType,
       'Registration',
       parsed.data.notes
     );

@@ -171,4 +171,4 @@ export const COMPETITIONS = [
       { q: 'Can I submit in Indonesian?', a: 'Yes, both English and Indonesian are accepted.' },
     ],
   },
-];
+] as const;

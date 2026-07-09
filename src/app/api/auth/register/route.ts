@@ -8,10 +8,10 @@ import { rateLimit } from '@/lib/rate-limit';
 import { z } from 'zod';
 
 const registerSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
+  name: z.string().min(2).transform((value) => value.trim()),
+  email: z.string().email().transform((value) => value.toLowerCase().trim()),
   password: z.string().min(8),
-  institution: z.string().min(2),
+  institution: z.string().min(2).transform((value) => value.trim()),
   educationLevel: z.enum(['SMA', 'S1', 'S2']),
 });
 
@@ -26,12 +26,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const body = await req.json();
-    console.log('Register payload:', body); // log untuk debug
+    const body = await req.json().catch(() => null);
 
     const parsed = registerSchema.safeParse(body);
     if (!parsed.success) {
-      console.error('Validation error:', parsed.error.flatten());
       return NextResponse.json(
         { error: 'Invalid input', details: parsed.error.flatten() },
         { status: 400 }

@@ -11,11 +11,53 @@ export default async function DashboardPage() {
     where: {
       members: { some: { userId: session.user.id } },
     },
-    include: {
-      registration: true,
-      submissions: { orderBy: { createdAt: 'desc' } },
-      captain: true,
-      members: { include: { user: true } },
+    select: {
+      id: true,
+      teamName: true,
+      competitionType: true,
+      captainId: true,
+      registration: {
+        select: {
+          id: true,
+          status: true,
+          currentPhase: true,
+          adminNote: true,
+        },
+      },
+      submissions: {
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          phase: true,
+          status: true,
+          notes: true,
+          proposalUrl: true,
+          videoPitchUrl: true,
+          fullPaperUrl: true,
+          posterUrl: true,
+          pitchDeckUrl: true,
+        },
+      },
+      captain: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      members: {
+        select: {
+          id: true,
+          userId: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
     },
   });
 

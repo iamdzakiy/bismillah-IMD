@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 import { isSubmissionOpen } from '@/lib/phase-utils';
+import { syncSubmissionToSheet } from '@/lib/google-sheets';
 
 const semifinalSchema = z.object({
   teamId: z.string(),
@@ -18,11 +19,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
     const parsed = semifinalSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Invalid input' },
+        { error: 'Invalid input', details: parsed.error.flatten() },
         { status: 400 }
       );
     }
@@ -44,6 +45,13 @@ export async function POST(req: Request) {
     if (team.captainId !== session.user.id) {
       return NextResponse.json(
         { error: 'Only team captain can submit' },
+        { status: 403 }
+      );
+    }
+
+    if (team.registration?.currentPhase !== 'SEMIFINAL') {
+      return NextResponse.json(
+        { error: 'Your team is not in the semifinal phase.' },
         { status: 403 }
       );
     }
@@ -72,6 +80,13 @@ export async function POST(req: Request) {
       );
     }
 
+    if (!fullPaperUrl || !videoPitchUrl) {
+      return NextResponse.json(
+        { error: 'Semifinal submission requires full paper and video pitch.' },
+        { status: 400 }
+      );
+    }
+
     const submission = await prisma.submission.create({
       data: {
         teamId,
@@ -83,9 +98,18 @@ export async function POST(req: Request) {
       },
     });
 
+    await syncSubmissionToSheet({
+      id: submission.id,
+      teamName: team.teamName,
+      phase: 'SEMIFINAL',
+      status: 'PENDING',
+      fileUrl: fullPaperUrl,
+    });
+
     return NextResponse.json({
       success: true,
       submissionId: submission.id,
+      message: 'Semifinal submission received. Our team will review it soon.',
     });
   } catch (error) {
     console.error('Semifinal submission error:', error);

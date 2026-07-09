@@ -123,8 +123,8 @@ export function HeroSection() {
                 <h3 className="text-2xl font-bold">IMD 2026 Mascot</h3>
                 <p className="text-white/50 text-sm">Meet our friendly microbial explorer!</p>
                 <div className="flex flex-wrap gap-2 justify-center mt-4">
-                  <span className="px-3 py-1 glass rounded-full text-xs">✨ HAHAHHAHA </span>
-                  <span className="px-3 py-1 glass rounded-full text-xs">🎨 HAHAHHAA HAHAH HAHA</span>
+                  <span className="px-3 py-1 glass rounded-full text-xs">✨ Microbial Explorer</span>
+                  <span className="px-3 py-1 glass rounded-full text-xs">🎨 Sustainable Future</span>
                 </div>
               </div>
             </div>

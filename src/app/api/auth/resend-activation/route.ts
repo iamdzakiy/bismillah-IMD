@@ -4,15 +4,29 @@ import crypto from 'crypto';
 import { sendVerificationEmail } from '@/lib/email';
 import { auth } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
+import { z } from 'zod';
+
+const resendSchema = z.object({
+  email: z.string().email().optional(),
+});
 
 export async function POST(req: Request) {
   try {
     const session = await auth();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const body = await req.json().catch(() => ({}));
+    const parsed = resendSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
     }
 
-    const { success } = rateLimit(`resend:${session.user.id}`, 2, 60 * 1000);
+    const email = (session?.user?.email ?? parsed.data.email)?.toLowerCase().trim();
+    if (!email) {
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    }
+
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const { success } = rateLimit(`resend:${email}:${ip}`, 2, 60 * 1000);
     if (!success) {
       return NextResponse.json(
         { error: 'Please wait before requesting another email.' },
@@ -20,12 +34,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      // Avoid account enumeration.
+      return NextResponse.json({ message: 'If the email exists, a verification link has been sent.' });
     }
 
     if (user.active) {

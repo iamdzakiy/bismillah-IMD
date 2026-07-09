@@ -38,7 +38,7 @@ export default function CompetitionPage({ params }: { params: { slug: string } }
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           {comp.benefits.map((benefit, i) => (
-            <GlassCard key={i} className="p-6 text-center" glow={comp.glowColor as any}>
+            <GlassCard key={i} className="p-6 text-center" glow={comp.glowColor}>
               <div className="text-4xl mb-2">{benefit.icon}</div>
               <p className="text-sm text-white/60 mb-1">{benefit.title}</p>
               <p className="text-lg font-bold text-bio-cyan">{benefit.value}</p>
@@ -141,7 +141,7 @@ export default function CompetitionPage({ params }: { params: { slug: string } }
             <h2 className="text-3xl font-bold mb-4">Ready to Join?</h2>
             <p className="text-white/70 mb-8">Register your team now and start your microbial odyssey!</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="/register?competition=olympiad" className="btn-glow">
+              <a href="/dashboard" className="btn-glow">
                 Register Now
               </a>
               <a href="/guidebook.pdf" target="_blank" className="btn-glass">

@@ -4,8 +4,22 @@ import { SubmissionsTable } from '../_components/SubmissionsTable';
 export default async function FinalSubmissionsPage() {
   const submissions = await prisma.submission.findMany({
     where: { phase: 'FINAL' },
-    include: {
-      team: { include: { captain: true } },
+    select: {
+      id: true,
+      status: true,
+      notes: true,
+      proposalUrl: true,
+      videoPitchUrl: true,
+      fullPaperUrl: true,
+      posterUrl: true,
+      pitchDeckUrl: true,
+      team: {
+        select: {
+          teamName: true,
+          competitionType: true,
+          captain: { select: { email: true } },
+        },
+      },
     },
     orderBy: { createdAt: 'desc' },
   });

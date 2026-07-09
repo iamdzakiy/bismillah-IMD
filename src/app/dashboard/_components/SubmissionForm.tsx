@@ -1,20 +1,23 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { FileUpload } from '@/components/FileUpload';
+import type { DashboardTeam, SubmissionPhase } from './types';
 
 interface SubmissionFormProps {
-  team: any;
+  team: DashboardTeam;
 }
 
 export function SubmissionForm({ team }: SubmissionFormProps) {
-  const [phase, setPhase] = useState<'PRELIMINARY' | 'SEMIFINAL' | 'FINAL'>('PRELIMINARY');
+  const router = useRouter();
+  const [phase, setPhase] = useState<SubmissionPhase>('PRELIMINARY');
   const [files, setFiles] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const currentPhase = team.registration?.currentPhase;
-  const existingSubmission = team.submissions?.find((s: any) => s.phase === phase);
+  const existingSubmission = team.submissions?.find((submission) => submission.phase === phase);
 
   const handleFileUpload = (key: string, url: string) => {
     setFiles((prev) => ({ ...prev, [key]: url }));
@@ -37,8 +40,9 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
 
       setMessage({ type: 'success', text: data.message || 'Submission successful!' });
       setFiles({});
-    } catch (err: any) {
-      setMessage({ type: 'error', text: err.message });
+      router.refresh();
+    } catch (err) {
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Submission failed' });
     } finally {
       setSubmitting(false);
     }
@@ -106,7 +110,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
         <h3 className="text-xl font-bold">Submit Your Work</h3>
         <select
           value={phase}
-          onChange={(e) => setPhase(e.target.value as any)}
+          onChange={(e) => setPhase(e.target.value as SubmissionPhase)}
           className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm text-white"
         >
           <option value="PRELIMINARY">Preliminary</option>

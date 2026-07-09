@@ -1,3 +1,4 @@
+// src/app/api/submissions/preliminary/route.ts
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
     const parsed = preliminarySchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Cek apakah dokumen sudah disetujui
+    // Check that documents are approved
     if (team.registration?.status !== 'DOCUMENT_APPROVED') {
       return NextResponse.json(
         { error: 'Your documents have not been approved yet.' },
@@ -58,7 +59,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Cek fase
+    // Check phase
     if (!isSubmissionOpen(team.competitionType, 'preliminary')) {
       return NextResponse.json(
         { error: 'Preliminary submission period is closed.' },
@@ -76,7 +77,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Validasi file berdasarkan kompetisi
+    // Validate required files based on competition type
     if (team.competitionType === 'SPC' && (!proposalUrl || !videoPitchUrl)) {
       return NextResponse.json(
         { error: 'SPC requires proposal and video pitch.' },
@@ -87,6 +88,14 @@ export async function POST(req: Request) {
     if (team.competitionType === 'NEC' && (!fullPaperUrl || !posterUrl)) {
       return NextResponse.json(
         { error: 'NEC requires full paper and infographic poster.' },
+        { status: 400 }
+      );
+    }
+
+    // For Olympiad, no file upload is required – handled separately
+    if (team.competitionType === 'OLYMPIAD') {
+      return NextResponse.json(
+        { error: 'Olympiad preliminary is exam-based; no file submission needed.' },
         { status: 400 }
       );
     }
