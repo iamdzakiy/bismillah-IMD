@@ -95,3 +95,25 @@ export async function sendRejectionEmail(
   `;
   await sendMailSafe(email, `📝 Update on your ${phase}`, html);
 }
+
+// 5. Password reset emails
+export async function sendPasswordResetEmail(email: string, token: string, name?: string) {
+  const url = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${encodeURIComponent(token)}`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h1 style="color: #06b6d4;">Reset your password</h1>
+      <p>Hi ${name || 'there'},</p>
+      <p>You requested a password reset for your account.</p>
+      <a href="${url}" style="display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0;">
+        Reset Password
+      </a>
+      <p style="color: #666; font-size: 14px;">If the button doesn't work, copy and paste this link:</p>
+      <p style="color: #06b6d4; word-break: break-all;">${url}</p>
+      <p style="color: #999; font-size: 12px;">This link will expire in 30 minutes.</p>
+    </div>
+  `;
+
+  await sendMailSafe(email, '🔐 Reset your IMD 2026 password', html);
+}
+

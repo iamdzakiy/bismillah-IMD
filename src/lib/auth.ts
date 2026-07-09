@@ -55,40 +55,61 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account }) {
+      // Ensure DB row exists and matches our activation policy
       if (account?.provider === 'google') {
         try {
-          const dbUser = await prisma.user.findUnique({
-            where: { email: user.email! },
-          });
-          if (dbUser && !dbUser.active) {
+          const email = user.email;
+          if (!email) return false;
+
+          const dbUser = await prisma.user.findUnique({ where: { email } });
+
+          if (!dbUser) {
+            await prisma.user.create({
+              data: {
+                email,
+                name: user.name ?? undefined,
+                active: true,
+                emailVerified: new Date(),
+                // googleId is optional but will help prevent duplicate signups
+                googleId: (account.providerAccountId as string) ?? undefined,
+                role: 'USER',
+              },
+            });
+          } else if (!dbUser.active) {
             await prisma.user.update({
               where: { id: dbUser.id },
-              data: { active: true },
+              data: { active: true, emailVerified: dbUser.emailVerified ?? new Date() },
             });
           }
         } catch (error) {
           console.error('Google signIn error:', error);
+          return false;
         }
       }
+
       return true;
     },
+
     async jwt({ token, user }) {
+      // On first sign-in, NextAuth passes `user`.
       if (user) {
         token.sub = user.id;
-        token.active = user.active;
-        token.role = user.role;
-        token.institution = user.institution;
-        token.educationLevel = user.educationLevel;
+        token.active = (user as any).active ?? true;
+        token.role = (user as any).role ?? 'USER';
+        token.institution = (user as any).institution ?? null;
+        token.educationLevel = (user as any).educationLevel ?? null;
       }
+
       return token;
     },
+
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub;
-        session.user.active = token.active;
-        session.user.role = token.role;
-        session.user.institution = token.institution;
-        session.user.educationLevel = token.educationLevel;
+        session.user.active = (token.active ?? false) as boolean;
+        session.user.role = (token.role ?? 'USER') as string;
+        session.user.institution = (token.institution ?? null) as any;
+        session.user.educationLevel = (token.educationLevel ?? null) as any;
       }
       return session;
     },

@@ -12,11 +12,24 @@ export async function middleware(request: NextRequest) {
     '/register',
     '/verify-email',
     '/api/auth',
+    '/api/auth/',
+    '/api/auth/callback',
+    '/api/auth/providers',
+    '/api/auth/session',
+    '/api/auth/csrf',
+    '/api/auth/error',
     '/api/webhooks',
     '/_next',
     '/favicon.ico',
     '/competitions',
+    '/dashboard',
+    '/dashboard/',
   ];
+
+  // Always allow NextAuth internal endpoints
+  if (pathname.startsWith('/api/auth/')) {
+    return NextResponse.next();
+  }
 
   if (publicPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next();

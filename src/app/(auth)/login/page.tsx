@@ -23,23 +23,34 @@ function LoginContent() {
 
     try {
       const result = await signIn('credentials', {
-        email,
+        email: email.trim().toLowerCase(),
         password,
         redirect: false,
       });
 
-      if (result?.error) {
-        setError('Invalid email or password');
-        setLoading(false);
-      } else if (result?.ok) {
+      // NextAuth returns shape: { ok, error, status, url, ... }
+      if (!result) {
+        setError('Login failed. Please try again.');
+        return;
+      }
+
+      if (result.error) {
+        setError(result.error === 'CredentialsSignin'
+          ? 'Invalid email or password (or email not verified).'
+          : result.error);
+        return;
+      }
+
+      if (result.ok) {
         router.push('/dashboard');
         router.refresh();
-      } else {
-        setError('Login failed. Please try again.');
-        setLoading(false);
+        return;
       }
+
+      setError('Login failed. Please try again.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during login');
+    } finally {
       setLoading(false);
     }
   };
@@ -141,12 +152,17 @@ function LoginContent() {
           Sign in with Google
         </button>
 
-        <p className="text-center text-white/60 text-sm mt-6">
-          Don't have an account?{' '}
-          <Link href="/register" className="text-bio-cyan hover:text-bio-emerald font-medium transition-colors">
-            Register here
+        <div className="flex items-center justify-between mt-6 gap-4">
+          <p className="text-white/60 text-sm">
+            Don't have an account?{' '}
+            <Link href="/register" className="text-bio-cyan hover:text-bio-emerald font-medium transition-colors">
+              Register here
+            </Link>
+          </p>
+          <Link href="/request-password-reset" className="text-bio-cyan hover:text-bio-emerald font-medium text-sm transition-colors">
+            Forgot password?
           </Link>
-        </p>
+        </div>
       </motion.div>
     </div>
   );
