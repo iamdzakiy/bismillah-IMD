@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { sendApprovalEmail } from '@/lib/email';
+import  sendApprovalEmail  from '@/lib/email';
 import { syncRegistrationToSheet } from '@/lib/google-sheets';
 
 export async function POST(

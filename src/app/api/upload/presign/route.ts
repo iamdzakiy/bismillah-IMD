@@ -55,9 +55,11 @@ export async function POST(req: Request) {
       );
     }
 
+    // Pass userId as third argument
     const { presignedUrl, publicUrl, path } = await getPresignedUrl(
       fileName,
-      fileType
+      fileType,
+      session.user.id
     );
 
     return NextResponse.json({
