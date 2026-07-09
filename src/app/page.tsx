@@ -1,0 +1,80 @@
+import { HeroSection } from './_components/HeroSection';
+import { CompetitionsSection } from './_components/CompetitionsSection';
+import { TimelineSection } from './_components/TimelineSection';
+import { FAQSection } from './_components/FAQSection';
+import { MemoriesGallery } from '@/components/ui/MemoriesGallery';
+import { SponsorMarquee } from '@/components/ui/SponsorMarquee';
+import { TimelineSlider } from '@/components/ui/TimelineSlider';
+import { RoadshowPopup } from '@/components/ui/RoadshowPopup';
+import { CursorGlow } from '@/components/ui/CursorGlow';
+import { MEDIA_PARTNERS, INDUSTRY_PARTNERS } from '@/lib/constants';
+
+export default function HomePage() {
+  return (
+    <main className="min-h-screen bg-space-900 text-white">
+      <CursorGlow />
+      <RoadshowPopup />
+      <HeroSection />
+      
+      {/* What is IMD - bisa ditambahkan di sini jika mau */}
+      
+      {/* Timeline Slider */}
+      <section className="py-20 px-4 max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <span className="inline-block px-4 py-1.5 glass rounded-full text-bio-cyan text-xs font-semibold uppercase tracking-widest mb-4">
+            Your Journey
+          </span>
+          <h2 className="text-4xl md:text-6xl font-black mb-4">
+            <span className="text-gradient">Event Timeline</span>
+          </h2>
+          <p className="text-white/50">Key milestones throughout IMD 2026</p>
+        </div>
+        <TimelineSlider />
+      </section>
+
+      {/* Memories Gallery */}
+      <section className="py-20 px-4 max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <span className="inline-block px-4 py-1.5 glass rounded-full text-bio-emerald text-xs font-semibold uppercase tracking-widest mb-4">
+            Memories
+          </span>
+          <h2 className="text-4xl md:text-6xl font-black mb-4">
+            <span className="text-gradient">Gallery of Previous Years</span>
+          </h2>
+          <p className="text-white/50">Relive the moments that made IMD special</p>
+        </div>
+        <MemoriesGallery />
+      </section>
+
+      {/* Sponsors */}
+      <section className="py-20 px-4 max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <span className="inline-block px-4 py-1.5 glass rounded-full text-bio-purple text-xs font-semibold uppercase tracking-widest mb-4">
+            Partners
+          </span>
+          <h2 className="text-4xl md:text-6xl font-black mb-4">
+            <span className="text-gradient">Our Partners & Sponsors</span>
+          </h2>
+        </div>
+
+        <div className="space-y-12">
+          <div>
+            <h3 className="text-center text-sm font-semibold text-white/40 uppercase tracking-wider mb-6">
+              Media Partners
+            </h3>
+            <SponsorMarquee items={MEDIA_PARTNERS} direction="left" speed={1.2} />
+          </div>
+          <div>
+            <h3 className="text-center text-sm font-semibold text-white/40 uppercase tracking-wider mb-6">
+              Industry Partners
+            </h3>
+            <SponsorMarquee items={INDUSTRY_PARTNERS} direction="right" speed={1} />
+          </div>
+        </div>
+      </section>
+
+      <CompetitionsSection />
+      <FAQSection />
+    </main>
+  );
+}

@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-space-900 text-white antialiased overflow-x-hidden;
+    background-image: 
+      radial-gradient(at 20% 30%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
+      radial-gradient(at 80% 70%, rgba(0, 245, 255, 0.1) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(0, 255, 157, 0.08) 0px, transparent 50%);
+  }
+
+  ::selection {
+    @apply bg-bio-cyan/30 text-white;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+  
+  .glass-strong {
+    @apply bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl;
+  }
+  
+  .glass-card {
+    @apply relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-500 hover:border-bio-cyan/50 hover:bg-white/10 hover:shadow-bio-cyan/20;
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-bio-cyan via-bio-emerald to-bio-teal bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-purple {
+    @apply bg-gradient-to-r from-bio-purple via-bio-pink to-bio-cyan bg-clip-text text-transparent;
+  }
+
+  .btn-glass {
+    @apply relative px-6 py-3 bg-white/5 backdrop-blur-xl border border-white/20 rounded-full font-medium transition-all duration-300 hover:bg-white/10 hover:border-bio-cyan/50 hover:scale-105 hover:shadow-lg hover:shadow-bio-cyan/20;
+  }
+  
+  .btn-glow {
+    @apply relative px-8 py-3 bg-gradient-to-r from-bio-cyan to-bio-emerald text-space-900 font-bold rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-bio-cyan/50;
+  }
+  
+  .btn-glow::before {
+    content: '';
+    @apply absolute inset-0 rounded-full bg-gradient-to-r from-bio-cyan to-bio-emerald blur-xl opacity-50 transition-opacity;
+    z-index: -1;
+  }
+  
+  .btn-glow:hover::before {
+    @apply opacity-100;
+  }
+
+  .input-glass {
+    @apply w-full px-4 py-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder:text-white/40 outline-none transition-all duration-300 focus:border-bio-cyan/50 focus:bg-white/10 focus:shadow-lg focus:shadow-bio-cyan/20;
+  }
+}
+
+@layer utilities {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-space-900;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gradient-to-b from-bio-cyan/50 to-bio-purple/50 rounded-full;
+  }
+  
+  .noise-overlay::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    opacity: 0.02;
+    z-index: 100;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+}

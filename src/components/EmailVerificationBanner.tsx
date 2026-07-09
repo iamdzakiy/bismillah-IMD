@@ -1,0 +1,26 @@
+'use client';
+
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+
+export function EmailVerificationBanner() {
+  const { data: session } = useSession();
+
+  if (!session || (session.user as any).active) return null;
+
+  return (
+    <div className="bg-yellow-500/10 border-l-4 border-yellow-500 px-4 py-3">
+      <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
+        <p className="text-yellow-200 text-sm">
+          ⚠️ Please verify your email to access all features.
+        </p>
+        <Link
+          href="/verify-email"
+          className="text-yellow-400 hover:text-yellow-300 text-sm font-medium underline"
+        >
+          Verify Now
+        </Link>
+      </div>
+    </div>
+  );
+}

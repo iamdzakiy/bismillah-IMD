@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum CompetitionType {
+  OLYMPIAD
+  SPC
+  NEC
+}
+
+enum Phase {
+  PRELIMINARY
+  SEMIFINAL
+  FINAL
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RegistrationStatus {
+  PENDING_DOCS   // menunggu upload dokumen
+  DOCUMENT_SUBMITTED
+  DOCUMENT_APPROVED
+  DOCUMENT_REJECTED
+  REGISTERED      // siap ikut lomba
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String?
+  googleId      String?   @unique
+  active        Boolean   @default(false)
+  role          Role      @default(USER)
+  institution   String?
+  educationLevel String?  // "SMA", "S1", "S2" dll
+
+  teams            TeamMember[]
+  activations      ActivateToken[]
+  reviews          Submission[] @relation("ReviewedBy")
+  captainedTeams   Team[]       @relation("TeamCaptain")
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Team {
+  id              String   @id @default(cuid())
+  teamName        String   @unique
+  competitionType CompetitionType
+  captainId       String
+  captain         User     @relation("TeamCaptain", fields: [captainId], references: [id])
+  members         TeamMember[]
+  registration    Registration?
+  submissions     Submission[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model TeamMember {
+  id      String @id @default(cuid())
+  teamId  String
+  team    Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId  String @unique
+  user    User   @relation(fields: [userId], references: [id])
+}
+
+model Registration {
+  id              String   @id @default(cuid())
+  teamId          String   @unique
+  team            Team     @relation(fields: [teamId], references: [id])
+  ktmUrl          String?  // URL KTM (PNG/JPG)
+  pdfMergeUrl     String?  // URL PDF Merge
+  status          RegistrationStatus @default(PENDING_DOCS)
+  adminNote       String?
+  paymentStatus   String   @default("FREE") // gratis
+  currentPhase    Phase    @default(PRELIMINARY)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Submission {
+  id            String           @id @default(cuid())
+  teamId        String
+  team          Team             @relation(fields: [teamId], references: [id])
+  phase         Phase
+  
+  // SPC requirements
+  proposalUrl   String?
+  videoPitchUrl String?
+  
+  // NEC requirements
+  fullPaperUrl  String?
+  posterUrl     String?
+  pitchDeckUrl  String?
+  
+  status        SubmissionStatus @default(PENDING)
+  notes         String?
+  reviewedById  String?
+  reviewedBy    User?            @relation("ReviewedBy", fields: [reviewedById], references: [id])
+  reviewedAt    DateTime?
+  
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model ActivateToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  
+  createdAt DateTime @default(now())
+}
