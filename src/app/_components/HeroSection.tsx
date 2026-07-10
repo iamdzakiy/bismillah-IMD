@@ -8,18 +8,39 @@ import { Countdown } from '@/components/ui/Countdown';
 export function HeroSection() {
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden pt-24 pb-12 px-4">
-      {/* Floating Orbs */}
+      {/* Immersive Background - Microbial Dark Matter */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-bio-cyan/20 rounded-full blur-[120px] animate-blob" />
-        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-bio-purple/20 rounded-full blur-[120px] animate-blob" style={{ animationDelay: '3s' }} />
-        <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-bio-emerald/15 rounded-full blur-[100px] animate-blob" style={{ animationDelay: '5s' }} />
+        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[150px] animate-blob" />
+        <div className="absolute bottom-1/4 right-1/4 w-[700px] h-[700px] bg-fuchsia-600/15 rounded-full blur-[150px] animate-blob" style={{ animationDelay: '3s' }} />
+        <div className="absolute top-1/2 left-1/2 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] animate-blob" style={{ animationDelay: '5s' }} />
+        
+        {/* Floating particles */}
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="particle-dot animate-drift"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 10}s`,
+              animationDuration: `${15 + Math.random() * 10}s`,
+              width: `${2 + Math.random() * 3}px`,
+              height: `${2 + Math.random() * 3}px`,
+            }}
+          />
+        ))}
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto w-full">
         {/* Countdown */}
-        <div className="glass rounded-2xl p-4 md:p-6 mb-12">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="glass rounded-2xl p-4 md:p-6 mb-12 max-w-md mx-auto lg:mx-0 glow-purple"
+        >
           <Countdown targetDate="2026-07-31T23:59:59" />
-        </div>
+        </motion.div>
 
         {/* Hero Content */}
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -31,8 +52,8 @@ export function HeroSection() {
               className="inline-flex items-center gap-2 px-5 py-2 glass rounded-full mb-6"
             >
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-bio-emerald opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-bio-emerald"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-400"></span>
               </span>
               <span className="text-sm font-medium text-white/90">
                 🧬 International Microorganism Day 2026
@@ -46,7 +67,7 @@ export function HeroSection() {
               className="text-5xl md:text-7xl font-black mb-6 leading-[1.1] tracking-tight"
             >
               The Great <br />
-              <GradientText className="block">Microbial Odyssey</GradientText>
+              <GradientText className="block text-gradient-glow">Microbial Odyssey</GradientText>
             </motion.h1>
 
             <motion.p
@@ -55,9 +76,9 @@ export function HeroSection() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="text-lg md:text-xl text-white/70 mb-6 max-w-2xl italic font-light"
             >
-              <span className="text-bio-cyan/80">"</span>
+              <span className="text-purple-400/80">"</span>
               Decoding the Earth's Dark Matter to Orchestrate a Sustainable Future
-              <span className="text-bio-cyan/80">"</span>
+              <span className="text-purple-400/80">"</span>
             </motion.p>
 
             <motion.p
@@ -78,10 +99,10 @@ export function HeroSection() {
               className="flex flex-wrap gap-4 justify-center lg:justify-start"
             >
               <Link href="/#competitions" className="btn-glow">
-                <i className="fas fa-trophy mr-2"></i> Explore Competitions
+                Explore Competitions
               </Link>
               <Link href="/register" className="btn-glass">
-                <i className="fas fa-user-plus mr-2"></i> Register Now
+                Register Now
               </Link>
             </motion.div>
 
@@ -89,7 +110,7 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.8 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10 glass rounded-2xl p-6"
+              className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10 glass rounded-2xl p-6 glow-purple"
             >
               {[
                 { target: 2100, label: 'Participants', suffix: '+' },
@@ -109,22 +130,29 @@ export function HeroSection() {
             </motion.div>
           </div>
 
-          {/* Hero Visual */}
+          {/* Hero Visual - IMD Mascot with Dark Matter Theme */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="hidden lg:flex justify-center"
           >
-            <div className="glass rounded-3xl p-8 max-w-md w-full relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-bio-cyan/5 to-bio-purple/5" />
+            <div className="glass rounded-3xl p-8 max-w-md w-full relative overflow-hidden glow-fuchsia">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-fuchsia-500/5" />
               <div className="relative text-center">
                 <div className="text-8xl mb-4 animate-float">🦠</div>
-                <h3 className="text-2xl font-bold">IMD 2026 Mascot</h3>
+                <h3 className="text-2xl font-bold text-gradient">IMD 2026 Mascot</h3>
                 <p className="text-white/50 text-sm">Meet our friendly microbial explorer!</p>
                 <div className="flex flex-wrap gap-2 justify-center mt-4">
                   <span className="px-3 py-1 glass rounded-full text-xs">✨ Microbial Explorer</span>
                   <span className="px-3 py-1 glass rounded-full text-xs">🎨 Sustainable Future</span>
+                </div>
+                {/* Dark matter visualization */}
+                <div className="mt-6 relative h-20">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-fuchsia-500/10 to-indigo-500/10 rounded-full blur-xl animate-pulse-glow" />
+                  <div className="relative flex items-center justify-center h-full">
+                    <span className="text-xs text-white/30">🔬 Exploring the unseen 99%</span>
+                  </div>
                 </div>
               </div>
             </div>

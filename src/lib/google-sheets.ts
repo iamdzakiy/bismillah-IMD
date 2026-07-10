@@ -51,6 +51,29 @@ export async function appendToSheet(sheetName: string, values: SheetValue[]) {
   }
 }
 
+export async function updateSheetRow(sheetName: string, row: number, values: SheetValue[]) {
+  const sheets = getSheetsClient();
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+
+  if (!sheets || !spreadsheetId) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`Skipped Google Sheets update for ${sheetName}: missing configuration.`);
+    }
+    return;
+  }
+
+  try {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${sheetName}!A${row}`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [values] },
+    });
+  } catch (error) {
+    console.error('Google Sheets update error:', error);
+  }
+}
+
 export async function syncRegistrationToSheet(registration: {
   id: string;
   teamName?: string | null;
@@ -59,16 +82,42 @@ export async function syncRegistrationToSheet(registration: {
   captainName?: string | null;
   institution?: string | null;
   status?: string | null;
+  members?: Array<{
+    name: string;
+    email: string;
+    institution: string;
+    phone: string;
+    age: number | null;
+    studentProofUrl: string | null;
+    role: string;
+  }>;
+  paymentProof?: string | null;
 }) {
+  const date = new Date().toISOString();
+  const memberNames = registration.members?.map((m) => m.name).join('; ') || '';
+  const memberEmails = registration.members?.map((m) => m.email).join('; ') || '';
+  const memberInstitutions = registration.members?.map((m) => m.institution).join('; ') || '';
+  const memberPhones = registration.members?.map((m) => m.phone).join('; ') || '';
+  const memberAges = registration.members?.map((m) => m.age?.toString() || '').join('; ') || '';
+  const memberProofs = registration.members?.map((m) => m.studentProofUrl || '').join('; ') || '';
+
   const values = [
-    new Date().toISOString(),
+    date,
     registration.id,
     registration.teamName ?? '',
     registration.competitionType ?? '',
-    registration.captainEmail ?? '',
     registration.captainName ?? '',
+    registration.captainEmail ?? '',
     registration.institution ?? '',
+    memberNames,
+    memberEmails,
+    memberInstitutions,
+    memberPhones,
+    memberAges,
+    memberProofs,
+    registration.paymentProof ?? '',
     registration.status ?? 'PENDING',
+    'FALSE', // approved (trigger for manual verification)
   ];
 
   await appendToSheet('Registrations', values);

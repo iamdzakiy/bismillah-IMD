@@ -52,15 +52,58 @@ export function TeamProfileCard({ team }: TeamProfileCardProps) {
 
       <div className="border-t border-white/5 pt-4">
         <p className="text-xs text-white/40 uppercase tracking-wider mb-3">Team Members</p>
-        <div className="flex flex-wrap gap-2">
+        <div className="space-y-3">
           {team.members.map((member) => (
             <div
               key={member.id}
-              className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-lg text-sm text-white/70"
+              className="glass rounded-xl p-4"
             >
-              {member.user.name || member.user.email}
-              {member.userId === team.captainId && (
-                <span className="ml-2 text-xs text-bio-emerald">(Captain)</span>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-white/80">
+                    {member.user.name || member.user.email}
+                  </span>
+                  {member.user.role === 'CHAIRMAN' && (
+                    <span className="text-xs text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/30">
+                      Chairman
+                    </span>
+                  )}
+                  {member.user.role === 'MEMBER' && (
+                    <span className="text-xs text-white/40 bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
+                      Member
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-white/50">
+                <div>
+                  <span className="block text-white/30">Email</span>
+                  {member.user.email}
+                </div>
+                <div>
+                  <span className="block text-white/30">Institution</span>
+                  {member.user.institution || '-'}
+                </div>
+                <div>
+                  <span className="block text-white/30">Phone</span>
+                  {member.user.phone || '-'}
+                </div>
+                <div>
+                  <span className="block text-white/30">Age</span>
+                  {member.user.age ?? '-'}
+                </div>
+              </div>
+              {member.user.studentProofUrl && (
+                <div className="mt-2">
+                  <a
+                    href={member.user.studentProofUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-purple-400 hover:text-purple-300 underline"
+                  >
+                    View Student Proof / KTM
+                  </a>
+                </div>
               )}
             </div>
           ))}

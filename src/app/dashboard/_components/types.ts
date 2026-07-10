@@ -8,6 +8,21 @@ export type RegistrationStatus =
   | 'DOCUMENT_REJECTED'
   | 'REGISTERED';
 
+export type DashboardMember = {
+  id: string;
+  userId: string;
+  user: {
+    id: string;
+    name?: string | null;
+    email: string;
+    institution?: string | null;
+    phone?: string | null;
+    age?: number | null;
+    studentProofUrl?: string | null;
+    role?: string | null;
+  };
+};
+
 export type DashboardSubmission = {
   id: string;
   phase: SubmissionPhase;
@@ -30,20 +45,13 @@ export type DashboardTeam = {
     name?: string | null;
     email: string;
   };
-  members: {
-    id: string;
-    userId: string;
-    user: {
-      id: string;
-      name?: string | null;
-      email: string;
-    };
-  }[];
+  members: DashboardMember[];
   registration?: {
     id: string;
     status: RegistrationStatus;
     currentPhase: SubmissionPhase;
     adminNote?: string | null;
+    paymentProofUrl?: string | null;
   } | null;
   submissions?: DashboardSubmission[];
 };

@@ -5,29 +5,31 @@ import { z } from 'zod';
 import { syncRegistrationToSheet } from '@/lib/google-sheets';
 import type { CompetitionType, User } from '@prisma/client';
 
-const memberSchema = z.object({
-  userId: z.string().optional(),
-  email: z.string().email().optional(),
+const memberDataSchema = z.object({
+  name: z.string().min(1).max(100),
+  email: z.string().email(),
+  institution: z.string().min(1).max(200),
+  phone: z.string().min(5).max(20),
+  age: z.number().int().min(10).max(99).nullable(),
+  studentProofUrl: z.string().url().optional(),
 });
 
 const registerSchema = z.object({
   teamName: z.string().trim().min(3).max(50),
   competitionType: z.enum(['OLYMPIAD', 'SPC', 'NEC']),
-  members: z.array(memberSchema).optional(),
-  memberEmails: z.array(z.string().email()).optional(),
+  members: z.array(memberDataSchema).min(1).max(4),
   ktmUrl: z.string().url().optional(),
   pdfMergeUrl: z.string().url().optional(),
+  paymentProofUrl: z.string().url().optional(),
 });
 
 function isEligible(user: Pick<User, 'educationLevel'>, competitionType: CompetitionType) {
   if (competitionType === 'OLYMPIAD' || competitionType === 'SPC') {
     return user.educationLevel === 'SMA';
   }
-
   if (competitionType === 'NEC') {
     return user.educationLevel === 'S1';
   }
-
   return false;
 }
 
@@ -60,7 +62,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { teamName, competitionType, members, memberEmails, ktmUrl, pdfMergeUrl } = parsed.data;
+    const { teamName, competitionType, members, ktmUrl, pdfMergeUrl, paymentProofUrl } = parsed.data;
 
     const captain = await prisma.user.findUnique({ where: { id: session.user.id } });
     if (!captain) {
@@ -81,61 +83,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: message }, { status: 400 });
     }
 
-    const memberIdsFromPayload = (members || [])
-      .map((member) => member.userId)
-      .filter((value): value is string => Boolean(value));
+    // Build memberData including captain as first entry
+    const memberData = [
+      {
+        name: captain.name || captain.email,
+        email: captain.email,
+        institution: captain.institution || '',
+        phone: '',
+        age: null,
+        studentProofUrl: ktmUrl || null,
+        role: 'CHAIRMAN',
+      },
+      ...members.map((m) => ({
+        name: m.name,
+        email: m.email,
+        institution: m.institution,
+        phone: m.phone,
+        age: m.age,
+        studentProofUrl: m.studentProofUrl || null,
+        role: 'MEMBER',
+      })),
+    ];
 
-    const memberEmailsFromPayload = [
-      ...(memberEmails || []),
-      ...(members || []).map((member) => member.email).filter((value): value is string => Boolean(value)),
-    ]
-      .map((email) => email.toLowerCase().trim())
-      .filter((email) => email && email !== captain.email.toLowerCase());
-
-    const uniqueEmails = [...new Set(memberEmailsFromPayload)];
-    const uniqueIds = [...new Set(memberIdsFromPayload.filter((id) => id !== captain.id))];
-
-    const usersByEmail = uniqueEmails.length
-      ? await prisma.user.findMany({ where: { email: { in: uniqueEmails } } })
-      : [];
-
-    const usersById = uniqueIds.length
-      ? await prisma.user.findMany({ where: { id: { in: uniqueIds } } })
-      : [];
-
-    const foundEmails = new Set(usersByEmail.map((user) => user.email.toLowerCase()));
-    const missingEmails = uniqueEmails.filter((email) => !foundEmails.has(email));
-    if (missingEmails.length) {
-      return NextResponse.json(
-        { error: `These member emails are not registered: ${missingEmails.join(', ')}` },
-        { status: 400 }
-      );
-    }
-
-    const membersMap = new Map<string, User>();
-    for (const user of [...usersByEmail, ...usersById]) {
-      if (user.id !== captain.id) membersMap.set(user.id, user);
-    }
-
-    const memberUsers = [...membersMap.values()];
-    const inactiveMembers = memberUsers.filter((user) => !user.active);
-    if (inactiveMembers.length) {
-      return NextResponse.json(
-        { error: `These members have not verified their email: ${inactiveMembers.map((user) => user.email).join(', ')}` },
-        { status: 400 }
-      );
-    }
-
-    const ineligibleMembers = memberUsers.filter((user) => !isEligible(user, competitionType));
-    if (ineligibleMembers.length) {
-      return NextResponse.json(
-        { error: `These members are not eligible for ${competitionType}: ${ineligibleMembers.map((user) => user.email).join(', ')}` },
-        { status: 400 }
-      );
-    }
-
-    const allMemberIds = [captain.id, ...memberUsers.map((user) => user.id)];
-    if (!validateTeamSize(competitionType, allMemberIds.length)) {
+    if (!validateTeamSize(competitionType, memberData.length)) {
       return NextResponse.json({ error: teamSizeMessage(competitionType) }, { status: 400 });
     }
 
@@ -144,37 +114,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Team name already taken.' }, { status: 400 });
     }
 
-    const conflictingMembers = await prisma.teamMember.findMany({
-      where: {
-        userId: { in: allMemberIds },
-        team: { competitionType },
-      },
-      include: { user: true, team: true },
-    });
-
-    if (conflictingMembers.length) {
-      const conflicts = conflictingMembers.map((member) => `${member.user.email} (${member.team.teamName})`);
-      return NextResponse.json(
-        { error: `Members already registered for ${competitionType}: ${conflicts.join(', ')}` },
-        { status: 400 }
-      );
-    }
-
     const team = await prisma.team.create({
       data: {
         teamName,
         competitionType,
         captainId: captain.id,
-        members: {
-          create: allMemberIds.map((userId) => ({ userId })),
-        },
+        memberData: memberData,
         registration: {
           create: {
             ktmUrl,
             pdfMergeUrl,
-            status: ktmUrl && pdfMergeUrl ? 'DOCUMENT_SUBMITTED' : 'PENDING_DOCS',
+            paymentProofUrl,
+            status: 'PENDING_DOCS',
             currentPhase: 'PRELIMINARY',
-            paymentStatus: 'FREE',
+            paymentStatus: paymentProofUrl ? 'PENDING' : 'FREE',
           },
         },
       },
@@ -184,6 +137,7 @@ export async function POST(req: Request) {
       },
     });
 
+    // Sync to Google Sheets
     await syncRegistrationToSheet({
       id: team.id,
       teamName: team.teamName,
@@ -192,6 +146,8 @@ export async function POST(req: Request) {
       captainName: team.captain.name,
       institution: team.captain.institution,
       status: team.registration?.status,
+      members: memberData,
+      paymentProof: paymentProofUrl,
     });
 
     return NextResponse.json({

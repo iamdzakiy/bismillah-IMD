@@ -5,8 +5,9 @@ import { COMPETITIONS } from '@/lib/competitions-data';
 import { Metadata } from 'next';
 
 // Generate metadata for SEO
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const comp = COMPETITIONS.find(c => c.id === params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const comp = COMPETITIONS.find(c => c.id === slug);
   if (!comp) return { title: 'Competition Not Found' };
   return {
     title: `${comp.title} – IMD 2026`,
@@ -15,8 +16,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function CompetitionPage({ params }: { params: { slug: string } }) {
-  const comp = COMPETITIONS.find(c => c.id === params.slug);
+export default async function CompetitionPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const comp = COMPETITIONS.find(c => c.id === slug);
   if (!comp) notFound();
 
   return (

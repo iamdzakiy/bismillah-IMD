@@ -9,12 +9,14 @@ export default async function AdminRegistrationsPage() {
       adminNote: true,
       ktmUrl: true,
       pdfMergeUrl: true,
+      paymentProofUrl: true,
+      googleSheetRow: true,
       team: {
         select: {
           teamName: true,
           competitionType: true,
-          captain: { select: { email: true, name: true } },
-          members: { select: { id: true } },
+          memberData: true,
+          captain: { select: { email: true, name: true, institution: true } },
         },
       },
     },
@@ -25,7 +27,7 @@ export default async function AdminRegistrationsPage() {
     <div>
       <h1 className="text-3xl font-bold mb-2">Registrations</h1>
       <p className="text-white/60 mb-8">Manage team registrations and approve/reject documents</p>
-      <RegistrationsTable registrations={registrations} />
+      <RegistrationsTable registrations={registrations as any} />
     </div>
   );
 }

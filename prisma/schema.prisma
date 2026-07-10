@@ -44,23 +44,22 @@ model User {
   id              String    @id @default(cuid())
   name            String?
   email           String    @unique
+  emailVerified   DateTime?
+  image           String?
   password        String?
   googleId        String?   @unique
   active          Boolean   @default(false)
   role            Role      @default(USER)
   institution     String?
-  educationLevel  String?   // "SMA", "S1", "S2" dll
+  educationLevel  String?   // "SMA", "S1"
 
-  teams           TeamMember[]
+  teams           Team[]     @relation("UserTeams")
   activations     ActivateToken[]
-  passwordResets PasswordResetToken[]
+  passwordResets  PasswordResetToken[]
   reviews         Submission[] @relation("ReviewedBy")
-  captainedTeams  Team[]       @relation("TeamCaptain")
-  
-  
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  emailVerified   DateTime?
 
   @@index([email])
 }
@@ -70,25 +69,13 @@ model Team {
   teamName        String   @unique
   competitionType CompetitionType
   captainId       String
-  captain         User     @relation("TeamCaptain", fields: [captainId], references: [id])
-  members         TeamMember[]
+  captain         User     @relation("UserTeams", fields: [captainId], references: [id])
+  memberData      Json?    // Array of { name, email, institution, phone, age, studentProofUrl }
   registration    Registration?
   submissions     Submission[]
-  
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-}
-
-model TeamMember {
-  id      String @id @default(cuid())
-  teamId  String
-  team    Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  userId  String
-  user    User   @relation(fields: [userId], references: [id])
-
-  @@unique([teamId, userId])
-  @@index([userId])
-  @@index([teamId])
 }
 
 model Registration {
@@ -97,11 +84,13 @@ model Registration {
   team            Team     @relation(fields: [teamId], references: [id])
   ktmUrl          String?
   pdfMergeUrl     String?
+  paymentProofUrl String?
   status          RegistrationStatus @default(PENDING_DOCS)
   adminNote       String?
   paymentStatus   String   @default("FREE")
   currentPhase    Phase    @default(PRELIMINARY)
-  
+  googleSheetRow  Int?     // Row number in Google Sheets for status updates
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -114,19 +103,19 @@ model Submission {
   teamId          String
   team            Team             @relation(fields: [teamId], references: [id])
   phase           Phase
-  
+
   proposalUrl     String?
   videoPitchUrl   String?
   fullPaperUrl    String?
   posterUrl       String?
   pitchDeckUrl    String?
-  
+
   status          SubmissionStatus @default(PENDING)
   notes           String?
   reviewedById    String?
   reviewedBy      User?            @relation("ReviewedBy", fields: [reviewedById], references: [id])
   reviewedAt      DateTime?
-  
+
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
@@ -141,7 +130,7 @@ model ActivateToken {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
-  
+
   createdAt DateTime @default(now())
 
   @@index([token])

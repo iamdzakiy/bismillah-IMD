@@ -13,16 +13,17 @@ function nextPhaseAfterApproval(phase: Phase): Phase | null {
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const submission = await prisma.submission.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         team: {
           include: {
@@ -46,9 +47,9 @@ export async function POST(
 
     const nextPhase = nextPhaseAfterApproval(submission.phase);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       await tx.submission.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           status: 'APPROVED',
           reviewedById: session.user.id,

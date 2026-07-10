@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
-  const token = await getToken({ req: request });
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = request.nextUrl;
 
   const publicPaths = [
@@ -11,6 +11,8 @@ export async function middleware(request: NextRequest) {
     '/login',
     '/register',
     '/verify-email',
+    '/request-password-reset',
+    '/reset-password',
     '/api/auth',
     '/api/auth/',
     '/api/auth/callback',
@@ -22,8 +24,6 @@ export async function middleware(request: NextRequest) {
     '/_next',
     '/favicon.ico',
     '/competitions',
-    '/dashboard',
-    '/dashboard/',
   ];
 
   // Always allow NextAuth internal endpoints

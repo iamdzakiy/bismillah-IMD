@@ -6,16 +6,17 @@ import { syncRegistrationToSheet } from '@/lib/google-sheets';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const registration = await prisma.registration.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         team: {
           include: {
@@ -37,7 +38,7 @@ export async function POST(
     }
 
     await prisma.registration.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status: 'DOCUMENT_APPROVED',
         adminNote: null,

@@ -9,17 +9,29 @@ type RegistrationStatus =
   | 'DOCUMENT_REJECTED'
   | 'REGISTERED';
 
+type MemberDataItem = {
+  name: string;
+  email: string;
+  institution: string;
+  phone: string;
+  age: number | null;
+  studentProofUrl: string | null;
+  role: string;
+};
+
 type RegistrationRow = {
   id: string;
   status: RegistrationStatus;
   adminNote?: string | null;
   ktmUrl?: string | null;
   pdfMergeUrl?: string | null;
+  paymentProofUrl?: string | null;
+  googleSheetRow?: number | null;
   team: {
     teamName: string;
     competitionType: string;
-    captain: { email: string; name?: string | null };
-    members: { id: string }[];
+    memberData: any;
+    captain: { email: string; name?: string | null; institution?: string | null };
   } | null;
 };
 
@@ -37,6 +49,12 @@ const statusColors: Record<RegistrationStatus, string> = {
 
 function formatStatus(status: string) {
   return status.replaceAll('_', ' ');
+}
+
+function getMembers(memberData: any): MemberDataItem[] {
+  if (!memberData) return [];
+  if (Array.isArray(memberData)) return memberData;
+  return [];
 }
 
 export function RegistrationsTable({ registrations }: RegistrationsTableProps) {
@@ -89,70 +107,101 @@ export function RegistrationsTable({ registrations }: RegistrationsTableProps) {
   return (
     <div className="glass-dark rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px]">
+        <table className="w-full min-w-[1100px]">
           <thead className="bg-white/5">
             <tr>
               <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Team Name</th>
               <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Competition</th>
-              <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Captain</th>
+              <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Chairman</th>
               <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Members</th>
               <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Docs</th>
+              <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Payment</th>
               <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Status</th>
               <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {registrations.map((reg) => (
-              <tr key={reg.id} className="border-t border-white/5 hover:bg-white/5">
-                <td className="px-4 py-3 text-white font-medium">{reg.team?.teamName || 'N/A'}</td>
-                <td className="px-4 py-3 text-white/70">{reg.team?.competitionType || 'N/A'}</td>
-                <td className="px-4 py-3 text-white/70">{reg.team?.captain?.email || 'N/A'}</td>
-                <td className="px-4 py-3 text-white/70">{reg.team?.members?.length || 0}</td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap gap-2">
-                    {reg.ktmUrl && (
-                      <a href={reg.ktmUrl} target="_blank" rel="noreferrer" className="text-xs text-bio-cyan hover:underline">
-                        Student Card
-                      </a>
-                    )}
-                    {reg.pdfMergeUrl && (
-                      <a href={reg.pdfMergeUrl} target="_blank" rel="noreferrer" className="text-xs text-bio-cyan hover:underline">
-                        Merged PDF
-                      </a>
-                    )}
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-1 text-xs rounded ${statusColors[reg.status]}`}>
-                    {formatStatus(reg.status)}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  {reg.status === 'DOCUMENT_SUBMITTED' ? (
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        disabled={loadingId === reg.id}
-                        onClick={() => handleApprove(reg.id)}
-                        className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs rounded"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        type="button"
-                        disabled={loadingId === reg.id}
-                        onClick={() => setRejectingId(reg.id)}
-                        className="px-3 py-1 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-xs rounded"
-                      >
-                        Reject
-                      </button>
+            {registrations.map((reg) => {
+              const members = getMembers(reg.team?.memberData);
+              return (
+                <tr key={reg.id} className="border-t border-white/5 hover:bg-white/5">
+                  <td className="px-4 py-3 text-white font-medium">{reg.team?.teamName || 'N/A'}</td>
+                  <td className="px-4 py-3 text-white/70">{reg.team?.competitionType || 'N/A'}</td>
+                  <td className="px-4 py-3">
+                    <div className="text-white/70 text-sm">{reg.team?.captain?.name || 'N/A'}</div>
+                    <div className="text-white/40 text-xs">{reg.team?.captain?.email}</div>
+                    <div className="text-white/40 text-xs">{reg.team?.captain?.institution}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="space-y-1">
+                      {members.map((m, i) => (
+                        <div key={i} className="text-xs text-white/60">
+                          {m.name} ({m.email})
+                          {m.studentProofUrl && (
+                            <a href={m.studentProofUrl} target="_blank" rel="noreferrer" className="ml-1 text-purple-400 hover:underline">
+                              [KTM]
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                      {members.length === 0 && <span className="text-xs text-white/30">No members</span>}
                     </div>
-                  ) : (
-                    <span className="text-xs text-white/40">{reg.adminNote || '—'}</span>
-                  )}
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-2">
+                      {reg.ktmUrl && (
+                        <a href={reg.ktmUrl} target="_blank" rel="noreferrer" className="text-xs text-purple-400 hover:underline">
+                          Chairman KTM
+                        </a>
+                      )}
+                      {reg.pdfMergeUrl && (
+                        <a href={reg.pdfMergeUrl} target="_blank" rel="noreferrer" className="text-xs text-purple-400 hover:underline">
+                          Merged PDF
+                        </a>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    {reg.paymentProofUrl ? (
+                      <a href={reg.paymentProofUrl} target="_blank" rel="noreferrer" className="text-xs text-purple-400 hover:underline">
+                        View Proof
+                      </a>
+                    ) : (
+                      <span className="text-xs text-white/30">FREE</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-1 text-xs rounded ${statusColors[reg.status]}`}>
+                      {formatStatus(reg.status)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {reg.status === 'DOCUMENT_SUBMITTED' ? (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          disabled={loadingId === reg.id}
+                          onClick={() => handleApprove(reg.id)}
+                          className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs rounded"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          type="button"
+                          disabled={loadingId === reg.id}
+                          onClick={() => setRejectingId(reg.id)}
+                          className="px-3 py-1 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-xs rounded"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-white/40">{reg.adminNote || '—'}</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
