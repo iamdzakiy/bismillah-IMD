@@ -8,17 +8,14 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-[#0a0514] text-white antialiased overflow-x-hidden selection:bg-purple-500/30 selection:text-white cursor-none;
+    @apply bg-[#0a0514] text-white antialiased overflow-x-hidden selection:bg-purple-500/30 selection:text-white;
     /* Deep Purple Background - Microbial Dark Matter Theme */
     background-image:
-      radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.1) 0px, transparent 50%),
-      radial-gradient(at 50% 50%, rgba(192, 132, 252, 0.05) 0px, transparent 60%),
-      radial-gradient(at 20% 80%, rgba(59, 130, 246, 0.08) 0px, transparent 40%),
-      radial-gradient(at 80% 20%, rgba(236, 72, 153, 0.08) 0px, transparent 40%);
+      radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.08) 0px, transparent 50%),
+      radial-gradient(at 50% 50%, rgba(192, 132, 252, 0.04) 0px, transparent 60%);
     background-attachment: fixed;
   }
-
 }
 
 @layer components {
@@ -101,15 +98,15 @@
   }
   
   .animate-blob {
-    animation: blob 20s infinite;
+    animation: blob 35s infinite;
   }
 
   .animate-pulse-glow {
-    animation: pulseGlow 3s ease-in-out infinite;
+    animation: pulseGlow 4s ease-in-out infinite;
   }
 
   .animate-drift {
-    animation: drift 15s ease-in-out infinite;
+    animation: drift 25s ease-in-out infinite;
   }
 
   .animate-spin-slow {
@@ -135,8 +132,8 @@
 
   @keyframes blob {
     0%, 100% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(30px, -50px) scale(1.1); }
-    66% { transform: translate(-20px, 20px) scale(0.9); }
+    33% { transform: translate(15px, -20px) scale(1.05); }
+    66% { transform: translate(-10px, 10px) scale(0.95); }
   }
 
   @keyframes pulseGlow {

@@ -10,18 +10,9 @@ export function RoadshowPopup() {
     const timer = setTimeout(() => setIsOpen(true), 2000);
     return () => clearTimeout(timer);
   }, []);
->>>>>>> SEARCH
-  const closePopup = () => {
-    setIsOpen(false);
-    localStorage.setItem('imd2026_popup_seen', 'true');
-  };
-  const closePopup = () => {
-    setIsOpen(false);
-  };
 
   const closePopup = () => {
     setIsOpen(false);
-    localStorage.setItem('imd2026_popup_seen', 'true');
   };
 
   return (
@@ -44,12 +35,12 @@ export function RoadshowPopup() {
               onClick={closePopup}
               className="absolute top-4 right-4 w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-red-500/20 transition-all"
             >
-              <i className="fas fa-times"></i>
+              <span className="text-white text-lg">×</span>
             </button>
 
             <div className="text-center">
-              <div className="inline-block px-4 py-1.5 glass rounded-full text-bio-cyan text-xs font-bold uppercase tracking-wider mb-4">
-                <i className="fas fa-bus mr-2"></i> ROADSHOW 2026
+              <div className="inline-block px-4 py-1.5 glass rounded-full text-purple-400 text-xs font-bold uppercase tracking-wider mb-4">
+                🎥 ROADSHOW 2026
               </div>
 
               <h3 className="text-3xl md:text-4xl font-black mb-3">
@@ -71,12 +62,10 @@ export function RoadshowPopup() {
 
               <div className="flex flex-wrap justify-center gap-6 text-sm text-white/60 mb-6">
                 <div className="flex items-center gap-2">
-                  <i className="fas fa-map-marker-alt text-bio-cyan"></i>
-                  <span>ITB Ganesha, Bandung</span>
+                  <span>📍 ITB Ganesha, Bandung</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <i className="fas fa-calendar text-bio-cyan"></i>
-                  <span>Coming Soon 2026</span>
+                  <span>📅 Coming Soon 2026</span>
                 </div>
               </div>
 
@@ -84,7 +73,7 @@ export function RoadshowPopup() {
                 onClick={closePopup}
                 className="btn-glow w-full"
               >
-                <i className="fas fa-arrow-right mr-2"></i> Explore Competitions
+                Explore Competitions
               </button>
             </div>
           </motion.div>
