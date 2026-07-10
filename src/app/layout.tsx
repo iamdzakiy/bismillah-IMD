@@ -6,7 +6,6 @@ import { Navbar } from '@/components/site/Navbar';
 import { Footer } from '@/components/site/Footer';
 import { EmailVerificationBanner } from '@/components/EmailVerificationBanner';
 import { FloatingOrbs } from '@/components/ui/FloatingOrbs';
-import { CustomCursor } from '@/components/ui/CustomCursor';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-display' });
@@ -34,7 +33,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <body className="font-sans noise-overlay">
         <AuthProvider>
-          <CustomCursor />
           <FloatingOrbs />
           <EmailVerificationBanner />
           <Navbar />
