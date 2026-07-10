@@ -19,14 +19,6 @@
     background-attachment: fixed;
   }
 
-  /* Custom Cursor - Magnifier Effect */
-  * {
-    cursor: none !important;
-  }
-
-  a, button, input, select, textarea, [role="button"] {
-    cursor: none !important;
-  }
 }
 
 @layer components {
