@@ -38,9 +38,9 @@ export function Countdown({ targetDate, onComplete }: CountdownProps) {
     return () => clearInterval(interval);
   }, [targetDate, onComplete]);
 
-  const unitClass = "text-center p-3 glass rounded-xl min-w-[70px] md:min-w-[80px]";
-  const valueClass = "font-display text-3xl md:text-4xl font-bold text-gradient";
-  const labelClass = "text-xs text-white/50 uppercase tracking-wider mt-1";
+  const unitClass = "text-center p-3 glass rounded-xl min-w-[70px] md:min-w-[80px] border border-white/5 bg-[#130c24]/50 shadow-inner";
+  const valueClass = "font-display text-3xl md:text-4xl font-bold text-gradient-glow text-purple-400";
+  const labelClass = "text-[10px] text-white/40 uppercase tracking-wider mt-1 block font-medium";
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
@@ -57,17 +57,17 @@ export function Countdown({ targetDate, onComplete }: CountdownProps) {
           <div className={valueClass}>{String(time.days).padStart(2, '0')}</div>
           <div className={labelClass}>Days</div>
         </div>
-        <span className="text-2xl text-bio-cyan animate-pulse">:</span>
+        <span className="text-xl text-purple-400/80 animate-pulse font-bold">:</span>
         <div className={unitClass}>
           <div className={valueClass}>{String(time.hours).padStart(2, '0')}</div>
           <div className={labelClass}>Hours</div>
         </div>
-        <span className="text-2xl text-bio-cyan animate-pulse">:</span>
+        <span className="text-xl text-purple-400/80 animate-pulse font-bold">:</span>
         <div className={unitClass}>
           <div className={valueClass}>{String(time.minutes).padStart(2, '0')}</div>
           <div className={labelClass}>Minutes</div>
         </div>
-        <span className="text-2xl text-bio-cyan animate-pulse">:</span>
+        <span className="text-xl text-purple-400/80 animate-pulse font-bold">:</span>
         <div className={unitClass}>
           <div className={valueClass}>{String(time.seconds).padStart(2, '0')}</div>
           <div className={labelClass}>Seconds</div>
@@ -78,7 +78,7 @@ export function Countdown({ targetDate, onComplete }: CountdownProps) {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex items-center gap-2 px-4 py-2 bg-bio-pink/20 border border-bio-pink/30 rounded-full text-bio-pink font-semibold text-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 font-semibold text-sm"
         >
           <span>📅</span>
           <span>Extended until <strong>31 July 2026</strong></span>

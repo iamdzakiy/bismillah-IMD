@@ -7,12 +7,17 @@ export function RoadshowPopup() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const seen = localStorage.getItem('imd2026_popup_seen');
-    if (!seen) {
-      const timer = setTimeout(() => setIsOpen(true), 2000);
-      return () => clearTimeout(timer);
-    }
+    const timer = setTimeout(() => setIsOpen(true), 2000);
+    return () => clearTimeout(timer);
   }, []);
+>>>>>>> SEARCH
+  const closePopup = () => {
+    setIsOpen(false);
+    localStorage.setItem('imd2026_popup_seen', 'true');
+  };
+  const closePopup = () => {
+    setIsOpen(false);
+  };
 
   const closePopup = () => {
     setIsOpen(false);
