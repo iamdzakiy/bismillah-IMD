@@ -125,8 +125,8 @@ export default function RegisterPage() {
               onChange={handleChange}
               className="input-glass text-sm"
             >
-              <option value="SMA">SMA / MA / SMK</option>
-              <option value="S1">S1 / D3 / D4</option>
+              <option value="SMA">SMA / MA / SMK / Sederajat</option>
+              <option value="S1">S1 / D3 / D4 / Diploma</option>
             </select>
           </div>
 

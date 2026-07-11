@@ -11,9 +11,9 @@ interface TeamRegistrationFormProps {
 }
 
 const competitionOptions: Record<CompetitionType, string> = {
-  OLYMPIAD: 'Microbiology Olympiad',
-  SPC: 'Science Project Competition',
-  NEC: 'National Essay Competition',
+  OLYMPIAD: 'Microbiology Olympiad (MO)',
+  SPC: 'Science Project Competition (SPC)',
+  NEC: 'National Essay Competition (NEC)',
 };
 
 interface MemberEntry {
@@ -22,7 +22,7 @@ interface MemberEntry {
   institution: string;
   phone: string;
   age: string;
-  studentProof: string;
+  studentProof: string; // KTA for SMA, KTM for S1
 }
 
 function emptyMember(): MemberEntry {
@@ -31,29 +31,40 @@ function emptyMember(): MemberEntry {
 
 export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
   const educationLevel = session.user.educationLevel;
+  
+  // MO = SMA only (individual with payment)
+  // SPC = SMA only (team of 2-4)
+  // NEC = S1/Diploma only (individual, no payment)
   const availableCompetitions: CompetitionType[] = (() => {
     if (educationLevel === 'SMA') return ['OLYMPIAD', 'SPC'];
-    if (educationLevel === 'S1') return ['NEC'];
+    if (educationLevel === 'S1' || educationLevel?.startsWith('S1')) return ['NEC'];
     return [];
   })();
 
   const [competitionType, setCompetitionType] = useState<CompetitionType>(availableCompetitions[0] || 'OLYMPIAD');
   const [teamName, setTeamName] = useState('');
   const [paymentProof, setPaymentProof] = useState('');
-  const [ktmUrl, setKtmUrl] = useState('');
+  const [ktmUrl, setKtmUrl] = useState(''); // Chairman student proof
   const [pdfMergeUrl, setPdfMergeUrl] = useState('');
-  const [members, setMembers] = useState<MemberEntry[]>([emptyMember()]);
+  const [shareProofUrl, setShareProofUrl] = useState('');
+  const [twibbonProofUrl, setTwibbonProofUrl] = useState('');
+  const [groupsProofUrl, setGroupsProofUrl] = useState('');
+  const [members, setMembers] = useState<MemberEntry[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const isTeamCompetition = competitionType === 'SPC' || competitionType === 'NEC';
-  const needsPaymentProof = competitionType === 'OLYMPIAD';
+  // MO = individual only, needs payment
+  // SPC = team 2-4 (captain + 1-3 members)
+  // NEC = individual only
+  const isIndividual = competitionType === 'OLYMPIAD' || competitionType === 'NEC';
+  const needsPaymentProof = competitionType === 'OLYMPIAD'; // Only MO needs payment
+  const isSMACompetition = competitionType === 'OLYMPIAD' || competitionType === 'SPC';
 
   const getMaxMembers = () => {
-    if (competitionType === 'OLYMPIAD') return 1;
-    if (competitionType === 'SPC') return 4;
-    if (competitionType === 'NEC') return 2;
-    return 1;
+    if (competitionType === 'OLYMPIAD') return 0; // individual, no extra members
+    if (competitionType === 'SPC') return 3; // max 3 additional members (total 4 with captain)
+    if (competitionType === 'NEC') return 0; // individual, no extra members
+    return 0;
   };
 
   const maxMembers = getMaxMembers();
@@ -80,6 +91,12 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
     setSubmitting(true);
     setMessage(null);
 
+    if (competitionType === 'SPC' && members.length < 1) {
+      setMessage({ type: 'error', text: 'SPC requires at least 2 members (you + 1 team member).' });
+      setSubmitting(false);
+      return;
+    }
+
     try {
       const res = await fetch('/api/competitions/register', {
         method: 'POST',
@@ -98,6 +115,9 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
           ktmUrl: ktmUrl || undefined,
           pdfMergeUrl: pdfMergeUrl || undefined,
           paymentProofUrl: paymentProof || undefined,
+          shareProofUrl: shareProofUrl || undefined,
+          twibbonProofUrl: twibbonProofUrl || undefined,
+          groupsProofUrl: groupsProofUrl || undefined,
         }),
       });
 
@@ -105,7 +125,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
       if (!res.ok) throw new Error(data.error || 'Registration failed');
 
       setMessage({ type: 'success', text: data.message || 'Team registered successfully.' });
-      window.location.reload();
+      setTimeout(() => window.location.reload(), 1500);
     } catch (error) {
       setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Registration failed' });
     } finally {
@@ -123,6 +143,8 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
       </div>
     );
   }
+
+  const studentProofLabel = isSMACompetition ? 'KTA (Kartu Tanda Anggota)' : 'KTM (Kartu Tanda Mahasiswa)';
 
   return (
     <form onSubmit={handleSubmit} className="glass-dark rounded-2xl p-8 space-y-5 text-left">
@@ -148,9 +170,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
           onChange={(e) => {
             const newType = e.target.value as CompetitionType;
             setCompetitionType(newType);
-            // Reset members for new competition type
-            const newMax = newType === 'OLYMPIAD' ? 1 : newType === 'SPC' ? 4 : 2;
-            setMembers(Array(newMax).fill(null).map(() => emptyMember()).slice(0, newMax));
+            setMembers([]);
           }}
           className="input-glass"
         >
@@ -161,7 +181,9 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-white/70 mb-2">Team Name</label>
+        <label className="block text-sm font-medium text-white/70 mb-2">
+          {isIndividual ? 'Full Name' : 'Team Name'}
+        </label>
         <input
           type="text"
           required
@@ -170,13 +192,15 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
           value={teamName}
           onChange={(e) => setTeamName(e.target.value)}
           className="input-glass"
-          placeholder="Enter your team name"
+          placeholder={isIndividual ? "Enter your full name" : "Enter your team name"}
         />
       </div>
 
       {/* Captain Info (auto-filled from session) */}
       <div className="glass rounded-xl p-4 space-y-3">
-        <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider">Chairman / Ketua Tim</h3>
+        <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+          {isIndividual ? 'Participant' : 'Chairman / Ketua Tim'}
+        </h3>
         <div className="grid md:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-medium text-white/50 mb-1">Name</label>
@@ -197,124 +221,148 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
         </div>
       </div>
 
-      {/* Members */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
-          Team Members ({members.length}/{maxMembers})
+      {/* Team Members - only for SPC */}
+      {!isIndividual && (
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+            Team Members ({members.length}/{maxMembers})
+          </h3>
+
+          {members.map((member, index) => (
+            <div key={index} className="glass rounded-xl p-4 space-y-3 relative">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-white/40 uppercase">Member {index + 1}</span>
+                {members.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeMember(index)}
+                    className="text-xs text-red-400 hover:text-red-300"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-white/50 mb-1">Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={member.name}
+                    onChange={(e) => updateMember(index, 'name', e.target.value)}
+                    className="input-glass text-sm"
+                    placeholder="Member name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-white/50 mb-1">Email *</label>
+                  <input
+                    type="email"
+                    required
+                    value={member.email}
+                    onChange={(e) => updateMember(index, 'email', e.target.value)}
+                    className="input-glass text-sm"
+                    placeholder="member@example.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-white/50 mb-1">Institution *</label>
+                  <input
+                    type="text"
+                    required
+                    value={member.institution}
+                    onChange={(e) => updateMember(index, 'institution', e.target.value)}
+                    className="input-glass text-sm"
+                    placeholder="e.g. SMA N 1 Bandung"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-white/50 mb-1">Phone Number *</label>
+                  <input
+                    type="tel"
+                    required
+                    value={member.phone}
+                    onChange={(e) => updateMember(index, 'phone', e.target.value)}
+                    className="input-glass text-sm"
+                    placeholder="08xxxxxxxxxx"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-white/50 mb-1">Age *</label>
+                  <input
+                    type="number"
+                    required
+                    min={10}
+                    max={99}
+                    value={member.age}
+                    onChange={(e) => updateMember(index, 'age', e.target.value)}
+                    className="input-glass text-sm"
+                    placeholder="18"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <FileUpload 
+                    label={`${studentProofLabel} (Member ${index + 1})`} 
+                    accept=".pdf,.png,.jpg,.jpeg" 
+                    onUpload={(url) => updateMember(index, 'studentProof', url)} 
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {members.length < maxMembers && (
+            <button
+              type="button"
+              onClick={addMember}
+              className="btn-glass w-full text-sm"
+            >
+              + Add Member
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Chairman Student Proof - required for all */}
+      <div className="glass rounded-xl p-4">
+        <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-3">
+          {studentProofLabel} (Chairman/Participant)
         </h3>
-
-        {members.map((member, index) => (
-          <div key={index} className="glass rounded-xl p-4 space-y-3 relative">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-white/40 uppercase">Member {index + 1}</span>
-              {members.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeMember(index)}
-                  className="text-xs text-red-400 hover:text-red-300"
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-white/50 mb-1">Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={member.name}
-                  onChange={(e) => updateMember(index, 'name', e.target.value)}
-                  className="input-glass text-sm"
-                  placeholder="Member name"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-white/50 mb-1">Email *</label>
-                <input
-                  type="email"
-                  required
-                  value={member.email}
-                  onChange={(e) => updateMember(index, 'email', e.target.value)}
-                  className="input-glass text-sm"
-                  placeholder="member@example.com"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-white/50 mb-1">Institution *</label>
-                <input
-                  type="text"
-                  required
-                  value={member.institution}
-                  onChange={(e) => updateMember(index, 'institution', e.target.value)}
-                  className="input-glass text-sm"
-                  placeholder="e.g. SMA N 1 Bandung"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-white/50 mb-1">Phone Number *</label>
-                <input
-                  type="tel"
-                  required
-                  value={member.phone}
-                  onChange={(e) => updateMember(index, 'phone', e.target.value)}
-                  className="input-glass text-sm"
-                  placeholder="08xxxxxxxxxx"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-white/50 mb-1">Age *</label>
-                <input
-                  type="number"
-                  required
-                  min={10}
-                  max={99}
-                  value={member.age}
-                  onChange={(e) => updateMember(index, 'age', e.target.value)}
-                  className="input-glass text-sm"
-                  placeholder="18"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <FileUpload label={`Student Proof / KTM (Member ${index + 1})`} accept=".pdf,.png,.jpg,.jpeg" onUpload={(url) => updateMember(index, 'studentProof', url)} />
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {members.length < maxMembers && (
-          <button
-            type="button"
-            onClick={addMember}
-            className="btn-glass w-full text-sm"
-          >
-            + Add Member
-          </button>
-        )}
+        <p className="text-xs text-white/40 mb-3">Required for all participants</p>
+        <FileUpload 
+          label={`Upload ${studentProofLabel}`} 
+          accept=".pdf,.png,.jpg,.jpeg" 
+          onUpload={setKtmUrl} 
+        />
       </div>
 
-      {/* Payment Proof (only for Olympiad) */}
+      {/* Payment Proof (only for MO/Olympiad) */}
       {needsPaymentProof && (
         <div className="glass rounded-xl p-4">
           <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-3">Payment Proof</h3>
-          <p className="text-xs text-white/40 mb-3">Required for Olympiad registration</p>
+          <p className="text-xs text-white/40 mb-3">Required for MO (Microbiology Olympiad) registration</p>
           <FileUpload label="Upload Payment Proof" accept=".pdf,.png,.jpg,.jpeg" onUpload={setPaymentProof} />
         </div>
       )}
 
-      {/* Additional Documents */}
-      <div className="grid md:grid-cols-2 gap-4">
-        <FileUpload label="Chairman Student Card / KTM" accept=".pdf,.png,.jpg,.jpeg" onUpload={setKtmUrl} />
-        <FileUpload label="Merged Registration PDF" accept=".pdf" onUpload={setPdfMergeUrl} />
+      {/* Share Proof - required for all */}
+      <div className="glass rounded-xl p-4">
+        <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-3">Required Proofs</h3>
+        <p className="text-xs text-white/40 mb-3">All participants must upload these proofs</p>
+        <div className="space-y-3">
+          <FileUpload label="Share SG (Student Gathering) Proof" accept=".pdf,.png,.jpg,.jpeg" onUpload={setShareProofUrl} />
+          <FileUpload label="Share to 3 Groups Proof" accept=".pdf,.png,.jpg,.jpeg" onUpload={setGroupsProofUrl} />
+          <FileUpload label="Twibbon Proof Upload" accept=".pdf,.png,.jpg,.jpeg" onUpload={setTwibbonProofUrl} />
+        </div>
       </div>
 
       <button
         type="submit"
-        disabled={submitting || !teamName.trim()}
+        disabled={submitting || !teamName.trim() || !ktmUrl}
         className="btn-glow w-full disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {submitting ? 'Registering...' : 'Register Team'}
+        {submitting ? 'Registering...' : 'Register'}
       </button>
     </form>
   );

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 interface CountdownProps {
   targetDate: string; // ISO string
@@ -38,13 +39,13 @@ export function Countdown({ targetDate, onComplete }: CountdownProps) {
     return () => clearInterval(interval);
   }, [targetDate, onComplete]);
 
-  const unitClass = "text-center px-4 py-2 glass rounded-lg border border-white/5";
-  const valueClass = "font-display text-2xl md:text-3xl font-bold text-bio-cyan";
+  const unitClass = "text-center px-3 py-2 glass rounded-lg border border-white/5";
+  const valueClass = "font-display text-xl md:text-2xl font-bold text-bio-cyan";
   const labelClass = "text-[10px] text-white/40 uppercase tracking-wider mt-1 block font-medium";
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <div className="text-center mb-4">
+    <div className="w-full text-center">
+      <div className="text-center mb-3">
         <p className="text-white/80 font-semibold text-sm md:text-base">Registration Closes In</p>
       </div>
       
@@ -69,6 +70,22 @@ export function Countdown({ targetDate, onComplete }: CountdownProps) {
           <div className={labelClass}>Seconds</div>
         </div>
       </div>
+
+      {/* Registration CTA */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="mt-4"
+      >
+        <Link
+          href="/register"
+          className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-bio-cyan to-bio-emerald text-white font-semibold rounded-full hover:shadow-lg hover:shadow-bio-cyan/30 transition-all text-sm"
+        >
+          <span>🚀</span>
+          <span>Register Now - Don't Miss Out!</span>
+        </Link>
+      </motion.div>
 
       {isExtended && (
         <motion.div

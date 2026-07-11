@@ -101,6 +101,9 @@ export async function syncRegistrationToSheet(registration: {
     role: string;
   }>;
   paymentProof?: string | null;
+  shareProofUrl?: string | null;
+  twibbonProofUrl?: string | null;
+  groupsProofUrl?: string | null;
 }) {
   const date = new Date().toISOString();
   const memberNames = registration.members?.map((m) => m.name).join('; ') || '';
@@ -125,6 +128,9 @@ export async function syncRegistrationToSheet(registration: {
     memberAges,
     memberProofs,
     registration.paymentProof ?? '',
+    registration.shareProofUrl ?? '',
+    registration.twibbonProofUrl ?? '',
+    registration.groupsProofUrl ?? '',
     registration.status ?? 'PENDING',
     'FALSE', // approved (trigger for manual verification)
   ];

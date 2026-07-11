@@ -51,7 +51,7 @@ model User {
   active          Boolean   @default(false)
   role            Role      @default(USER)
   institution     String?
-  educationLevel  String?   // "SMA", "S1"
+  educationLevel  String?   // "SMA", "S1/Diploma"
 
   teams           Team[]     @relation("UserTeams")
   activations     ActivateToken[]

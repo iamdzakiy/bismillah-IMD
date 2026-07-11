@@ -21,13 +21,12 @@ export function MemoriesGallery() {
     const items = track.querySelectorAll('.memory-item');
     if (items.length === 0) return;
 
-    // Duplicate for seamless loop
     const totalWidth = track.scrollWidth / 2;
 
     const animate = () => {
       if (!isPaused) {
         setScrollPos((prev) => {
-          let newPos = prev + 1;
+          let newPos = prev + 0.5;
           if (newPos >= totalWidth) newPos = 0;
           return newPos;
         });
@@ -53,6 +52,8 @@ export function MemoriesGallery() {
         className="overflow-hidden rounded-2xl"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={() => setIsPaused(true)}
+        onTouchEnd={() => setIsPaused(false)}
       >
         <div
           ref={trackRef}
@@ -71,14 +72,17 @@ export function MemoriesGallery() {
                 <img
                   src={mem.image}
                   alt={mem.title}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   loading="lazy"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    (e.target as HTMLImageElement).parentElement!.querySelector('.fallback')?.classList.remove('hidden');
+                  }}
                 />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-7xl filter drop-shadow-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20">
-                  📸
-                </div>
-              )}
+              ) : null}
+              <div className="fallback hidden absolute inset-0 flex items-center justify-center text-7xl filter drop-shadow-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20">
+                📸
+              </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                 <p className="font-bold text-white text-lg">{mem.title}</p>
                 <p className="text-white/60 text-sm">{mem.date}</p>
@@ -89,17 +93,6 @@ export function MemoriesGallery() {
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="flex justify-center gap-3 mt-6">
-        <button
-          onClick={() => setIsPaused(!isPaused)}
-          className={`w-12 h-12 rounded-full glass flex items-center justify-center transition-all ${
-            isPaused ? 'bg-red-500/20 border-red-500/30 text-red-400' : ''
-          }`}
-        >
-          <i className={`fas ${isPaused ? 'fa-play' : 'fa-pause'}`}></i>
-        </button>
       </div>
     </div>
   );

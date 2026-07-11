@@ -98,11 +98,12 @@ export function HeroSection() {
               transition={{ duration: 0.8, delay: 0.6 }}
               className="flex flex-wrap gap-4 justify-center lg:justify-start"
             >
-              <Link href="/#competitions" className="btn-glow">
-                Explore Competitions
+              <Link href="/register" className="btn-glow inline-flex items-center gap-2">
+                <span>🚀</span>
+                <span>Register Now - It's Free!</span>
               </Link>
-              <Link href="/register" className="btn-glass">
-                Register Now
+              <Link href="/#competitions" className="btn-glass">
+                Explore Competitions
               </Link>
             </motion.div>
 

@@ -39,9 +39,9 @@ export function Footer() {
           <div>
             <h4 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-4">Competitions</h4>
             <ul className="space-y-2">
-              <li><Link href="/competitions/olympiad" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Microbiology Olympiad</Link></li>
-              <li><Link href="/competitions/spc" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Science Project Competition</Link></li>
-              <li><Link href="/competitions/nec" className="text-sm text-white/50 hover:text-purple-400 transition-colors">National Essay Competition</Link></li>
+              <li><Link href="/competitions/olympiad" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Microbiology Olympiad (MO)</Link></li>
+              <li><Link href="/competitions/spc" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Science Project Competition (SPC)</Link></li>
+              <li><Link href="/competitions/nec" className="text-sm text-white/50 hover:text-purple-400 transition-colors">National Essay Competition (NEC)</Link></li>
             </ul>
           </div>
 
@@ -74,7 +74,7 @@ export function Footer() {
         {/* Bottom */}
         <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs text-white/30">
-            © {currentYear} IMD 2026 — Archaea ITB. All rights reserved.
+            © {currentYear} IMD 2026 — International Microorganism Day
           </p>
           <div className="flex gap-4 text-xs text-white/30">
             <span>Built by Mikrobiologi 2023 ITB</span>

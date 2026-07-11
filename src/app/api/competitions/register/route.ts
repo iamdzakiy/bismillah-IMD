@@ -12,38 +12,49 @@ const memberDataSchema = z.object({
   phone: z.string().min(5).max(20),
   age: z.number().int().min(10).max(99).nullable(),
   studentProofUrl: z.string().url().optional(),
+  shareProofUrl: z.string().url().optional(),
+  twibbonProofUrl: z.string().url().optional(),
+  groupsProofUrl: z.string().url().optional(),
 });
 
 const registerSchema = z.object({
   teamName: z.string().trim().min(3).max(50),
   competitionType: z.enum(['OLYMPIAD', 'SPC', 'NEC']),
-  members: z.array(memberDataSchema).min(1).max(4),
+  members: z.array(memberDataSchema).min(0).max(4),
   ktmUrl: z.string().url().optional(),
   pdfMergeUrl: z.string().url().optional(),
   paymentProofUrl: z.string().url().optional(),
+  shareProofUrl: z.string().url().optional(),
+  twibbonProofUrl: z.string().url().optional(),
+  groupsProofUrl: z.string().url().optional(),
 });
 
 function isEligible(user: Pick<User, 'educationLevel'>, competitionType: CompetitionType) {
+  // MO (Olympiad) and SPC for SMA/sederajat only
   if (competitionType === 'OLYMPIAD' || competitionType === 'SPC') {
     return user.educationLevel === 'SMA';
   }
+  // NEC for S1/Diploma sederajat only (NO S2/S3)
   if (competitionType === 'NEC') {
-    return user.educationLevel === 'S1';
+    return user.educationLevel?.startsWith('S1') || user.educationLevel === 'S1';
   }
   return false;
 }
 
 function validateTeamSize(competitionType: CompetitionType, totalMembers: number) {
-  if (competitionType === 'OLYMPIAD') return totalMembers === 1;
-  if (competitionType === 'SPC') return totalMembers >= 2 && totalMembers <= 4;
-  if (competitionType === 'NEC') return totalMembers >= 1 && totalMembers <= 2;
+  // MO (Olympiad) = individual only, no members
+  if (competitionType === 'OLYMPIAD') return totalMembers === 1; // only captain
+  // SPC = 2-4 members (captain + 1-3 others)
+  if (competitionType === 'SPC') return totalMembers >= 1 && totalMembers <= 4;
+  // NEC = individual only (MO type for uni)
+  if (competitionType === 'NEC') return totalMembers === 1; // only captain, individual
   return false;
 }
 
 function teamSizeMessage(competitionType: CompetitionType) {
-  if (competitionType === 'OLYMPIAD') return 'Olympiad is individual only.';
+  if (competitionType === 'OLYMPIAD') return 'MO is individual only (1 person).';
   if (competitionType === 'SPC') return 'SPC requires 2-4 team members.';
-  return 'NEC allows 1-2 authors.';
+  return 'NEC is individual only (1 person).';
 }
 
 export async function POST(req: Request) {
@@ -62,7 +73,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { teamName, competitionType, members, ktmUrl, pdfMergeUrl, paymentProofUrl } = parsed.data;
+    const { teamName, competitionType, members, ktmUrl, pdfMergeUrl, paymentProofUrl, shareProofUrl, twibbonProofUrl, groupsProofUrl } = parsed.data;
 
     const captain = await prisma.user.findUnique({ where: { id: session.user.id } });
     if (!captain) {
@@ -78,12 +89,15 @@ export async function POST(req: Request) {
 
     if (!isEligible(captain, competitionType)) {
       const message = competitionType === 'NEC'
-        ? 'NEC is only for active S1 university students.'
-        : 'Olympiad and SPC are only for SMA/sederajat students.';
+        ? 'NEC is only for active S1/Diploma university students.'
+        : 'MO and SPC are only for SMA/sederajat students.';
       return NextResponse.json({ error: message }, { status: 400 });
     }
 
     // Build memberData including captain as first entry
+    // MO = individual (captain only, no additional members)
+    // SPC = team of 2-4 (captain + 1-3 members)
+    // NEC = individual (captain only, no additional members)
     const memberData = [
       {
         name: captain.name || captain.email,
@@ -105,8 +119,20 @@ export async function POST(req: Request) {
       })),
     ];
 
-    if (!validateTeamSize(competitionType, memberData.length)) {
-      return NextResponse.json({ error: teamSizeMessage(competitionType) }, { status: 400 });
+    // For MO and NEC, no additional members allowed
+    if ((competitionType === 'OLYMPIAD' || competitionType === 'NEC') && members.length > 0) {
+      return NextResponse.json(
+        { error: 'This competition is individual only. No additional members allowed.' },
+        { status: 400 }
+      );
+    }
+
+    // For SPC, members are allowed
+    if (competitionType === 'SPC' && (members.length < 1 || members.length > 3)) {
+      return NextResponse.json(
+        { error: 'SPC requires 2-4 members total (you + 1-3 team members).' },
+        { status: 400 }
+      );
     }
 
     const existingTeamName = await prisma.team.findUnique({ where: { teamName } });
@@ -137,7 +163,7 @@ export async function POST(req: Request) {
       },
     });
 
-    // Sync to Google Sheets
+    // Sync to Google Sheets with all proof fields
     await syncRegistrationToSheet({
       id: team.id,
       teamName: team.teamName,
@@ -148,6 +174,9 @@ export async function POST(req: Request) {
       status: team.registration?.status,
       members: memberData,
       paymentProof: paymentProofUrl,
+      shareProofUrl,
+      twibbonProofUrl,
+      groupsProofUrl,
     });
 
     return NextResponse.json({

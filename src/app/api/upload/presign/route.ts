@@ -47,12 +47,19 @@ export async function POST(req: Request) {
       'application/pdf',
       'image/png',
       'image/jpeg',
-      'video/mp4',
-      'video/quicktime',
     ];
     if (!allowedTypes.includes(fileType)) {
       return NextResponse.json(
-        { error: 'File type not allowed' },
+        { error: 'Only PDF, JPG, JPEG, and PNG files are allowed.' },
+        { status: 400 }
+      );
+    }
+
+    // Validate file size (5MB max)
+    const { fileSize } = await req.json();
+    if (fileSize && fileSize > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: 'Maximum file size is 5MB.' },
         { status: 400 }
       );
     }

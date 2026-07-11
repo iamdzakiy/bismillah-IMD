@@ -12,7 +12,7 @@ const registerSchema = z.object({
   email: z.string().email().transform((value) => value.toLowerCase().trim()),
   password: z.string().min(8),
   institution: z.string().min(2).transform((value) => value.trim()),
-  educationLevel: z.enum(['SMA', 'S1', 'S2']),
+  educationLevel: z.enum(['SMA', 'S1']),
 });
 
 export async function POST(req: Request) {

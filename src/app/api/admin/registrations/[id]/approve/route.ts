@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { sendApprovalEmail }  from '@/lib/email';
-import { syncRegistrationToSheet } from '@/lib/google-sheets';
+import { updateSheetRow } from '@/lib/google-sheets';
 
 export async function POST(
   req: NextRequest,
@@ -45,15 +45,30 @@ export async function POST(
       },
     });
 
-    await syncRegistrationToSheet({
-      id: registration.teamId,
-      teamName: registration.team.teamName,
-      competitionType: registration.team.competitionType,
-      captainEmail: registration.team.captain.email,
-      captainName: registration.team.captain.name,
-      institution: registration.team.captain.institution,
-      status: 'DOCUMENT_APPROVED',
-    });
+    // Sync to Google Sheets - update the status row
+    if (registration.googleSheetRow) {
+      await updateSheetRow('Registrations', registration.googleSheetRow, [
+        registration.createdAt.toISOString(),
+        registration.id,
+        registration.team.teamName,
+        registration.team.competitionType,
+        registration.team.captain.name || '',
+        registration.team.captain.email,
+        registration.team.captain.institution || '',
+        '', // member names (keep empty to not overwrite)
+        '', // member emails
+        '', // member institutions
+        '', // member phones
+        '', // member ages
+        '', // member proofs
+        registration.paymentProofUrl || '',
+        '', // share proof
+        '', // twibbon proof
+        '', // groups proof
+        'DOCUMENT_APPROVED',
+        'TRUE', // approved
+      ]);
+    }
 
     await sendApprovalEmail(
       registration.team.captain.email,

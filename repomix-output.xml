@@ -135,6 +135,8 @@ src/
           route.ts
       test-email/
         route.ts
+      test-google-sheets/
+        route.ts
       upload/
         presign/
           route.ts
@@ -164,7 +166,6 @@ src/
       Card.tsx
       Countdown.tsx
       CursorGlow.tsx
-      CustomCursor.tsx
       FloatingOrbs.tsx
       GlassCard.tsx
       GradientText.tsx
@@ -194,6 +195,7 @@ src/
     next-auth.d.ts
   middleware.ts
 .gitignore
+GOOGLE_SHEETS_SETUP.md
 next.config.js
 package.json
 postcss.config.js
@@ -4200,6 +4202,52 @@ export async function POST(req: Request) {
 }
 </file>
 
+<file path="src/app/api/test-google-sheets/route.ts">
+import { NextResponse } from 'next/server';
+import { syncRegistrationToSheet, appendToSheet } from '@/lib/google-sheets';
+
+export async function GET() {
+  try {
+    // Test 1: Simple append test
+    await appendToSheet('Test', ['Test timestamp', 'Test data', new Date().toISOString()]);
+    
+    // Test 2: Registration sync test
+    await syncRegistrationToSheet({
+      id: 'TEST-' + Date.now(),
+      teamName: 'Test Team',
+      competitionType: 'NEC',
+      captainEmail: 'test@example.com',
+      captainName: 'Test User',
+      institution: 'Test Institution',
+      status: 'PENDING',
+      members: [
+        {
+          name: 'Member 1',
+          email: 'member1@example.com',
+          institution: 'Test Institution',
+          phone: '081234567890',
+          age: 20,
+          studentProofUrl: 'https://example.com/proof.pdf',
+          role: 'MEMBER',
+        },
+      ],
+      paymentProof: 'https://example.com/payment.pdf',
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Google Sheets test completed. Check your sheet for new entries.',
+    });
+  } catch (error) {
+    console.error('Google Sheets test error:', error);
+    return NextResponse.json(
+      { error: 'Test failed', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}
+</file>
+
 <file path="src/app/dashboard/_components/StatusBanner.tsx">
 'use client';
 
@@ -4411,98 +4459,6 @@ export function Card({ children, className }: CardProps) {
 }
 </file>
 
-<file path="src/components/ui/Countdown.tsx">
-'use client';
-
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-
-interface CountdownProps {
-  targetDate: string; // ISO string
-  onComplete?: () => void;
-}
-
-export function Countdown({ targetDate, onComplete }: CountdownProps) {
-  const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  const [isExtended, setIsExtended] = useState(false);
-
-  useEffect(() => {
-    const target = new Date(targetDate).getTime();
-
-    const update = () => {
-      const now = Date.now();
-      let diff = target - now;
-
-      if (diff <= 0) {
-        diff = 0;
-        setIsExtended(true);
-        if (onComplete) onComplete();
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setTime({ days, hours, minutes, seconds });
-    };
-
-    update();
-    const interval = setInterval(update, 1000);
-    return () => clearInterval(interval);
-  }, [targetDate, onComplete]);
-
-  const unitClass = "text-center p-3 glass rounded-xl min-w-[70px] md:min-w-[80px]";
-  const valueClass = "font-display text-3xl md:text-4xl font-bold text-gradient";
-  const labelClass = "text-xs text-white/50 uppercase tracking-wider mt-1";
-
-  return (
-    <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
-      <div className="flex items-center gap-4">
-        <div className="text-4xl md:text-5xl animate-pulse">⏳</div>
-        <div>
-          <p className="font-bold text-lg">Registration Closes In</p>
-          <p className="text-sm text-white/50">Don't miss your chance!</p>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 flex-wrap justify-center">
-        <div className={unitClass}>
-          <div className={valueClass}>{String(time.days).padStart(2, '0')}</div>
-          <div className={labelClass}>Days</div>
-        </div>
-        <span className="text-2xl text-bio-cyan animate-pulse">:</span>
-        <div className={unitClass}>
-          <div className={valueClass}>{String(time.hours).padStart(2, '0')}</div>
-          <div className={labelClass}>Hours</div>
-        </div>
-        <span className="text-2xl text-bio-cyan animate-pulse">:</span>
-        <div className={unitClass}>
-          <div className={valueClass}>{String(time.minutes).padStart(2, '0')}</div>
-          <div className={labelClass}>Minutes</div>
-        </div>
-        <span className="text-2xl text-bio-cyan animate-pulse">:</span>
-        <div className={unitClass}>
-          <div className={valueClass}>{String(time.seconds).padStart(2, '0')}</div>
-          <div className={labelClass}>Seconds</div>
-        </div>
-      </div>
-
-      {isExtended && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex items-center gap-2 px-4 py-2 bg-bio-pink/20 border border-bio-pink/30 rounded-full text-bio-pink font-semibold text-sm"
-        >
-          <span>📅</span>
-          <span>Extended until <strong>31 July 2026</strong></span>
-        </motion.div>
-      )}
-    </div>
-  );
-}
-</file>
-
 <file path="src/components/ui/CursorGlow.tsx">
 'use client';
 
@@ -4539,112 +4495,6 @@ export function CursorGlow() {
         opacity: 0.6,
       }}
     />
-  );
-}
-</file>
-
-<file path="src/components/ui/CustomCursor.tsx">
-'use client';
-
-import { useEffect, useState } from 'react';
-import { motion, useSpring } from 'framer-motion';
-
-export function CustomCursor() {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-
-  const springConfig = { damping: 25, stiffness: 200, mass: 0.5 };
-  const x = useSpring(0, springConfig);
-  const y = useSpring(0, springConfig);
-
-  useEffect(() => {
-    const updatePosition = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY });
-      x.set(e.clientX);
-      y.set(e.clientY);
-      if (!isVisible) setIsVisible(true);
-    };
-
-    const handleMouseEnter = () => setIsHovering(true);
-    const handleMouseLeave = () => setIsHovering(false);
-
-    window.addEventListener('mousemove', updatePosition);
-
-    // Detect hoverable elements
-    const hoverables = document.querySelectorAll('a, button, input, select, textarea, [role="button"], label');
-    hoverables.forEach((el) => {
-      el.addEventListener('mouseenter', handleMouseEnter);
-      el.addEventListener('mouseleave', handleMouseLeave);
-    });
-
-    return () => {
-      window.removeEventListener('mousemove', updatePosition);
-      hoverables.forEach((el) => {
-        el.removeEventListener('mouseenter', handleMouseEnter);
-        el.removeEventListener('mouseleave', handleMouseLeave);
-      });
-    };
-  }, [isVisible, x, y]);
-
-  if (typeof window === 'undefined') return null;
-
-  return (
-    <>
-      {/* Main Cursor - Magnifier */}
-      <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference"
-        style={{
-          x: x.get() - 24,
-          y: y.get() - 24,
-          opacity: isVisible ? 1 : 0,
-        }}
-      >
-        <svg
-          width="48"
-          height="48"
-          viewBox="0 0 48 48"
-          fill="none"
-          className={`transition-transform duration-200 ${isHovering ? 'scale-125' : 'scale-100'}`}
-        >
-          {/* Outer ring */}
-          <circle
-            cx="24"
-            cy="24"
-            r="22"
-            stroke="rgba(168, 85, 247, 0.6)"
-            strokeWidth="2"
-            fill="rgba(168, 85, 247, 0.05)"
-          />
-          {/* Inner dot */}
-          <circle cx="24" cy="24" r="4" fill="rgba(192, 132, 252, 0.8)" />
-          {/* Scanning lines (magnifier effect) */}
-          <line x1="4" y1="24" x2="12" y2="24" stroke="rgba(168, 85, 247, 0.3)" strokeWidth="1" />
-          <line x1="36" y1="24" x2="44" y2="24" stroke="rgba(168, 85, 247, 0.3)" strokeWidth="1" />
-          <line x1="24" y1="4" x2="24" y2="12" stroke="rgba(168, 85, 247, 0.3)" strokeWidth="1" />
-          <line x1="24" y1="36" x2="24" y2="44" stroke="rgba(168, 85, 247, 0.3)" strokeWidth="1" />
-        </svg>
-      </motion.div>
-
-      {/* Trail Effect */}
-      <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-[9998]"
-        style={{
-          x: position.x - 2,
-          y: position.y - 2,
-          opacity: isVisible ? 0.3 : 0,
-        }}
-        animate={{
-          scale: [1, 0.8, 1],
-        }}
-        transition={{
-          duration: 0.8,
-          repeat: Infinity,
-        }}
-      >
-        <div className="w-1 h-1 bg-purple-400 rounded-full" />
-      </motion.div>
-    </>
   );
 }
 </file>
@@ -4784,106 +4634,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 Input.displayName = 'Input';
 </file>
 
-<file path="src/components/ui/MemoriesGallery.tsx">
-'use client';
-
-import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { MEMORIES_DATA } from '@/lib/constants';
-
-export function MemoriesGallery() {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
-  const [scrollPos, setScrollPos] = useState(0);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient || !trackRef.current) return;
-
-    const track = trackRef.current;
-    const items = track.querySelectorAll('.memory-item');
-    if (items.length === 0) return;
-
-    // Duplicate for seamless loop
-    const totalWidth = track.scrollWidth / 2;
-
-    const animate = () => {
-      if (!isPaused) {
-        setScrollPos((prev) => {
-          let newPos = prev + 1;
-          if (newPos >= totalWidth) newPos = 0;
-          return newPos;
-        });
-      }
-      requestAnimationFrame(animate);
-    };
-
-    const animId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animId);
-  }, [isPaused, isClient]);
-
-  useEffect(() => {
-    if (trackRef.current) {
-      trackRef.current.style.transform = `translateX(-${scrollPos}px)`;
-    }
-  }, [scrollPos]);
-
-  const items = [...MEMORIES_DATA, ...MEMORIES_DATA]; // duplicate for seamless
-
-  return (
-    <div className="relative w-full">
-      <div
-        className="overflow-hidden rounded-2xl"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        <div
-          ref={trackRef}
-          className="flex gap-4 transition-none will-change-transform"
-          style={{ width: 'max-content' }}
-        >
-          {items.map((mem, i) => (
-            <div
-              key={i}
-              className="memory-item relative w-[260px] md:w-[300px] aspect-[4/3] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer group"
-              style={{
-                background: `linear-gradient(135deg, ${mem.color}22, ${mem.color}44)`,
-              }}
-            >
-              <div className="absolute inset-0 flex items-center justify-center text-7xl filter drop-shadow-lg">
-                {mem.emoji}
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                <p className="font-bold text-white text-lg">{mem.title}</p>
-                <p className="text-white/60 text-sm">{mem.date}</p>
-              </div>
-              <div className="absolute top-3 right-3 px-3 py-1 bg-black/50 backdrop-blur-sm rounded-full text-xs font-bold text-bio-cyan">
-                {mem.year}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex justify-center gap-3 mt-6">
-        <button
-          onClick={() => setIsPaused(!isPaused)}
-          className={`w-12 h-12 rounded-full glass flex items-center justify-center transition-all ${
-            isPaused ? 'bg-red-500/20 border-red-500/30 text-red-400' : ''
-          }`}
-        >
-          <i className={`fas ${isPaused ? 'fa-play' : 'fa-pause'}`}></i>
-        </button>
-      </div>
-    </div>
-  );
-}
-</file>
-
 <file path="src/components/ui/MouseGlow.tsx">
 'use client';
 
@@ -4911,393 +4661,6 @@ export function MouseGlow() {
     />
   );
 }
-</file>
-
-<file path="src/components/ui/RoadshowPopup.tsx">
-'use client';
-
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-
-export function RoadshowPopup() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    const seen = localStorage.getItem('imd2026_popup_seen');
-    if (!seen) {
-      const timer = setTimeout(() => setIsOpen(true), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  const closePopup = () => {
-    setIsOpen(false);
-    localStorage.setItem('imd2026_popup_seen', 'true');
-  };
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-lg"
-          onClick={(e) => e.target === e.currentTarget && closePopup()}
-        >
-          <motion.div
-            initial={{ scale: 0.9, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, y: 20 }}
-            className="relative w-full max-w-2xl glass-strong rounded-3xl p-6 md:p-8 overflow-y-auto max-h-[90vh]"
-          >
-            <button
-              onClick={closePopup}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-red-500/20 transition-all"
-            >
-              <i className="fas fa-times"></i>
-            </button>
-
-            <div className="text-center">
-              <div className="inline-block px-4 py-1.5 glass rounded-full text-bio-cyan text-xs font-bold uppercase tracking-wider mb-4">
-                <i className="fas fa-bus mr-2"></i> ROADSHOW 2026
-              </div>
-
-              <h3 className="text-3xl md:text-4xl font-black mb-3">
-                The Great <span className="text-gradient">Microbial Odyssey</span>
-              </h3>
-
-              <p className="text-white/60 text-sm mb-6">
-                Watch our official roadshow teaser and get ready for the biggest microbiology event in Indonesia!
-              </p>
-
-              <div className="aspect-video rounded-2xl overflow-hidden mb-6 bg-black">
-                <iframe
-                  src="https://www.youtube.com/embed/EZOiy1-cnxM?autoplay=1&rel=0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-full"
-                />
-              </div>
-
-              <div className="flex flex-wrap justify-center gap-6 text-sm text-white/60 mb-6">
-                <div className="flex items-center gap-2">
-                  <i className="fas fa-map-marker-alt text-bio-cyan"></i>
-                  <span>ITB Ganesha, Bandung</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <i className="fas fa-calendar text-bio-cyan"></i>
-                  <span>Coming Soon 2026</span>
-                </div>
-              </div>
-
-              <button
-                onClick={closePopup}
-                className="btn-glow w-full"
-              >
-                <i className="fas fa-arrow-right mr-2"></i> Explore Competitions
-              </button>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
-</file>
-
-<file path="src/components/ui/SponsorMarquee.tsx">
-'use client';
-
-import { useEffect, useRef } from 'react';
-
-interface SponsorMarqueeProps {
-  items: { name: string; icon: string }[];
-  direction?: 'left' | 'right';
-  speed?: number; // pixels per frame
-}
-
-export function SponsorMarquee({
-  items,
-  direction = 'left',
-  speed = 1,
-}: SponsorMarqueeProps) {
-  const trackRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-
-    let pos = 0;
-    const totalWidth = track.scrollWidth / 2;
-
-    const animate = () => {
-      pos += direction === 'left' ? speed : -speed;
-      if (pos >= totalWidth) pos = 0;
-      if (pos <= -totalWidth) pos = 0;
-      track.style.transform = `translateX(${direction === 'left' ? -pos : pos}px)`;
-      requestAnimationFrame(animate);
-    };
-
-    const animId = requestAnimationFrame(animate);
-
-    const handleMouseEnter = () => cancelAnimationFrame(animId);
-    const handleMouseLeave = () => requestAnimationFrame(animate);
-
-    track.addEventListener('mouseenter', handleMouseEnter);
-    track.addEventListener('mouseleave', handleMouseLeave);
-
-    return () => {
-      cancelAnimationFrame(animId);
-      track.removeEventListener('mouseenter', handleMouseEnter);
-      track.removeEventListener('mouseleave', handleMouseLeave);
-    };
-  }, [direction, speed]);
-
-  const doubled = [...items, ...items];
-
-  return (
-    <div className="overflow-hidden mask-gradient">
-      <div
-        ref={trackRef}
-        className="flex gap-8 whitespace-nowrap will-change-transform"
-        style={{ width: 'max-content' }}
-      >
-        {doubled.map((item, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 px-6 py-4 glass rounded-2xl border border-white/10 hover:border-bio-cyan/50 transition-all hover:-translate-y-1"
-          >
-            <i className={`fas ${item.icon} text-2xl text-bio-cyan`}></i>
-            <span className="font-medium text-white/80">{item.name}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-</file>
-
-<file path="src/components/ui/TimelineSlider.tsx">
-'use client';
-
-import { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { TIMELINE_DATA } from '@/lib/constants';
-
-export function TimelineSlider() {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [maxIndex, setMaxIndex] = useState(0);
-
-  useEffect(() => {
-    const updateMax = () => {
-      if (!trackRef.current || !containerRef.current) return;
-      const items = trackRef.current.querySelectorAll('.timeline-item');
-      if (items.length === 0) return;
-      const itemWidth = items[0].getBoundingClientRect().width + 20; // + gap
-      const containerWidth = containerRef.current.getBoundingClientRect().width;
-      const visible = Math.floor(containerWidth / itemWidth);
-      setMaxIndex(Math.max(0, items.length - visible));
-    };
-
-    updateMax();
-    window.addEventListener('resize', updateMax);
-    return () => window.removeEventListener('resize', updateMax);
-  }, []);
-
-  useEffect(() => {
-    if (!trackRef.current) return;
-    const items = trackRef.current.querySelectorAll('.timeline-item');
-    if (items.length === 0) return;
-    const itemWidth = items[0].getBoundingClientRect().width + 20;
-    trackRef.current.style.transform = `translateX(-${currentIndex * itemWidth}px)`;
-  }, [currentIndex]);
-
-  const handlePrev = () => {
-    setCurrentIndex((prev) => Math.max(0, prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => Math.min(maxIndex, prev + 1));
-  };
-
-  const progress = maxIndex > 0 ? (currentIndex / maxIndex) * 100 : 0;
-
-  return (
-    <div className="w-full">
-      <div ref={containerRef} className="overflow-hidden rounded-2xl">
-        <div
-          ref={trackRef}
-          className="flex gap-5 transition-transform duration-500 ease-out will-change-transform"
-          style={{ width: 'max-content' }}
-        >
-          {TIMELINE_DATA.map((item) => (
-            <div
-              key={item.id}
-              className="timeline-item w-[240px] md:w-[280px] flex-shrink-0 p-6 glass rounded-2xl border border-white/10 hover:border-bio-cyan/50 transition-all hover:-translate-y-2"
-            >
-              <div className="text-sm text-bio-cyan font-semibold uppercase tracking-wider mb-2">
-                {item.phase}
-              </div>
-              <div className="text-2xl font-bold text-white mb-1">{item.title}</div>
-              <div className="text-sm text-white/50">{item.date}</div>
-              <div className="text-sm text-white/60 mt-2">{item.desc}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex items-center justify-center gap-6 mt-6">
-        <button
-          onClick={handlePrev}
-          disabled={currentIndex === 0}
-          className="w-12 h-12 rounded-full glass flex items-center justify-center hover:bg-bio-cyan/20 disabled:opacity-30 transition-all"
-        >
-          <i className="fas fa-chevron-left"></i>
-        </button>
-
-        <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-bio-cyan to-bio-emerald rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        <button
-          onClick={handleNext}
-          disabled={currentIndex === maxIndex}
-          className="w-12 h-12 rounded-full glass flex items-center justify-center hover:bg-bio-cyan/20 disabled:opacity-30 transition-all"
-        >
-          <i className="fas fa-chevron-right"></i>
-        </button>
-      </div>
-    </div>
-  );
-}
-</file>
-
-<file path="src/lib/constants.ts">
-// Data statis untuk timeline, memories, sponsors, dll.
-
-export const TIMELINE_DATA = [
-  {
-    id: '1',
-    phase: 'Registration',
-    date: '1 Jun 2026',
-    title: 'Registration Opens',
-    desc: 'Early bird registration begins',
-    icon: '🚀',
-  },
-  {
-    id: '2',
-    phase: 'Workshop',
-    date: '15 Jun 2026',
-    title: 'Petri Dish Art Workshop',
-    desc: 'Pre-event workshop',
-    icon: '🎨',
-  },
-  {
-    id: '3',
-    phase: 'Workshop',
-    date: '1 Jul 2026',
-    title: 'Workshop Series',
-    desc: 'Expert-led training sessions',
-    icon: '📚',
-  },
-  {
-    id: '4',
-    phase: 'Deadline',
-    date: '10 Jul 2026',
-    title: 'MO Registration Closes',
-    desc: 'Olympiad deadline',
-    icon: '⏰',
-  },
-  {
-    id: '5',
-    phase: 'Prelim',
-    date: '15 Jul 2026',
-    title: 'SPC & NEC Prelim',
-    desc: 'Preliminary submissions',
-    icon: '📝',
-  },
-  {
-    id: '6',
-    phase: 'Prelim',
-    date: '20 Jul 2026',
-    title: 'MO Preliminary',
-    desc: 'Online test round',
-    icon: '💻',
-  },
-  {
-    id: '7',
-    phase: 'Final',
-    date: '25 Jul 2026',
-    title: 'Final Rounds',
-    desc: 'Top teams compete',
-    icon: '🏆',
-  },
-  {
-    id: '8',
-    phase: 'Finale',
-    date: '31 Jul 2026',
-    title: 'Grand Finale',
-    desc: 'Awards & closing ceremony',
-    icon: '🎉',
-  },
-  {
-    id: '9',
-    phase: 'Symposium',
-    date: '1-3 Aug 2026',
-    title: 'Symposium',
-    desc: 'Expert discussions',
-    icon: '🎤',
-  },
-  {
-    id: '10',
-    phase: 'Exhibition',
-    date: '1-3 Aug 2026',
-    title: 'Exhibition',
-    desc: 'Innovation showcase',
-    icon: '🔬',
-  },
-];
-
-export const MEMORIES_DATA = [
-  { title: 'Grand Final 2025', date: 'August 2025', year: '2025', emoji: '🏆', color: '#6e8efb' },
-  { title: 'Keynote Speaker', date: 'July 2025', year: '2025', emoji: '🎤', color: '#a777e3' },
-  { title: 'Laboratory Session', date: 'July 2024', year: '2024', emoji: '🔬', color: '#f093fb' },
-  { title: 'Networking Night', date: 'August 2024', year: '2024', emoji: '🤝', color: '#4facfe' },
-  { title: 'Workshop 2023', date: 'June 2023', year: '2023', emoji: '📚', color: '#6e8efb' },
-  { title: 'Awarding Night', date: 'August 2023', year: '2023', emoji: '🎉', color: '#a777e3' },
-  { title: 'Hackathon 2022', date: 'July 2022', year: '2022', emoji: '💻', color: '#f093fb' },
-  { title: 'Exhibition Day', date: 'August 2022', year: '2022', emoji: '🎨', color: '#4facfe' },
-  { title: 'Opening Ceremony', date: 'June 2021', year: '2021', emoji: '🚀', color: '#6e8efb' },
-  { title: 'Team Photo', date: 'August 2021', year: '2021', emoji: '📸', color: '#a777e3' },
-];
-
-export const MEDIA_PARTNERS = [
-  { name: 'Kompas', icon: 'fa-newspaper' },
-  { name: 'Detik', icon: 'fa-globe' },
-  { name: 'Tempo', icon: 'fa-broadcast-tower' },
-  { name: 'CNN Indonesia', icon: 'fa-tv' },
-  { name: 'Republika', icon: 'fa-rss' },
-  { name: 'Liputan6', icon: 'fa-newspaper' },
-  { name: 'Grid Network', icon: 'fa-th' },
-  { name: 'Herworld', icon: 'fa-magazine' },
-];
-
-export const INDUSTRY_PARTNERS = [
-  { name: 'BioFarma', icon: 'fa-pills' },
-  { name: 'Kalbe Farma', icon: 'fa-prescription-bottle' },
-  { name: 'Kimia Farma', icon: 'fa-flask' },
-  { name: 'Nutrifood', icon: 'fa-leaf' },
-  { name: 'Indofood', icon: 'fa-utensils' },
-  { name: 'Unilever', icon: 'fa-soap' },
-  { name: 'Danone', icon: 'fa-tint' },
-  { name: 'Nestle', icon: 'fa-mug-hot' },
-];
 </file>
 
 <file path="src/lib/db.ts">
@@ -5499,6 +4862,114 @@ Thumbs.db
 next-env.d.ts
 </file>
 
+<file path="GOOGLE_SHEETS_SETUP.md">
+# Google Sheets Integration Setup
+
+## Issue: "The caller does not have permission"
+
+This error means the Google Service Account doesn't have access to the spreadsheet. Here's how to fix it:
+
+## Step 1: Get the Service Account Email
+
+From your `.env` file, the service account email is:
+```
+imd-383@imd2026101.iam.gserviceaccount.com
+```
+
+## Step 2: Share the Google Sheet
+
+1. Open your Google Sheet: https://docs.google.com/spreadsheets/d/1Pm4Wxb1OblTAoajqChv1O4LMn7USqA6MwPtYpx2JGv8
+
+2. Click the **"Share"** button (top right)
+
+3. Add the service account email: `imd-383@imd2026101.iam.gserviceaccount.com`
+
+4. Set permission to **"Editor"**
+
+5. Click **"Send"**
+
+## Step 3: Verify Sheet Tabs Exist
+
+Make sure your Google Sheet has these tabs (sheets):
+- `Registrations` - for team registration data
+- `Submissions` - for competition submissions
+- `Test` - for testing (optional)
+
+## Step 4: Test the Integration
+
+After sharing, test the integration:
+
+```bash
+# In your browser:
+curl http://localhost:3000/api/test-google-sheets
+```
+
+Or visit: http://localhost:3000/api/test-google-sheets
+
+## Expected Result
+
+You should see:
+```json
+{
+  "success": true,
+  "message": "Google Sheets test completed. Check your sheet for new entries."
+}
+```
+
+And in your Google Sheet, you should see new rows in the "Registrations" and "Test" tabs.
+
+## Troubleshooting
+
+### Error: "The caller does not have permission"
+**Solution**: Make sure you've shared the sheet with the service account email and given it "Editor" permissions.
+
+### Error: "Missing configuration"
+**Solution**: Check that `GOOGLE_SERVICE_ACCOUNT_KEY` and `GOOGLE_SHEET_ID` are set in your `.env` file.
+
+### Error: "Sheet not found"
+**Solution**: Make sure the sheet tabs exist with the exact names: `Registrations`, `Submissions`, `Test`
+
+## How It Works
+
+When a team registers:
+1. The registration API (`/api/competitions/register`) saves to database
+2. It automatically calls `syncRegistrationToSheet()`
+3. The data appears in the "Registrations" tab in Google Sheets
+
+When a team submits work:
+1. The submission API saves to database
+2. It automatically calls `syncSubmissionToSheet()`
+3. The data appears in the "Submissions" tab in Google Sheets
+
+## Data Format
+
+### Registrations Tab Columns:
+- Timestamp
+- Registration ID
+- Team Name
+- Competition Type
+- Captain Name
+- Captain Email
+- Institution
+- Member Names (semicolon-separated)
+- Member Emails
+- Member Institutions
+- Member Phones
+- Member Ages
+- Member Proof URLs
+- Payment Proof URL
+- Status
+- Approved (FALSE = pending verification)
+
+### Submissions Tab Columns:
+- Timestamp
+- Submission ID
+- Team Name
+- Phase (PRELIMINARY/SEMIFINAL/FINAL)
+- Status
+- File URL
+</file>
+
 <file path="postcss.config.js">
 module.exports = {
   plugins: {
@@ -5506,103 +4977,6 @@ module.exports = {
     autoprefixer: {},
   },
 };
-</file>
-
-<file path="tailwind.config.ts">
-import type { Config } from 'tailwindcss';
-
-const config: Config = {
-  content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
-  theme: {
-    extend: {
-      colors: {
-        space: {
-          900: '#030014',
-          800: '#0a0520',
-          700: '#120a2e',
-          600: '#1a1040',
-        },
-        bio: {
-          cyan: '#00f5ff',
-          emerald: '#00ff9d',
-          teal: '#14ffec',
-          purple: '#a855f7',
-          pink: '#ec4899',
-        },
-      },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Space Grotesk', 'sans-serif'],
-      },
-      animation: {
-        float: 'float 6s ease-in-out infinite',
-        blob: 'blob 12s infinite',
-        gradient: 'gradient 8s ease infinite',
-        'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
-      },
-      keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-20px)' },
-        },
-        blob: {
-          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
-          '25%': { transform: 'translate(30px, -50px) scale(1.1)' },
-          '50%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-          '75%': { transform: 'translate(20px, 40px) scale(1.05)' },
-        },
-        gradient: {
-          '0%, 100%': { backgroundPosition: '0% 50%' },
-          '50%': { backgroundPosition: '100% 50%' },
-        },
-        pulseGlow: {
-          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-          '50%': { opacity: '0.7', transform: 'scale(1.05)' },
-        },
-      },
-      backdropBlur: {
-        xs: '2px',
-      },
-    },
-  },
-  plugins: [],
-};
-
-export default config;
-</file>
-
-<file path="tsconfig.json">
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
-}
 </file>
 
 <file path="prisma/seed.ts">
@@ -5650,139 +5024,6 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-</file>
-
-<file path="src/app/_components/FAQSection.tsx">
-'use client';
-
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-
-const faqs = [
-  {
-    q: "What is IMD 2026?",
-    a: "International Microorganism Day (IMD) 2026 is a prestigious microbiology event organized by Archaea ITB at Institut Teknologi Bandung. It features competitions, workshops, and networking opportunities for students across Indonesia."
-  },
-  {
-    q: "Who can participate?",
-    a: "SMA/sederajat students can join the Microbiology Olympiad (individual) and Science Project Competition (SPC, teams of 2-4). S1/D3/D4 university students can join the National Essay Competition (NEC, 1-2 authors)."
-  },
-  {
-    q: "Is there a registration fee?",
-    a: "Olympiad participants need to pay a registration fee (proof required). SPC and NEC are free to register. All competition types are free for document verification."
-  },
-  {
-    q: "What documents are required?",
-    a: "Each team member needs to upload their Student Card/KTM as proof. The chairman also uploads their personal KTM and a merged PDF of all registration documents."
-  },
-  {
-    q: "How are competitions judged?",
-    a: "Each competition has preliminary, semifinal, and final rounds. Submissions are reviewed by expert judges from ITB and partner institutions. Detailed rubrics are provided for each phase."
-  },
-  {
-    q: "Can I change my team members after registration?",
-    a: "Team changes must be requested via email to imd@itb.ac.id. Changes are subject to approval and may not be allowed after the semifinal phase."
-  },
-  {
-    q: "When and where will IMD 2026 be held?",
-    a: "The main event will be held at Institut Teknologi Bandung in July 2026. Preliminary rounds are conducted online. Specific dates will be announced on our timeline."
-  },
-];
-
-export function FAQSection() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  return (
-    <section id="faq" className="relative py-24 px-4">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/3 w-96 h-96 bg-purple-600/5 rounded-full blur-[100px]" />
-      </div>
-
-      <div className="relative max-w-3xl mx-auto">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="section-title"
-        >
-          Frequently Asked Questions
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="section-subtitle"
-        >
-          Everything you need to know about IMD 2026
-        </motion.p>
-
-        <div className="space-y-3">
-          {faqs.map((faq, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
-              className="glass rounded-2xl overflow-hidden transition-all duration-300 hover:border-purple-500/20"
-            >
-              <button
-                onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full px-6 py-4 flex items-center justify-between text-left"
-              >
-                <span className="text-white/80 font-medium pr-4">{faq.q}</span>
-                <svg
-                  className={`w-5 h-5 text-purple-400 flex-shrink-0 transition-transform duration-300 ${
-                    openIndex === index ? 'rotate-180' : ''
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              <AnimatePresence>
-                {openIndex === index && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-6 pb-4 text-white/50 text-sm leading-relaxed">
-                      {faq.a}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Still have questions? */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-10 text-center"
-        >
-          <p className="text-white/50 text-sm mb-4">Still have questions?</p>
-          <a
-            href="https://wa.me/6281234567890?text=Halo%20IMD%202026%2C%20saya%20ingin%20bertanya..."
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-glass inline-flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            Ask via WhatsApp
-          </a>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
 </file>
 
 <file path="src/app/(auth)/verify-email/page.tsx">
@@ -7011,91 +6252,6 @@ export async function GET() {
 }
 </file>
 
-<file path="src/app/dashboard/_components/DashboardClient.tsx">
-'use client';
-
-import { Session } from 'next-auth';
-import { signOut } from 'next-auth/react';
-import Link from 'next/link';
-import { TeamProfileCard } from './TeamProfileCard';
-import { SubmissionForm } from './SubmissionForm';
-import { StatusBanner } from './StatusBanner';
-import { TeamRegistrationForm } from './TeamRegistrationForm';
-import type { DashboardTeam } from './types';
-
-interface DashboardClientProps {
-  session: Session;
-  teams: DashboardTeam[];
-}
-
-export function DashboardClient({ session, teams }: DashboardClientProps) {
-  return (
-    <div className="min-h-screen bg-space-900 text-white">
-      <nav className="border-b border-space-700 bg-space-800/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="text-xl font-bold text-gradient">
-            IMD 2026
-          </Link>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-white/60 hidden sm:block">{session.user?.email}</span>
-            <button
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-medium rounded-lg transition"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-6xl mx-auto px-4 py-12">
-        <StatusBanner active={session.user.active} />
-
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">
-            Welcome, {session.user?.name || 'Participant'}!
-          </h1>
-          <p className="text-white/60">Manage your team and track your competition progress.</p>
-        </div>
-
-        {teams.length === 0 ? (
-          <div className="glass-dark rounded-2xl p-12 text-center">
-            <div className="w-20 h-20 mx-auto bg-bio-emerald/10 rounded-full flex items-center justify-center mb-6">
-              <svg className="w-10 h-10 text-bio-emerald" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold mb-2">No Team Yet</h2>
-            <p className="text-white/60 mb-6">
-              Register for a competition to start your microbial odyssey!
-            </p>
-            <TeamRegistrationForm session={session} />
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {teams.map((team) => (
-              <div key={team.id} className="space-y-6">
-                <TeamProfileCard team={team} />
-                <SubmissionForm team={team} />
-              </div>
-            ))}
-
-            <details className="glass-dark rounded-2xl p-6">
-              <summary className="cursor-pointer text-lg font-semibold text-white">
-                Register for another eligible competition
-              </summary>
-              <div className="mt-6">
-                <TeamRegistrationForm session={session} />
-              </div>
-            </details>
-          </div>
-        )}
-      </main>
-    </div>
-  );
-}
-</file>
-
 <file path="src/app/dashboard/_components/SubmissionForm.tsx">
 'use client';
 
@@ -7652,159 +6808,6 @@ export type DashboardTeam = {
 };
 </file>
 
-<file path="src/app/layout.tsx">
-import type { Metadata } from 'next';
-import { Inter, Space_Grotesk } from 'next/font/google';
-import './globals.css';
-import AuthProvider from '@/provider/AuthProvider';
-import { Navbar } from '@/components/site/Navbar';
-import { Footer } from '@/components/site/Footer';
-import { EmailVerificationBanner } from '@/components/EmailVerificationBanner';
-import { FloatingOrbs } from '@/components/ui/FloatingOrbs';
-import { CustomCursor } from '@/components/ui/CustomCursor';
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-display' });
-
-export const metadata: Metadata = {
-  title: 'IMD 2026 – International Microorganism Day | ITB',
-  description: "The Great Microbial Odyssey: Decoding the Earth's Dark Matter to Orchestrate a Sustainable Future",
-  keywords: 'IMD 2026, International Microorganism Day, Archaea ITB, Microbiology Competition, Olympiad, SPC, NEC',
-  icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-  },
-  openGraph: {
-    title: 'IMD 2026 – International Microorganism Day',
-    description: "The Great Microbial Odyssey: Decoding the Earth's Dark Matter",
-    url: 'https://imd.itb.ac.id',
-    siteName: 'IMD 2026',
-    images: [{ url: 'https://imd.itb.ac.id/og-image.jpg' }],
-    type: 'website',
-  },
-};
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
-      <body className="font-sans noise-overlay">
-        <AuthProvider>
-          <CustomCursor />
-          <FloatingOrbs />
-          <EmailVerificationBanner />
-          <Navbar />
-          <main className="relative z-10">
-            {children}
-          </main>
-          <Footer />
-        </AuthProvider>
-      </body>
-    </html>
-  );
-}
-</file>
-
-<file path="src/components/site/Footer.tsx">
-'use client';
-
-import Link from 'next/link';
-
-export function Footer() {
-  const currentYear = new Date().getFullYear();
-
-  return (
-    <footer className="relative border-t border-white/5 bg-[#0a0514]/80 backdrop-blur-xl">
-      {/* Top decorative gradient line */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
-
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="grid md:grid-cols-4 gap-8 mb-12">
-          {/* Brand */}
-          <div className="md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <span className="text-2xl">🧬</span>
-              <span className="text-xl font-black text-gradient">IMD 2026</span>
-            </Link>
-            <p className="text-white/50 text-sm leading-relaxed">
-              International Microorganism Day 2026<br />
-              Institut Teknologi Bandung
-            </p>
-            <div className="flex gap-3 mt-4">
-              <a href="https://www.instagram.com/imd.itb/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 glass rounded-full flex items-center justify-center hover:bg-purple-500/20 transition-all group">
-                <svg className="w-4 h-4 text-white/60 group-hover:text-purple-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-              </a>
-              <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="w-9 h-9 glass rounded-full flex items-center justify-center hover:bg-purple-500/20 transition-all group">
-                <svg className="w-4 h-4 text-white/60 group-hover:text-purple-400" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-              </a>
-              <a href="mailto:imd@itb.ac.id" className="w-9 h-9 glass rounded-full flex items-center justify-center hover:bg-purple-500/20 transition-all group">
-                <svg className="w-4 h-4 text-white/60 group-hover:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-              </a>
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-4">Competitions</h4>
-            <ul className="space-y-2">
-              <li><Link href="/competitions/olympiad" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Microbiology Olympiad</Link></li>
-              <li><Link href="/competitions/spc" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Science Project Competition</Link></li>
-              <li><Link href="/competitions/nec" className="text-sm text-white/50 hover:text-purple-400 transition-colors">National Essay Competition</Link></li>
-            </ul>
-          </div>
-
-          {/* Support */}
-          <div>
-            <h4 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-4">Support</h4>
-            <ul className="space-y-2">
-              <li><a href="/#faq" className="text-sm text-white/50 hover:text-purple-400 transition-colors">FAQ</a></li>
-              <li><a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Contact via WhatsApp</a></li>
-              <li><a href="mailto:imd@itb.ac.id" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Email Us</a></li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h4 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-4">Contact</h4>
-            <ul className="space-y-2 text-sm text-white/50">
-              <li>Archaea ITB</li>
-              <li>Institut Teknologi Bandung</li>
-              <li>Ganesha 10, Bandung</li>
-              <li className="pt-2">
-                <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors">
-                  WA: +62 812-3456-7890
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Partners & Sponsors */}
-        <div className="border-t border-white/5 pt-8 mb-8">
-          <h4 className="text-sm font-semibold text-white/60 uppercase tracking-wider text-center mb-6">Partners & Sponsors</h4>
-          <div className="flex flex-wrap justify-center gap-6 items-center">
-            {['ITB', 'Archaea', 'Microbiology', 'Research'].map((name, i) => (
-              <div key={i} className="glass rounded-xl px-6 py-3 text-white/40 text-sm font-medium hover:bg-white/5 transition-all">
-                {name}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom */}
-        <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-white/30">
-            © {currentYear} IMD 2026 — Archaea ITB. All rights reserved.
-          </p>
-          <div className="flex gap-4 text-xs text-white/30">
-            <span>Built with 🧬 for the microbial explorers</span>
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-}
-</file>
-
 <file path="src/components/site/Navbar.tsx">
 'use client';
 
@@ -8043,6 +7046,300 @@ export function Navbar() {
 }
 </file>
 
+<file path="src/components/ui/MemoriesGallery.tsx">
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { MEMORIES_DATA } from '@/lib/constants';
+
+export function MemoriesGallery() {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const [scrollPos, setScrollPos] = useState(0);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient || !trackRef.current) return;
+
+    const track = trackRef.current;
+    const items = track.querySelectorAll('.memory-item');
+    if (items.length === 0) return;
+
+    // Duplicate for seamless loop
+    const totalWidth = track.scrollWidth / 2;
+
+    const animate = () => {
+      if (!isPaused) {
+        setScrollPos((prev) => {
+          let newPos = prev + 1;
+          if (newPos >= totalWidth) newPos = 0;
+          return newPos;
+        });
+      }
+      requestAnimationFrame(animate);
+    };
+
+    const animId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animId);
+  }, [isPaused, isClient]);
+
+  useEffect(() => {
+    if (trackRef.current) {
+      trackRef.current.style.transform = `translateX(-${scrollPos}px)`;
+    }
+  }, [scrollPos]);
+
+  const items = [...MEMORIES_DATA, ...MEMORIES_DATA]; // duplicate for seamless
+
+  return (
+    <div className="relative w-full">
+      <div
+        className="overflow-hidden rounded-2xl"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        <div
+          ref={trackRef}
+          className="flex gap-4 transition-none will-change-transform"
+          style={{ width: 'max-content' }}
+        >
+          {items.map((mem, i) => (
+            <div
+              key={i}
+              className="memory-item relative w-[260px] md:w-[300px] aspect-[4/3] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer group"
+              style={{
+                background: `linear-gradient(135deg, ${mem.color}22, ${mem.color}44)`,
+              }}
+            >
+              {mem.image ? (
+                <img
+                  src={mem.image}
+                  alt={mem.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-7xl filter drop-shadow-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20">
+                  📸
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                <p className="font-bold text-white text-lg">{mem.title}</p>
+                <p className="text-white/60 text-sm">{mem.date}</p>
+              </div>
+              <div className="absolute top-3 right-3 px-3 py-1 bg-black/50 backdrop-blur-sm rounded-full text-xs font-bold text-bio-cyan">
+                {mem.year}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex justify-center gap-3 mt-6">
+        <button
+          onClick={() => setIsPaused(!isPaused)}
+          className={`w-12 h-12 rounded-full glass flex items-center justify-center transition-all ${
+            isPaused ? 'bg-red-500/20 border-red-500/30 text-red-400' : ''
+          }`}
+        >
+          <i className={`fas ${isPaused ? 'fa-play' : 'fa-pause'}`}></i>
+        </button>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/ui/SponsorMarquee.tsx">
+'use client';
+
+import { useEffect, useRef } from 'react';
+
+interface SponsorMarqueeProps {
+  items: { name: string; icon?: string; image?: string }[];
+  direction?: 'left' | 'right';
+  speed?: number; // pixels per frame
+}
+
+export function SponsorMarquee({
+  items,
+  direction = 'left',
+  speed = 1,
+}: SponsorMarqueeProps) {
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    let pos = 0;
+    const totalWidth = track.scrollWidth / 2;
+
+    const animate = () => {
+      pos += direction === 'left' ? speed : -speed;
+      if (pos >= totalWidth) pos = 0;
+      if (pos <= -totalWidth) pos = 0;
+      track.style.transform = `translateX(${direction === 'left' ? -pos : pos}px)`;
+      requestAnimationFrame(animate);
+    };
+
+    const animId = requestAnimationFrame(animate);
+
+    const handleMouseEnter = () => cancelAnimationFrame(animId);
+    const handleMouseLeave = () => requestAnimationFrame(animate);
+
+    track.addEventListener('mouseenter', handleMouseEnter);
+    track.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      track.removeEventListener('mouseenter', handleMouseEnter);
+      track.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [direction, speed]);
+
+  const doubled = [...items, ...items];
+
+  return (
+    <div className="overflow-hidden mask-gradient">
+      <div
+        ref={trackRef}
+        className="flex gap-8 whitespace-nowrap will-change-transform"
+        style={{ width: 'max-content' }}
+      >
+        {doubled.map((item, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-3 px-6 py-4 glass rounded-2xl border border-white/10 hover:border-bio-cyan/50 transition-all hover:-translate-y-1"
+          >
+            {item.image ? (
+              <img src={item.image} alt={item.name} className="h-8 w-auto object-contain" />
+            ) : (
+              <i className={`fas ${item.icon} text-2xl text-bio-cyan`}></i>
+            )}
+            <span className="font-medium text-white/80">{item.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/ui/TimelineSlider.tsx">
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { TIMELINE_DATA } from '@/lib/constants';
+
+export function TimelineSlider() {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [maxIndex, setMaxIndex] = useState(0);
+
+  useEffect(() => {
+    const updateMax = () => {
+      if (!trackRef.current || !containerRef.current) return;
+      const items = trackRef.current.querySelectorAll('.timeline-item');
+      if (items.length === 0) return;
+      const itemWidth = items[0].getBoundingClientRect().width + 20; // + gap
+      const containerWidth = containerRef.current.getBoundingClientRect().width;
+      const visible = Math.floor(containerWidth / itemWidth);
+      setMaxIndex(Math.max(0, items.length - visible));
+    };
+
+    updateMax();
+    window.addEventListener('resize', updateMax);
+    return () => window.removeEventListener('resize', updateMax);
+  }, []);
+
+  useEffect(() => {
+    if (!trackRef.current) return;
+    const items = trackRef.current.querySelectorAll('.timeline-item');
+    if (items.length === 0) return;
+    const itemWidth = items[0].getBoundingClientRect().width + 20;
+    trackRef.current.style.transform = `translateX(-${currentIndex * itemWidth}px)`;
+  }, [currentIndex]);
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => Math.min(maxIndex, prev + 1));
+  };
+
+  const progress = maxIndex > 0 ? (currentIndex / maxIndex) * 100 : 0;
+
+  return (
+    <div className="w-full">
+      <div ref={containerRef} className="overflow-hidden rounded-2xl">
+        <div
+          ref={trackRef}
+          className="flex gap-5 transition-transform duration-500 ease-out will-change-transform"
+          style={{ width: 'max-content' }}
+        >
+          {TIMELINE_DATA.map((item) => (
+            <div
+              key={item.id}
+              className="timeline-item w-[240px] md:w-[280px] flex-shrink-0 p-6 glass rounded-2xl border border-white/10 hover:border-bio-cyan/50 transition-all hover:-translate-y-2"
+            >
+              <div className="text-sm text-bio-cyan font-semibold uppercase tracking-wider mb-2">
+                {item.phase}
+              </div>
+              <div className="text-2xl font-bold text-white mb-1">{item.title}</div>
+              <div className="text-sm text-white/50">{item.date}</div>
+              <div className="text-sm text-white/60 mt-2">{item.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center gap-4 mt-6">
+        <button
+          onClick={handlePrev}
+          disabled={currentIndex === 0}
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full glass flex items-center justify-center hover:bg-bio-cyan/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          aria-label="Previous"
+        >
+          <i className="fas fa-chevron-left text-sm sm:text-base"></i>
+        </button>
+
+        <div className="flex-1 max-w-xs">
+          <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-bio-cyan to-bio-emerald rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className="text-center mt-2">
+            <span className="text-xs text-white/50">
+              {currentIndex + 1} / {maxIndex + 1}
+            </span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleNext}
+          disabled={currentIndex === maxIndex}
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full glass flex items-center justify-center hover:bg-bio-cyan/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          aria-label="Next"
+        >
+          <i className="fas fa-chevron-right text-sm sm:text-base"></i>
+        </button>
+      </div>
+    </div>
+  );
+}
+</file>
+
 <file path="src/components/EmailVerificationBanner.tsx">
 'use client';
 
@@ -8072,272 +7369,126 @@ export function EmailVerificationBanner() {
 }
 </file>
 
-<file path="src/components/FileUpload.tsx">
-'use client';
+<file path="src/lib/constants.ts">
+// Data statis untuk timeline, memories, sponsors, dll.
 
-import { useId, useState } from 'react';
-
-interface FileUploadProps {
-  label: string;
-  accept?: string;
-  onUpload: (url: string) => void;
-}
-
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
-
-export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload }: FileUploadProps) {
-  const inputId = useId();
-  const [uploading, setUploading] = useState(false);
-  const [fileName, setFileName] = useState<string>('');
-  const [error, setError] = useState<string>('');
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setError('');
-
-    if (file.size > MAX_FILE_SIZE) {
-      setFileName('');
-      setError('Maximum file size is 50MB.');
-      e.target.value = '';
-      return;
-    }
-
-    setFileName(file.name);
-    setUploading(true);
-
-    try {
-      const res = await fetch('/api/upload/presign', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: file.name, fileType: file.type, fileSize: file.size }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to get upload URL');
-
-      const uploadRes = await fetch(data.presignedUrl, {
-        method: data.method || 'PUT',
-        body: file,
-        headers: { 'Content-Type': data.contentType || file.type },
-      });
-
-      if (!uploadRes.ok) throw new Error('Upload failed');
-
-      onUpload(data.publicUrl);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed');
-      setFileName('');
-    } finally {
-      setUploading(false);
-      e.target.value = '';
-    }
-  };
-
-  return (
-    <div>
-      <label className="block text-sm font-medium text-white/70 mb-2">{label}</label>
-      <div className="border-2 border-dashed border-white/20 rounded-xl p-6 text-center hover:border-bio-emerald/50 transition-colors">
-        <input
-          type="file"
-          accept={accept}
-          onChange={handleFileChange}
-          disabled={uploading}
-          className="hidden"
-          id={inputId}
-        />
-        <label htmlFor={inputId} className="cursor-pointer">
-          <svg className="w-10 h-10 mx-auto text-white/30 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-          </svg>
-          <p className="text-white/70 text-sm font-medium">
-            {uploading ? 'Uploading...' : fileName || 'Click to upload'}
-          </p>
-          <p className="text-xs text-white/30 mt-1">PDF, PNG, JPG, MP4, or MOV (Max 50MB)</p>
-        </label>
-      </div>
-      {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
-    </div>
-  );
-}
-</file>
-
-<file path="src/lib/competitions-data.ts">
-export const COMPETITIONS = [
+export const TIMELINE_DATA = [
   {
-    id: 'olympiad',
-    shortName: 'Olympiad',
-    title: 'Microbiology Olympiad',
-    category: 'SMA/Sederajat',
-    icon: '🏆',
-    glowColor: 'cyan',
-    description: 'OSN-level competition testing deep understanding of microbiology concepts, from theory to laboratory skills.',
-    fullDescription: 'Challenge your microbiology knowledge and laboratory skills in Indonesia\'s most comprehensive high school microbiology competition. Test your skills with analytical questions equivalent to National Science Olympiad (OSN) standards.',
-    format: 'Online preliminary exam + offline final practical exam',
-    teamSize: 'Individual',
-    eligibility: 'Active SMA/MA/SMK students (all grades)',
-    requirements: [
-      'Active SMA/MA/SMK student (all grades)',
-      'Individual participation',
-      'Basic understanding of biology/microbiology',
-      'Willingness to learn laboratory techniques',
-    ],
-    benefits: [
-      { icon: '🏆', title: 'Total Prize', value: 'Rp 15.000.000+' },
-      { icon: '📜', title: 'Certificates', value: 'E-Certificate for all participants' },
-      { icon: '🎓', title: 'ITB Exposure', value: 'Experience world-class lab facilities' },
-      { icon: '🔬', title: 'Mentorship', value: 'Direct guidance from ITB lecturers' },
-    ],
-    whyJoin: [
-      {
-        icon: '📊',
-        title: 'OSN-Standard Competition',
-        desc: 'Test your knowledge with analytical questions equivalent to National Science Olympiad (OSN) standards.',
-      },
-      {
-        icon: '🧫',
-        title: 'Hands-On Laboratory Experience',
-        desc: 'Master essential microbiology techniques: Gram staining, optical density reading, spread plate, and streak plate methods.',
-      },
-      {
-        icon: '🦠',
-        title: 'Explore Microbial Dark Matter',
-        desc: 'Dive deep into the 99% of unculturable microorganisms and discover their hidden potential.',
-      },
-      {
-        icon: '🔭',
-        title: 'Path to Research Career',
-        desc: 'Identify your potential as a future microbiology researcher with guidance from ITB experts.',
-      },
-    ],
-    timeline: [
-      { phase: 'Registration', date: '1 - 31 July 2026', desc: 'Open registration' },
-      { phase: 'Preliminary', date: '1 - 16 August 2026', desc: 'Online theory exam' },
-      { phase: 'Semifinal', date: '17 - 31 August 2026', desc: 'Online advanced test' },
-      { phase: 'Final', date: '14 - 15 November 2026', desc: 'Offline at ITB Campus' },
-    ],
-    faq: [
-      { q: 'What topics are covered?', a: 'General microbiology, microbial physiology, genetics, ecology, virology, immunology, and applied microbiology.' },
-      { q: 'Is there a registration fee?', a: 'Free for all participants.' },
-      { q: 'How many rounds?', a: 'Two rounds: preliminary (online) and final (onsite at ITB).' },
-    ],
+    id: '1',
+    phase: 'Registration',
+    date: '1 Jun 2026',
+    title: 'Registration Opens',
+    desc: 'Early bird registration begins',
+    icon: '🚀',
   },
   {
-    id: 'spc',
-    shortName: 'SPC',
-    title: 'Science Project Competition',
-    category: 'SMA/Sederajat',
-    icon: '🔬',
-    glowColor: 'emerald',
-    description: 'Creative competition for SMA students to develop innovative microbiology-based product prototypes addressing global challenges.',
-    fullDescription: 'Transform your microbiology innovations into real-world prototypes and compete for the chance to change the future of sustainability. Develop prototype solutions for global challenges: renewable energy, waste management, and food security using microbiology.',
-    format: 'Executive summary -> Full proposal -> Final pitching',
-    teamSize: '2-4 members',
-    eligibility: 'Active SMA/MA/SMK students (all grades)',
-    requirements: [
-      'Team of 2-4 members from same or different schools',
-      'Active SMA/MA/SMK students',
-      'Proposal and video pitch required',
-      'Mentor (teacher) recommended',
-    ],
-    benefits: [
-      { icon: '💰', title: 'Total Prize', value: 'Rp 20.000.000+' },
-      { icon: '🏅', title: 'Certificates', value: 'E-Certificate + Trophy' },
-      { icon: '🚀', title: 'Prototype Development', value: 'Funding support' },
-      { icon: '🤝', title: 'Industry Connection', value: 'Networking with experts' },
-    ],
-    whyJoin: [
-      {
-        icon: '🌍',
-        title: 'Real-World Impact',
-        desc: 'Develop prototype solutions for global challenges: renewable energy, waste management, and food security using microbiology.',
-      },
-      {
-        icon: '💡',
-        title: 'Innovation Platform',
-        desc: 'Transform your creative ideas into tangible products with guidance from ITB researchers and industry professionals.',
-      },
-      {
-        icon: '🔬',
-        title: 'Decode Microbial Dark Matter',
-        desc: 'Explore the 99% of unculturable microorganisms and unlock their biotechnological potential.',
-      },
-      {
-        icon: '📈',
-        title: 'Entrepreneurial Skills',
-        desc: 'Learn to pitch your innovation, develop business models, and connect with potential investors.',
-      },
-    ],
-    timeline: [
-      { phase: 'Registration', date: '1 - 31 July 2026', desc: 'Open registration' },
-      { phase: 'Preliminary', date: '1 - 16 August 2026', desc: 'Executive summary & video' },
-      { phase: 'Semifinal', date: '17 - 31 August 2026', desc: 'Full proposal & video' },
-      { phase: 'Final', date: '14 - 15 November 2026', desc: 'Final pitching at ITB' },
-    ],
-    faq: [
-      { q: 'What is the theme?', a: '"Decoding the Earth\'s Dark Matter to Orchestrate a Sustainable Future".' },
-      { q: 'Can we have a mentor?', a: 'Yes, a teacher/supervisor is recommended but not mandatory.' },
-    ],
+    id: '2',
+    phase: 'Workshop',
+    date: '15 Jun 2026',
+    title: 'Petri Dish Art Workshop',
+    desc: 'Pre-event workshop',
+    icon: '🎨',
   },
   {
-    id: 'nec',
-    shortName: 'NEC',
-    title: 'National Essay Competition',
-    category: 'S1 Universitas',
+    id: '3',
+    phase: 'Workshop',
+    date: '1 Jul 2026',
+    title: 'Workshop Series',
+    desc: 'Expert-led training sessions',
+    icon: '📚',
+  },
+  {
+    id: '4',
+    phase: 'Deadline',
+    date: '10 Jul 2026',
+    title: 'MO Registration Closes',
+    desc: 'Olympiad deadline',
+    icon: '⏰',
+  },
+  {
+    id: '5',
+    phase: 'Prelim',
+    date: '15 Jul 2026',
+    title: 'SPC & NEC Prelim',
+    desc: 'Preliminary submissions',
     icon: '📝',
-    glowColor: 'purple',
-    description: 'Platform for S1 students to develop critical thinking and scientific writing on global microbiology issues.',
-    fullDescription: 'Showcase your critical thinking and scientific writing skills. Propose innovative microbiological solutions to global sustainability challenges. Open to all S1 students from any major.',
-    format: 'Executive summary -> Full paper & poster -> Pitch deck presentation',
-    teamSize: '1-2 authors',
-    eligibility: 'Active S1 university students (all majors)',
-    requirements: [
-      'Active S1 student from any major',
-      'Individual or team (max 2 authors)',
-      'Full paper (8-12 pages) and infographic poster',
-      'Indonesian universities only',
-    ],
-    benefits: [
-      { icon: '💵', title: 'Total Prize', value: 'Rp 18.000.000+' },
-      { icon: '📜', title: 'Certificates', value: 'E-Certificate + Trophy' },
-      { icon: '📰', title: 'Publication', value: 'Opportunity for journal publication' },
-      { icon: '🎓', title: 'Research Network', value: 'Connect with academics' },
-    ],
-    whyJoin: [
-      {
-        icon: '🌐',
-        title: 'Interdisciplinary Approach',
-        desc: 'Open to all S1 students from any major - science, engineering, social sciences, or humanities. Your unique perspective matters!',
-      },
-      {
-        icon: '🧠',
-        title: 'Critical Thinking Development',
-        desc: 'Hone your ability to analyze complex global issues and propose evidence-based microbiological solutions.',
-      },
-      {
-        icon: '✍️',
-        title: 'Scientific Writing Excellence',
-        desc: 'Master the art of scientific communication and learn to present complex ideas clearly and persuasively.',
-      },
-      {
-        icon: '🏛️',
-        title: 'Policy Impact',
-        desc: 'Your essay could influence real policy recommendations and contribute to Indonesia\'s sustainable development goals.',
-      },
-    ],
-    timeline: [
-      { phase: 'Registration', date: '1 - 31 July 2026', desc: 'Open registration' },
-      { phase: 'Preliminary', date: '1 - 16 August 2026', desc: 'Executive summary' },
-      { phase: 'Semifinal', date: '17 - 31 August 2026', desc: 'Full paper & poster' },
-      { phase: 'Final', date: '14 - 15 November 2026', desc: 'Pitch deck presentation' },
-    ],
-    faq: [
-      { q: 'What is the word limit?', a: 'Full paper: 8-12 pages, excluding references.' },
-      { q: 'Can I submit in Indonesian?', a: 'Yes, both English and Indonesian are accepted.' },
-    ],
   },
-] as const;
+  {
+    id: '6',
+    phase: 'Prelim',
+    date: '20 Jul 2026',
+    title: 'MO Preliminary',
+    desc: 'Online test round',
+    icon: '💻',
+  },
+  {
+    id: '7',
+    phase: 'Final',
+    date: '25 Jul 2026',
+    title: 'Final Rounds',
+    desc: 'Top teams compete',
+    icon: '🏆',
+  },
+  {
+    id: '8',
+    phase: 'Finale',
+    date: '31 Jul 2026',
+    title: 'Grand Finale',
+    desc: 'Awards & closing ceremony',
+    icon: '🎉',
+  },
+  {
+    id: '9',
+    phase: 'Symposium',
+    date: '1-3 Aug 2026',
+    title: 'Symposium',
+    desc: 'Expert discussions',
+    icon: '🎤',
+  },
+  {
+    id: '10',
+    phase: 'Exhibition',
+    date: '1-3 Aug 2026',
+    title: 'Exhibition',
+    desc: 'Innovation showcase',
+    icon: '🔬',
+  },
+];
+
+export const MEMORIES_DATA = [
+  { title: 'Grand Final 2025', date: 'August 2025', year: '2025', image: '/memories/2025-grand-final.jpg', color: '#6e8efb' },
+  { title: 'Keynote Speaker', date: 'July 2025', year: '2025', image: '/memories/2025-keynote.jpg', color: '#a777e3' },
+  { title: 'Laboratory Session', date: 'July 2024', year: '2024', image: '/memories/2024-lab.jpg', color: '#f093fb' },
+  { title: 'Networking Night', date: 'August 2024', year: '2024', image: '/memories/2024-networking.jpg', color: '#4facfe' },
+  { title: 'Workshop 2023', date: 'June 2023', year: '2023', image: '/memories/2023-workshop.jpg', color: '#6e8efb' },
+  { title: 'Awarding Night', date: 'August 2023', year: '2023', image: '/memories/2023-awarding.jpg', color: '#a777e3' },
+  { title: 'Hackathon 2022', date: 'July 2022', year: '2022', image: '/memories/2022-hackathon.jpg', color: '#f093fb' },
+  { title: 'Exhibition Day', date: 'August 2022', year: '2022', image: '/memories/2022-exhibition.jpg', color: '#4facfe' },
+  { title: 'Opening Ceremony', date: 'June 2021', year: '2021', image: '/memories/2021-opening.jpg', color: '#6e8efb' },
+  { title: 'Team Photo', date: 'August 2021', year: '2021', image: '/memories/2021-team.jpg', color: '#a777e3' },
+];
+
+export const MEDIA_PARTNERS = [
+  { name: 'Kompas', icon: 'fa-newspaper' },
+  { name: 'Detik', icon: 'fa-globe' },
+  { name: 'Tempo', icon: 'fa-broadcast-tower' },
+  { name: 'CNN Indonesia', icon: 'fa-tv' },
+  { name: 'Republika', icon: 'fa-rss' },
+  { name: 'Liputan6', icon: 'fa-newspaper' },
+  { name: 'Grid Network', icon: 'fa-th' },
+  { name: 'Herworld', icon: 'fa-magazine' },
+];
+
+export const INDUSTRY_PARTNERS = [
+  { name: 'BioFarma', image: '/partners/biofarma.png' },
+  { name: 'Kalbe Farma', image: '/partners/kalbe.png' },
+  { name: 'Kimia Farma', image: '/partners/kimia-farma.png' },
+  { name: 'Nutrifood', image: '/partners/nutrifood.png' },
+  { name: 'Indofood', image: '/partners/indofood.png' },
+  { name: 'Unilever', image: '/partners/unilever.png' },
+  { name: 'Danone', image: '/partners/danone.png' },
+  { name: 'Nestle', image: '/partners/nestle.png' },
+];
 </file>
 
 <file path="src/types/next-auth.d.ts">
@@ -8395,6 +7546,73 @@ const nextConfig = {
 module.exports = nextConfig;
 </file>
 
+<file path="tailwind.config.ts">
+import type { Config } from 'tailwindcss';
+
+const config: Config = {
+  content: [
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        space: {
+          900: '#0a0514',
+          800: '#120a2e',
+          700: '#1a1040',
+          600: '#2d1b69',
+        },
+        bio: {
+          cyan: '#22d3ee',
+          emerald: '#34d399',
+          teal: '#2dd4bf',
+          purple: '#a855f7',
+          pink: '#ec4899',
+        },
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Space Grotesk', 'sans-serif'],
+      },
+      animation: {
+        float: 'float 6s ease-in-out infinite',
+        blob: 'blob 12s infinite',
+        gradient: 'gradient 8s ease infinite',
+        'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+        blob: {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '25%': { transform: 'translate(30px, -50px) scale(1.1)' },
+          '50%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+          '75%': { transform: 'translate(20px, 40px) scale(1.05)' },
+        },
+        gradient: {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
+        pulseGlow: {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.7', transform: 'scale(1.05)' },
+        },
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
+    },
+  },
+  plugins: [],
+};
+
+export default config;
+</file>
+
 <file path="TODO.md">
 # Fix Login Issues & Other Problems
 
@@ -8413,6 +7631,195 @@ module.exports = nextConfig;
 - [x] **Issue 6: Applied Prisma migration** - Created and applied migration `20260709235542_add_image_field` to sync the database schema.
 
 ## Build Status: ✅ PASSED (0 errors, 0 warnings)
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
+</file>
+
+<file path="src/app/_components/FAQSection.tsx">
+'use client';
+
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const faqs = [
+  {
+    q: "What is IMD 2026?",
+    a: "International Microorganism Day (IMD) 2026 is a prestigious microbiology event organized by Archaea ITB at Institut Teknologi Bandung. It features competitions, workshops, and networking opportunities for students across Indonesia."
+  },
+  {
+    q: "Who can participate?",
+    a: "SMA/sederajat students can join the Microbiology Olympiad (individual) and Science Project Competition (SPC, teams of 2-4). S1/D3/D4 university students can join the National Essay Competition (NEC, 1-2 authors)."
+  },
+  {
+    q: "Is there a registration fee?",
+    a: "Olympiad participants need to pay a registration fee (proof required). SPC and NEC are free to register. All competition types are free for document verification."
+  },
+  {
+    q: "What documents are required?",
+    a: "Each team member needs to upload their Student Card/KTM as proof. The chairman also uploads their personal KTM and a merged PDF of all registration documents."
+  },
+  {
+    q: "How are competitions judged?",
+    a: "Each competition has preliminary, semifinal, and final rounds. Submissions are reviewed by expert judges from ITB and partner institutions. Detailed rubrics are provided for each phase."
+  },
+  {
+    q: "Can I change my team members after registration?",
+    a: "Team changes must be requested via email to imd@itb.ac.id. Changes are subject to approval and may not be allowed after the semifinal phase."
+  },
+  {
+    q: "When and where will IMD 2026 be held?",
+    a: "The main event will be held at Institut Teknologi Bandung in July 2026. Preliminary rounds are conducted online. Specific dates will be announced on our timeline."
+  },
+];
+
+export function FAQSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  return (
+    <section id="faq" className="relative py-24 px-4">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/3 w-96 h-96 bg-purple-600/5 rounded-full blur-[100px]" />
+      </div>
+
+      <div className="relative max-w-3xl mx-auto">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="section-title"
+        >
+          Frequently Asked Questions
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="section-subtitle"
+        >
+          Everything you need to know about IMD 2026
+        </motion.p>
+
+        <div className="space-y-3">
+          {faqs.map((faq, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.05 }}
+              className="glass rounded-2xl overflow-hidden transition-all duration-300 hover:border-purple-500/20"
+            >
+              <button
+                onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                className="w-full px-6 py-4 flex items-center justify-between text-left"
+              >
+                <span className="text-white/80 font-medium pr-4">{faq.q}</span>
+                <svg
+                  className={`w-5 h-5 text-purple-400 flex-shrink-0 transition-transform duration-300 ${
+                    openIndex === index ? 'rotate-180' : ''
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <AnimatePresence>
+                {openIndex === index && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-6 pb-4 text-white/50 text-sm leading-relaxed">
+                      {faq.a}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Still have questions? */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-10 text-center"
+        >
+          <p className="text-white/50 text-sm mb-4">Still have questions? Contact our admins:</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <a
+              href="https://wa.me/6281234567890?text=Halo%20IMD%202026%2C%20saya%20ingin%20bertanya..."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-glass inline-flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Admin 1
+          </a>
+          <a
+            href="https://wa.me/628987654321?text=Halo%20IMD%202026%2C%20saya%20ingin%20bertanya..."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-glass inline-flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Admin 2
+          </a>
+        </div>
+        <p className="text-white/40 text-xs mt-4">Or view our interactive FAQ sheet for more details</p>
+      </motion.div>
+      </div>
+    </section>
+  );
+}
 </file>
 
 <file path="src/app/_components/HeroSection.tsx">
@@ -8578,190 +7985,6 @@ export function HeroSection() {
         </div>
       </div>
     </section>
-  );
-}
-</file>
-
-<file path="src/app/(auth)/register/page.tsx">
-'use client';
-
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { signIn } from 'next-auth/react';
-
-export default function RegisterPage() {
-  const router = useRouter();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    institution: '',
-    educationLevel: 'SMA',
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Registration failed');
-
-      router.push('/verify-email?email=' + encodeURIComponent(formData.email));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleRegister = () => {
-    signIn('google', { callbackUrl: '/dashboard' });
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Subtle Purple Background Orbs */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px] animate-blob" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-fuchsia-600/10 rounded-full blur-[120px] animate-blob" style={{ animationDelay: '5s' }} />
-      </div>
-
-      <div className="relative w-full max-w-md glass-strong rounded-3xl p-8 shadow-2xl border border-purple-500/20">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gradient">Join IMD 2026</h1>
-          <p className="text-white/60 mt-2 text-sm">Start your microbial odyssey with us</p>
-        </div>
-
-        {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Full Name</label>
-            <input
-              type="text"
-              name="name"
-              required
-              value={formData.name}
-              onChange={handleChange}
-              className="input-glass"
-              placeholder="John Doe"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Email</label>
-            <input
-              type="email"
-              name="email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              className="input-glass"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Institution</label>
-            <input
-              type="text"
-              name="institution"
-              required
-              value={formData.institution}
-              onChange={handleChange}
-              className="input-glass"
-              placeholder="e.g. SMA N 1 Bandung / Institut Teknologi Bandung"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Education Level</label>
-            <select
-              name="educationLevel"
-              required
-              value={formData.educationLevel}
-              onChange={handleChange}
-              className="input-glass"
-            >
-              <option value="SMA">SMA / MA / SMK</option>
-              <option value="S1">S1 / D3 / D4</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Password</label>
-            <input
-              type="password"
-              name="password"
-              required
-              minLength={8}
-              value={formData.password}
-              onChange={handleChange}
-              className="input-glass"
-              placeholder="Minimum 8 characters"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-glow w-full"
-          >
-            {loading ? 'Creating Account...' : 'Register'}
-          </button>
-        </form>
-
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/5" />
-          </div>
-          <div className="relative flex justify-center">
-            <span className="bg-[#0a0514]/50 px-3 text-xs text-white/30 uppercase tracking-wider">
-              Or register with
-            </span>
-          </div>
-        </div>
-
-        <button
-          onClick={handleGoogleRegister}
-          className="btn-glass w-full flex items-center justify-center gap-2 hover:bg-white/10"
-        >
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-          </svg>
-          <span className="text-white/90">Google</span>
-        </button>
-
-        <p className="text-center text-white/60 text-sm mt-6">
-          Already have an account?{' '}
-          <Link href="/login" className="text-purple-400 hover:text-fuchsia-400 font-medium transition-colors">
-            Login here
-          </Link>
-        </p>
-      </div>
-    </div>
   );
 }
 </file>
@@ -9335,83 +8558,6 @@ export async function POST(req: Request) {
 }
 </file>
 
-<file path="src/app/api/upload/presign/route.ts">
-// src/app/api/upload/presign/route.ts
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { getPresignedUrl } from '@/lib/supabase';
-import { rateLimit } from '@/lib/rate-limit';
-import { prisma } from '@/lib/db';
-
-export async function POST(req: Request) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Rate limit per user
-    const { success } = rateLimit(`upload:${session.user.id}`, 10, 60 * 1000);
-    if (!success) {
-      return NextResponse.json(
-        { error: 'Too many upload requests' },
-        { status: 429 }
-      );
-    }
-
-    const { teamId, fileName, fileType } = await req.json();
-
-    if (!teamId || !fileName || !fileType) {
-      return NextResponse.json(
-        { error: 'teamId, fileName and fileType are required' },
-        { status: 400 }
-      );
-    }
-
-    // Verify user is captain of this team
-    const team = await prisma.team.findUnique({
-      where: { id: teamId, captainId: session.user.id },
-    });
-    if (!team) {
-      return NextResponse.json(
-        { error: 'You are not authorized to upload for this team' },
-        { status: 403 }
-      );
-    }
-
-    const allowedTypes = [
-      'application/pdf',
-      'image/png',
-      'image/jpeg',
-      'video/mp4',
-      'video/quicktime',
-    ];
-    if (!allowedTypes.includes(fileType)) {
-      return NextResponse.json(
-        { error: 'File type not allowed' },
-        { status: 400 }
-      );
-    }
-
-    // Pass userId as third argument
-    const { presignedUrl, publicUrl, path } = await getPresignedUrl(
-      fileName,
-      fileType,
-      session.user.id
-    );
-
-    return NextResponse.json({
-      presignedUrl,
-      publicUrl,
-      path,
-    });
-  } catch (error) {
-    console.error('Presign error:', error);
-    return NextResponse.json({ error: 'Failed to generate upload URL' }, { status: 500 });
-  }
-}
-</file>
-
 <file path="src/app/competitions/[slug]/page.tsx">
 import { notFound } from 'next/navigation';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -9782,150 +8928,602 @@ export default async function DashboardPage() {
 }
 </file>
 
-<file path="src/lib/google-sheets.ts">
-import { google, sheets_v4 } from 'googleapis';
+<file path="src/app/layout.tsx">
+import type { Metadata } from 'next';
+import { Inter, Space_Grotesk } from 'next/font/google';
+import './globals.css';
+import AuthProvider from '@/provider/AuthProvider';
+import { Navbar } from '@/components/site/Navbar';
+import { Footer } from '@/components/site/Footer';
+import { EmailVerificationBanner } from '@/components/EmailVerificationBanner';
+import { FloatingOrbs } from '@/components/ui/FloatingOrbs';
 
-type SheetValue = string | number | boolean | null | undefined;
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-display' });
 
-let sheetsClient: sheets_v4.Sheets | null = null;
+export const metadata: Metadata = {
+  title: 'IMD 2026 – International Microorganism Day | ITB',
+  description: "The Great Microbial Odyssey: Decoding the Earth's Dark Matter to Orchestrate a Sustainable Future",
+  keywords: 'IMD 2026, International Microorganism Day, Archaea ITB, Microbiology Competition, Olympiad, SPC, NEC',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+  },
+  openGraph: {
+    title: 'IMD 2026 – International Microorganism Day',
+    description: "The Great Microbial Odyssey: Decoding the Earth's Dark Matter",
+    url: 'https://imd.itb.ac.id',
+    siteName: 'IMD 2026',
+    images: [{ url: 'https://imd.itb.ac.id/og-image.jpg' }],
+    type: 'website',
+  },
+};
 
-function getSheetsClient() {
-  if (sheetsClient) return sheetsClient;
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+      <body className="font-sans noise-overlay">
+        <AuthProvider>
+          <FloatingOrbs />
+          <EmailVerificationBanner />
+          <Navbar />
+          <main className="relative z-10">
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
+      </body>
+    </html>
+  );
+}
+</file>
 
-  const rawCredentials = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+<file path="src/components/site/Footer.tsx">
+'use client';
 
-  if (!rawCredentials || !spreadsheetId) {
-    return null;
-  }
+import Link from 'next/link';
 
-  try {
-    const auth = new google.auth.GoogleAuth({
-      credentials: JSON.parse(rawCredentials),
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-    });
+export function Footer() {
+  const currentYear = new Date().getFullYear();
 
-    sheetsClient = google.sheets({ version: 'v4', auth });
-    return sheetsClient;
-  } catch (error) {
-    console.error('Google Sheets configuration error:', error);
-    return null;
-  }
+  return (
+    <footer className="relative border-t border-white/5 bg-[#0a0514]/80 backdrop-blur-xl">
+      {/* Top decorative gradient line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
+
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <div className="grid md:grid-cols-4 gap-8 mb-12">
+          {/* Brand */}
+          <div className="md:col-span-1">
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <span className="text-2xl">🧬</span>
+              <span className="text-xl font-black text-gradient">IMD 2026</span>
+            </Link>
+            <p className="text-white/50 text-sm leading-relaxed">
+              International Microorganism Day 2026<br />
+              Institut Teknologi Bandung
+            </p>
+            <div className="flex gap-3 mt-4">
+              <a href="https://www.instagram.com/imd.itb/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 glass rounded-full flex items-center justify-center hover:bg-purple-500/20 transition-all group">
+                <svg className="w-4 h-4 text-white/60 group-hover:text-purple-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              </a>
+              <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="w-9 h-9 glass rounded-full flex items-center justify-center hover:bg-purple-500/20 transition-all group">
+                <svg className="w-4 h-4 text-white/60 group-hover:text-purple-400" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              </a>
+              <a href="mailto:imd@itb.ac.id" className="w-9 h-9 glass rounded-full flex items-center justify-center hover:bg-purple-500/20 transition-all group">
+                <svg className="w-4 h-4 text-white/60 group-hover:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </a>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h4 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-4">Competitions</h4>
+            <ul className="space-y-2">
+              <li><Link href="/competitions/olympiad" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Microbiology Olympiad</Link></li>
+              <li><Link href="/competitions/spc" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Science Project Competition</Link></li>
+              <li><Link href="/competitions/nec" className="text-sm text-white/50 hover:text-purple-400 transition-colors">National Essay Competition</Link></li>
+            </ul>
+          </div>
+
+          {/* Support */}
+          <div>
+            <h4 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-4">Support</h4>
+            <ul className="space-y-2">
+              <li><a href="/#faq" className="text-sm text-white/50 hover:text-purple-400 transition-colors">FAQ</a></li>
+              <li><a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Contact via WhatsApp</a></li>
+              <li><a href="mailto:imd@itb.ac.id" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Email Us</a></li>
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h4 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-4">Contact</h4>
+            <ul className="space-y-2 text-sm text-white/50">
+              <li>Archaea ITB</li>
+              <li>Institut Teknologi Bandung</li>
+              <li>Ganesha 10, Bandung</li>
+              <li className="pt-2">
+                <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors">
+                  WA: +62 812-3456-7890
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom */}
+        <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-xs text-white/30">
+            © {currentYear} IMD 2026 — Archaea ITB. All rights reserved.
+          </p>
+          <div className="flex gap-4 text-xs text-white/30">
+            <span>Built by Mikrobiologi 2023 ITB</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+</file>
+
+<file path="src/components/ui/Countdown.tsx">
+'use client';
+
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+
+interface CountdownProps {
+  targetDate: string; // ISO string
+  onComplete?: () => void;
 }
 
-export async function appendToSheet(sheetName: string, values: SheetValue[]) {
-  const sheets = getSheetsClient();
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+export function Countdown({ targetDate, onComplete }: CountdownProps) {
+  const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isExtended, setIsExtended] = useState(false);
 
-  if (!sheets || !spreadsheetId) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(`Skipped Google Sheets sync for ${sheetName}: missing configuration.`);
+  useEffect(() => {
+    const target = new Date(targetDate).getTime();
+
+    const update = () => {
+      const now = Date.now();
+      let diff = target - now;
+
+      if (diff <= 0) {
+        diff = 0;
+        setIsExtended(true);
+        if (onComplete) onComplete();
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTime({ days, hours, minutes, seconds });
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [targetDate, onComplete]);
+
+  const unitClass = "text-center px-4 py-2 glass rounded-lg border border-white/5";
+  const valueClass = "font-display text-2xl md:text-3xl font-bold text-bio-cyan";
+  const labelClass = "text-[10px] text-white/40 uppercase tracking-wider mt-1 block font-medium";
+
+  return (
+    <div className="w-full max-w-4xl mx-auto">
+      <div className="text-center mb-4">
+        <p className="text-white/80 font-semibold text-sm md:text-base">Registration Closes In</p>
+      </div>
+      
+      <div className="flex items-center justify-center gap-2 md:gap-3">
+        <div className={unitClass}>
+          <div className={valueClass}>{String(time.days).padStart(2, '0')}</div>
+          <div className={labelClass}>Days</div>
+        </div>
+        <span className="text-lg text-bio-cyan/60 font-bold">:</span>
+        <div className={unitClass}>
+          <div className={valueClass}>{String(time.hours).padStart(2, '0')}</div>
+          <div className={labelClass}>Hours</div>
+        </div>
+        <span className="text-lg text-bio-cyan/60 font-bold">:</span>
+        <div className={unitClass}>
+          <div className={valueClass}>{String(time.minutes).padStart(2, '0')}</div>
+          <div className={labelClass}>Minutes</div>
+        </div>
+        <span className="text-lg text-bio-cyan/60 font-bold">:</span>
+        <div className={unitClass}>
+          <div className={valueClass}>{String(time.seconds).padStart(2, '0')}</div>
+          <div className={labelClass}>Seconds</div>
+        </div>
+      </div>
+
+      {isExtended && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-4 text-center"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-bio-emerald/10 border border-bio-emerald/30 rounded-full text-bio-emerald font-semibold text-sm">
+            <span>📅</span>
+            <span>Extended until <strong>31 July 2026</strong></span>
+          </span>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/ui/RoadshowPopup.tsx">
+'use client';
+
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+export function RoadshowPopup() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsOpen(true), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const closePopup = () => {
+    setIsOpen(false);
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-lg"
+          onClick={(e) => e.target === e.currentTarget && closePopup()}
+        >
+          <motion.div
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 20 }}
+            className="relative w-full max-w-2xl glass-strong rounded-3xl p-6 md:p-8 overflow-y-auto max-h-[90vh]"
+          >
+            <button
+              onClick={closePopup}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-red-500/20 transition-all"
+            >
+              <span className="text-white text-lg">×</span>
+            </button>
+
+            <div className="text-center">
+              <div className="inline-block px-4 py-1.5 glass rounded-full text-purple-400 text-xs font-bold uppercase tracking-wider mb-4">
+                🎥 ROADSHOW 2026
+              </div>
+
+              <h3 className="text-3xl md:text-4xl font-black mb-3">
+                The Great <span className="text-gradient">Microbial Odyssey</span>
+              </h3>
+
+              <p className="text-white/60 text-sm mb-6">
+                Watch our official roadshow teaser and get ready for the biggest microbiology event in Indonesia!
+              </p>
+
+              <div className="aspect-video rounded-2xl overflow-hidden mb-6 bg-black">
+                <iframe
+                  src="https://www.youtube.com/embed/EZOiy1-cnxM?autoplay=1&rel=0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-6 text-sm text-white/60 mb-6">
+                <div className="flex items-center gap-2">
+                  <span>📍 ITB Ganesha, Bandung</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>📅 Coming Soon 2026</span>
+                </div>
+              </div>
+
+              <button
+                onClick={closePopup}
+                className="btn-glow w-full"
+              >
+                Explore Competitions
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+</file>
+
+<file path="src/components/FileUpload.tsx">
+'use client';
+
+import { useId, useState } from 'react';
+
+interface FileUploadProps {
+  label: string;
+  accept?: string;
+  onUpload: (url: string) => void;
+  teamId?: string;
+}
+
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
+
+export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload, teamId }: FileUploadProps) {
+  const inputId = useId();
+  const [uploading, setUploading] = useState(false);
+  const [fileName, setFileName] = useState<string>('');
+  const [error, setError] = useState<string>('');
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setError('');
+
+    if (file.size > MAX_FILE_SIZE) {
+      setFileName('');
+      setError('Maximum file size is 50MB.');
+      e.target.value = '';
+      return;
     }
-    return;
-  }
 
-  try {
-    await sheets.spreadsheets.values.append({
-      spreadsheetId,
-      range: `${sheetName}!A1`,
-      valueInputOption: 'USER_ENTERED',
-      requestBody: { values: [values] },
-    });
-  } catch (error) {
-    console.error('Google Sheets append error:', error);
-  }
-}
+    setFileName(file.name);
+    setUploading(true);
 
-export async function updateSheetRow(sheetName: string, row: number, values: SheetValue[]) {
-  const sheets = getSheetsClient();
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+    try {
+      const body: any = { fileName: file.name, fileType: file.type, fileSize: file.size };
+      if (teamId) body.teamId = teamId;
+      
+      const res = await fetch('/api/upload/presign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
 
-  if (!sheets || !spreadsheetId) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(`Skipped Google Sheets update for ${sheetName}: missing configuration.`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to get upload URL');
+
+      const uploadRes = await fetch(data.presignedUrl, {
+        method: data.method || 'PUT',
+        body: file,
+        headers: { 'Content-Type': data.contentType || file.type },
+      });
+
+      if (!uploadRes.ok) throw new Error('Upload failed');
+
+      onUpload(data.publicUrl);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed');
+      setFileName('');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
     }
-    return;
-  }
+  };
 
-  try {
-    await sheets.spreadsheets.values.update({
-      spreadsheetId,
-      range: `${sheetName}!A${row}`,
-      valueInputOption: 'USER_ENTERED',
-      requestBody: { values: [values] },
-    });
-  } catch (error) {
-    console.error('Google Sheets update error:', error);
-  }
+  return (
+    <div>
+      <label className="block text-sm font-medium text-white/70 mb-2">{label}</label>
+      <div className="border-2 border-dashed border-white/20 rounded-xl p-6 text-center hover:border-bio-emerald/50 transition-colors">
+        <input
+          type="file"
+          accept={accept}
+          onChange={handleFileChange}
+          disabled={uploading}
+          className="hidden"
+          id={inputId}
+        />
+        <label htmlFor={inputId} className="cursor-pointer">
+          <svg className="w-10 h-10 mx-auto text-white/30 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <p className="text-white/70 text-sm font-medium">
+            {uploading ? 'Uploading...' : fileName || 'Click to upload'}
+          </p>
+          <p className="text-xs text-white/30 mt-1">PDF, PNG, JPG, MP4, or MOV (Max 50MB)</p>
+        </label>
+      </div>
+      {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+    </div>
+  );
 }
+</file>
 
-export async function syncRegistrationToSheet(registration: {
-  id: string;
-  teamName?: string | null;
-  competitionType?: string | null;
-  captainEmail?: string | null;
-  captainName?: string | null;
-  institution?: string | null;
-  status?: string | null;
-  members?: Array<{
-    name: string;
-    email: string;
-    institution: string;
-    phone: string;
-    age: number | null;
-    studentProofUrl: string | null;
-    role: string;
-  }>;
-  paymentProof?: string | null;
-}) {
-  const date = new Date().toISOString();
-  const memberNames = registration.members?.map((m) => m.name).join('; ') || '';
-  const memberEmails = registration.members?.map((m) => m.email).join('; ') || '';
-  const memberInstitutions = registration.members?.map((m) => m.institution).join('; ') || '';
-  const memberPhones = registration.members?.map((m) => m.phone).join('; ') || '';
-  const memberAges = registration.members?.map((m) => m.age?.toString() || '').join('; ') || '';
-  const memberProofs = registration.members?.map((m) => m.studentProofUrl || '').join('; ') || '';
-
-  const values = [
-    date,
-    registration.id,
-    registration.teamName ?? '',
-    registration.competitionType ?? '',
-    registration.captainName ?? '',
-    registration.captainEmail ?? '',
-    registration.institution ?? '',
-    memberNames,
-    memberEmails,
-    memberInstitutions,
-    memberPhones,
-    memberAges,
-    memberProofs,
-    registration.paymentProof ?? '',
-    registration.status ?? 'PENDING',
-    'FALSE', // approved (trigger for manual verification)
-  ];
-
-  await appendToSheet('Registrations', values);
-}
-
-export async function syncSubmissionToSheet(submission: {
-  id: string;
-  teamName?: string | null;
-  phase?: string | null;
-  status?: string | null;
-  fileUrl?: string | null;
-}) {
-  const values = [
-    new Date().toISOString(),
-    submission.id,
-    submission.teamName ?? '',
-    submission.phase ?? '',
-    submission.status ?? '',
-    submission.fileUrl ?? '',
-  ];
-
-  await appendToSheet('Submissions', values);
-}
+<file path="src/lib/competitions-data.ts">
+export const COMPETITIONS = [
+  {
+    id: 'olympiad',
+    shortName: 'Olympiad',
+    title: 'Microbiology Olympiad',
+    category: 'SMA/Sederajat',
+    icon: '🏆',
+    glowColor: 'cyan',
+    description: 'OSN-level competition testing deep understanding of microbiology concepts, from theory to laboratory skills.',
+    fullDescription: 'Challenge your microbiology knowledge and laboratory skills in Indonesia\'s most comprehensive high school microbiology competition. Test your skills with analytical questions equivalent to National Science Olympiad (OSN) standards.',
+    format: 'Online preliminary exam + offline final practical exam',
+    teamSize: 'Individual',
+    eligibility: 'Active SMA/MA/SMK students (all grades)',
+    requirements: [
+      'Active SMA/MA/SMK student (all grades)',
+      'Individual participation (1 person only)',
+      'KTA (Kartu Tanda Anggota) for each participant',
+      'Payment proof upload required',
+      'Share to 3 groups proof',
+      'Twibbon proof upload',
+      'Share SG (Student Gathering) proof',
+    ],
+    benefits: [
+      { icon: '🏆', title: 'Total Prize', value: 'Rp 15.000.000+' },
+      { icon: '📜', title: 'Certificates', value: 'E-Certificate for all participants' },
+      { icon: '🎓', title: 'ITB Exposure', value: 'Experience world-class lab facilities' },
+      { icon: '🔬', title: 'Mentorship', value: 'Direct guidance from ITB lecturers' },
+    ],
+    whyJoin: [
+      {
+        icon: '📊',
+        title: 'OSN-Standard Competition',
+        desc: 'Test your knowledge with analytical questions equivalent to National Science Olympiad (OSN) standards.',
+      },
+      {
+        icon: '🧫',
+        title: 'Hands-On Laboratory Experience',
+        desc: 'Master essential microbiology techniques: Gram staining, optical density reading, spread plate, and streak plate methods.',
+      },
+      {
+        icon: '🦠',
+        title: 'Explore Microbial Dark Matter',
+        desc: 'Dive deep into the 99% of unculturable microorganisms and discover their hidden potential.',
+      },
+      {
+        icon: '🔭',
+        title: 'Path to Research Career',
+        desc: 'Identify your potential as a future microbiology researcher with guidance from ITB experts.',
+      },
+    ],
+    timeline: [
+      { phase: 'Registration', date: '1 - 31 July 2026', desc: 'Open registration' },
+      { phase: 'Preliminary', date: '1 - 16 August 2026', desc: 'Online theory exam' },
+      { phase: 'Semifinal', date: '17 - 31 August 2026', desc: 'Online advanced test' },
+      { phase: 'Final', date: '14 - 15 November 2026', desc: 'Offline at ITB Campus' },
+    ],
+    faq: [
+      { q: 'What topics are covered?', a: 'General microbiology, microbial physiology, genetics, ecology, virology, immunology, and applied microbiology.' },
+      { q: 'Is there a registration fee?', a: 'Free for all participants.' },
+      { q: 'How many rounds?', a: 'Two rounds: preliminary (online) and final (onsite at ITB).' },
+    ],
+  },
+  {
+    id: 'spc',
+    shortName: 'SPC',
+    title: 'Science Project Competition',
+    category: 'SMA/Sederajat',
+    icon: '🔬',
+    glowColor: 'emerald',
+    description: 'Creative competition for SMA students to develop innovative microbiology-based product prototypes addressing global challenges.',
+    fullDescription: 'Transform your microbiology innovations into real-world prototypes and compete for the chance to change the future of sustainability. Develop prototype solutions for global challenges: renewable energy, waste management, and food security using microbiology.',
+    format: 'Executive summary -> Full proposal -> Final pitching',
+    teamSize: '2-3 members',
+    eligibility: 'Active SMA/MA/SMK students (all grades)',
+    requirements: [
+      'Team of 2-3 members from same or different schools',
+      'Active SMA/MA/SMK students',
+      'KTM (Kartu Tanda Mahasiswa) for each participant',
+      'Payment proof upload required',
+      'Share to 3 groups proof',
+      'Twibbon proof upload',
+      'Share SG (Student Gathering) proof',
+    ],
+    benefits: [
+      { icon: '💰', title: 'Total Prize', value: 'Rp 20.000.000+' },
+      { icon: '🏅', title: 'Certificates', value: 'E-Certificate + Trophy' },
+      { icon: '🚀', title: 'Prototype Development', value: 'Funding support' },
+      { icon: '🤝', title: 'Industry Connection', value: 'Networking with experts' },
+    ],
+    whyJoin: [
+      {
+        icon: '🌍',
+        title: 'Real-World Impact',
+        desc: 'Develop prototype solutions for global challenges: renewable energy, waste management, and food security using microbiology.',
+      },
+      {
+        icon: '💡',
+        title: 'Innovation Platform',
+        desc: 'Transform your creative ideas into tangible products with guidance from ITB researchers and industry professionals.',
+      },
+      {
+        icon: '🔬',
+        title: 'Decode Microbial Dark Matter',
+        desc: 'Explore the 99% of unculturable microorganisms and unlock their biotechnological potential.',
+      },
+      {
+        icon: '📈',
+        title: 'Entrepreneurial Skills',
+        desc: 'Learn to pitch your innovation, develop business models, and connect with potential investors.',
+      },
+    ],
+    timeline: [
+      { phase: 'Registration', date: '1 - 31 July 2026', desc: 'Open registration' },
+      { phase: 'Preliminary', date: '1 - 16 August 2026', desc: 'Executive summary & video' },
+      { phase: 'Semifinal', date: '17 - 31 August 2026', desc: 'Full proposal & video' },
+      { phase: 'Final', date: '14 - 15 November 2026', desc: 'Final pitching at ITB' },
+    ],
+    faq: [
+      { q: 'What is the theme?', a: '"Decoding the Earth\'s Dark Matter to Orchestrate a Sustainable Future".' },
+      { q: 'Can we have a mentor?', a: 'Yes, a teacher/supervisor is recommended but not mandatory.' },
+    ],
+  },
+  {
+    id: 'nec',
+    shortName: 'NEC',
+    title: 'National Essay Competition',
+    category: 'S1/Diploma Universitas',
+    icon: '📝',
+    glowColor: 'purple',
+    description: 'Platform for university students to develop critical thinking and scientific writing on global microbiology issues.',
+    fullDescription: 'Showcase your critical thinking and scientific writing skills. Propose innovative microbiological solutions to global sustainability challenges. Open to all S1,  and Diploma students from any major.',
+    format: 'Executive summary -> Full paper & poster -> Pitch deck presentation',
+    teamSize: '1-2 authors',
+    eligibility: 'Active S1/Diploma university students (all majors)',
+    requirements: [
+      'Active S1/Diploma student from any major',
+      'Individual or team (1-2 authors)',
+      'KTA (Kartu Tanda Anggota) for each participant',
+      'Full paper (8-12 pages) and infographic poster',
+      'Payment proof upload required',
+      'Share to 3 groups proof',
+      'Twibbon proof upload',
+      'Share SG (Student Gathering) proof',
+    ],
+    benefits: [
+      { icon: '💵', title: 'Total Prize', value: 'Rp 18.000.000+' },
+      { icon: '📜', title: 'Certificates', value: 'E-Certificate + Trophy' },
+      { icon: '📰', title: 'Publication', value: 'Opportunity for journal publication' },
+      { icon: '🎓', title: 'Research Network', value: 'Connect with academics' },
+    ],
+    whyJoin: [
+      {
+        icon: '🌐',
+        title: 'Interdisciplinary Approach',
+        desc: 'Open to all S1 students from any major - science, engineering, social sciences, or humanities. Your unique perspective matters!',
+      },
+      {
+        icon: '🧠',
+        title: 'Critical Thinking Development',
+        desc: 'Hone your ability to analyze complex global issues and propose evidence-based microbiological solutions.',
+      },
+      {
+        icon: '✍️',
+        title: 'Scientific Writing Excellence',
+        desc: 'Master the art of scientific communication and learn to present complex ideas clearly and persuasively.',
+      },
+      {
+        icon: '🏛️',
+        title: 'Policy Impact',
+        desc: 'Your essay could influence real policy recommendations and contribute to Indonesia\'s sustainable development goals.',
+      },
+    ],
+    timeline: [
+      { phase: 'Registration', date: '1 - 31 July 2026', desc: 'Open registration' },
+      { phase: 'Preliminary', date: '1 - 16 August 2026', desc: 'Executive summary' },
+      { phase: 'Semifinal', date: '17 - 31 August 2026', desc: 'Full paper & poster' },
+      { phase: 'Final', date: '14 - 15 November 2026', desc: 'Pitch deck presentation' },
+    ],
+    faq: [
+      { q: 'What is the word limit?', a: 'Full paper: 8-12 pages, excluding references.' },
+      { q: 'Can I submit in Indonesian?', a: 'Yes, both English and Indonesian are accepted.' },
+    ],
+  },
+] as const;
 </file>
 
 <file path="src/lib/supabase.ts">
@@ -10037,52 +9635,62 @@ export const config = {
 };
 </file>
 
-<file path="src/app/(auth)/login/page.tsx">
+<file path="src/app/(auth)/register/page.tsx">
 'use client';
-import { motion } from 'framer-motion';
-import { useState, Suspense } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 
-function LoginContent() {
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { signIn } from 'next-auth/react';
+
+export default function RegisterPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const verified = searchParams.get('verified');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    institution: '',
+    educationLevel: 'SMA',
+  });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
+    // Validate password length
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const result = await signIn('credentials', {
-        email: email.trim().toLowerCase(),
-        password,
-        redirect: false,
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
       });
 
-      if (result?.error) {
-        setError('Invalid email or password. Please check your credentials.');
-      } else if (result?.ok) {
-        router.push('/dashboard');
-        router.refresh();
-      } else {
-        setError('Login failed. Please try again.');
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Registration failed');
+
+      router.push('/verify-email?email=' + encodeURIComponent(formData.email));
     } catch (err) {
-      console.error(err);
-      setError('An unexpected error occurred.');
+      setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleLogin = () => {
+  const handleGoogleRegister = () => {
+    // For Google OAuth, redirect to dashboard after successful registration
     signIn('google', { callbackUrl: '/dashboard' });
   };
 
@@ -10094,80 +9702,111 @@ function LoginContent() {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-fuchsia-600/10 rounded-full blur-[120px] animate-blob" style={{ animationDelay: '5s' }} />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative w-full max-w-md glass-strong rounded-3xl p-8 shadow-2xl border border-purple-500/20"
-      >
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-white">
-            Welcome Back
-          </h1>
-          <p className="text-white/60 text-sm">Continue your microbial odyssey</p>
+      <div className="relative w-full max-w-md glass-strong rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl border border-purple-500/20 mx-4">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gradient">Join IMD 2026</h1>
+          <p className="text-white/60 mt-2 text-xs sm:text-sm">Start your microbial odyssey with us</p>
         </div>
 
-        {verified && (
-          <div className="mb-6 bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 rounded-lg text-sm text-center">
-            ✅ Email verified! You can now log in.
-          </div>
-        )}
-
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm text-center">
+          <div className="mb-4 sm:mb-6 bg-red-500/10 border border-red-500/50 text-red-400 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div>
-            <label className="block text-xs font-medium text-white/50 mb-1 ml-1">Email</label>
+            <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Full Name</label>
+            <input
+              type="text"
+              name="name"
+              required
+              value={formData.name}
+              onChange={handleChange}
+              className="input-glass text-sm"
+              placeholder="John Doe"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Email</label>
             <input
               type="email"
+              name="email"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-glass"
+              value={formData.email}
+              onChange={handleChange}
+              className="input-glass text-sm"
               placeholder="you@example.com"
             />
           </div>
+
           <div>
-            <label className="block text-xs font-medium text-white/50 mb-1 ml-1">Password</label>
+            <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Institution</label>
             <input
-              type="password"
+              type="text"
+              name="institution"
               required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-glass"
-              placeholder="••••••••"
+              value={formData.institution}
+              onChange={handleChange}
+              className="input-glass text-sm"
+              placeholder="e.g. SMA N 1 Bandung / Institut Teknologi Bandung"
             />
           </div>
-          
+
+          <div>
+            <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Education Level</label>
+            <select
+              name="educationLevel"
+              required
+              value={formData.educationLevel}
+              onChange={handleChange}
+              className="input-glass text-sm"
+            >
+              <option value="SMA">SMA / MA / SMK</option>
+              <option value="S1">S1 / D3 / D4</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Password</label>
+            <input
+              type="password"
+              name="password"
+              required
+              minLength={8}
+              value={formData.password}
+              onChange={handleChange}
+              className="input-glass text-sm"
+              placeholder="Minimum 8 characters"
+            />
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="btn-glow w-full mt-2"
+            className="btn-glow w-full text-sm sm:text-base"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Creating Account...' : 'Register'}
           </button>
         </form>
 
-        <div className="relative my-6">
+        <div className="relative my-4 sm:my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-white/5" />
           </div>
           <div className="relative flex justify-center">
-            <span className="bg-[#0a0514]/50 px-3 text-xs text-white/30 uppercase tracking-wider">
-              Or continue with
+            <span className="bg-[#0a0514]/50 px-3 text-[10px] sm:text-xs text-white/30 uppercase tracking-wider">
+              Or register with
             </span>
           </div>
         </div>
 
         <button
-          onClick={handleGoogleLogin}
-          className="btn-glass w-full flex items-center justify-center gap-2 hover:bg-white/10"
+          onClick={handleGoogleRegister}
+          className="btn-glass w-full flex items-center justify-center gap-2 hover:bg-white/10 text-sm"
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
@@ -10176,202 +9815,168 @@ function LoginContent() {
           <span className="text-white/90">Google</span>
         </button>
 
-        <div className="mt-6 text-center text-sm text-white/50">
-          Don't have an account?{' '}
-          <Link href="/register" className="text-purple-400 hover:text-fuchsia-400 font-medium transition-colors">
-            Register here
+        <p className="text-center text-white/60 text-xs sm:text-sm mt-4 sm:mt-6">
+          Already have an account?{' '}
+          <Link href="/login" className="text-purple-400 hover:text-fuchsia-400 font-medium transition-colors">
+            Login here
           </Link>
-        </div>
-      </motion.div>
+        </p>
+      </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-white">Loading...</div>}>
-      <LoginContent />
-    </Suspense>
   );
 }
 </file>
 
-<file path="src/app/globals.css">
-/* src/app/globals.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+<file path="src/app/api/upload/presign/route.ts">
+// src/app/api/upload/presign/route.ts
+import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { getPresignedUrl } from '@/lib/supabase';
+import { rateLimit } from '@/lib/rate-limit';
+import { prisma } from '@/lib/db';
 
-@layer base {
-  html {
-    scroll-behavior: smooth;
-  }
-  body {
-    @apply bg-[#0a0514] text-white antialiased overflow-x-hidden selection:bg-purple-500/30 selection:text-white cursor-none;
-    /* Deep Purple Background - Microbial Dark Matter Theme */
-    background-image:
-      radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.1) 0px, transparent 50%),
-      radial-gradient(at 50% 50%, rgba(192, 132, 252, 0.05) 0px, transparent 60%),
-      radial-gradient(at 20% 80%, rgba(59, 130, 246, 0.08) 0px, transparent 40%),
-      radial-gradient(at 80% 20%, rgba(236, 72, 153, 0.08) 0px, transparent 40%);
-    background-attachment: fixed;
-  }
+export async function POST(req: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-  /* Custom Cursor - Magnifier Effect */
-  * {
-    cursor: none !important;
-  }
+    // Rate limit per user
+    const { success } = rateLimit(`upload:${session.user.id}`, 10, 60 * 1000);
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many upload requests' },
+        { status: 429 }
+      );
+    }
 
-  a, button, input, select, textarea, [role="button"] {
-    cursor: none !important;
+    const { teamId, fileName, fileType } = await req.json();
+
+    if (!fileName || !fileType) {
+      return NextResponse.json(
+        { error: 'fileName and fileType are required' },
+        { status: 400 }
+      );
+    }
+
+    // teamId is optional - if provided, verify user is captain
+    if (teamId) {
+      const team = await prisma.team.findUnique({
+        where: { id: teamId, captainId: session.user.id },
+      });
+      if (!team) {
+        return NextResponse.json(
+          { error: 'You are not authorized to upload for this team' },
+          { status: 403 }
+        );
+      }
+    }
+
+    const allowedTypes = [
+      'application/pdf',
+      'image/png',
+      'image/jpeg',
+      'video/mp4',
+      'video/quicktime',
+    ];
+    if (!allowedTypes.includes(fileType)) {
+      return NextResponse.json(
+        { error: 'File type not allowed' },
+        { status: 400 }
+      );
+    }
+
+    // Pass userId as third argument
+    const { presignedUrl, publicUrl, path } = await getPresignedUrl(
+      fileName,
+      fileType,
+      session.user.id
+    );
+
+    return NextResponse.json({
+      presignedUrl,
+      publicUrl,
+      path,
+    });
+  } catch (error) {
+    console.error('Presign error:', error);
+    return NextResponse.json({ error: 'Failed to generate upload URL' }, { status: 500 });
   }
 }
+</file>
 
-@layer components {
-  /* Refined Glass Effect - Purple Tint */
-  .glass {
-    @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-lg;
-  }
-  
-  .glass-strong {
-    @apply bg-[#130c24]/80 backdrop-blur-2xl border border-purple-500/20 shadow-2xl;
-  }
+<file path="src/app/dashboard/_components/DashboardClient.tsx">
+'use client';
 
-  .glass-dark {
-    @apply bg-[#0f0720]/60 backdrop-blur-xl border border-white/[0.05] shadow-lg;
-  }
+import { Session } from 'next-auth';
+import { signOut } from 'next-auth/react';
+import Link from 'next/link';
+import { TeamProfileCard } from './TeamProfileCard';
+import { SubmissionForm } from './SubmissionForm';
+import { StatusBanner } from './StatusBanner';
+import { TeamRegistrationForm } from './TeamRegistrationForm';
+import type { DashboardTeam } from './types';
 
-  /* Purple Gradient Text */
-  .text-gradient {
-    @apply bg-gradient-to-r from-purple-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent;
-  }
-
-  .text-gradient-glow {
-    @apply bg-gradient-to-r from-purple-300 via-fuchsia-300 to-indigo-300 bg-clip-text text-transparent;
-    filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.3));
-  }
-
-  /* Buttons */
-  .btn-glass {
-    @apply relative px-6 py-3 bg-white/[0.05] backdrop-blur-md border border-white/[0.1] rounded-full font-medium transition-all duration-500 hover:bg-purple-500/20 hover:border-purple-500/50 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(168,85,247,0.3)];
-  }
-
-  .btn-glow {
-    @apply relative px-8 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-bold rounded-full transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] hover:brightness-110;
-  }
-
-  .input-glass {
-    @apply w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(168,85,247,0.2)];
-  }
-
-  /* Section Title */
-  .section-title {
-    @apply text-4xl md:text-5xl font-bold text-gradient-glow text-center mb-4;
-  }
-
-  .section-subtitle {
-    @apply text-white/50 text-center max-w-2xl mx-auto mb-12;
-  }
-
-  /* Glow Effects */
-  .glow-purple {
-    box-shadow: 0 0 30px rgba(168, 85, 247, 0.15), 0 0 60px rgba(168, 85, 247, 0.05);
-  }
-
-  .glow-fuchsia {
-    box-shadow: 0 0 30px rgba(217, 70, 239, 0.15), 0 0 60px rgba(217, 70, 239, 0.05);
-  }
-
-  /* Particle Dot */
-  .particle-dot {
-    @apply absolute w-1 h-1 bg-purple-400/30 rounded-full;
-  }
+interface DashboardClientProps {
+  session: Session;
+  teams: DashboardTeam[];
 }
 
-@layer utilities {
-  /* Custom Scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    @apply bg-[#0a0514];
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-purple-900/50 rounded-full hover:bg-purple-500/50;
-  }
+export function DashboardClient({ session, teams }: DashboardClientProps) {
+  return (
+    <div className="min-h-screen bg-[#0a0514] text-white">
+      <nav className="border-b border-purple-500/10 bg-[#130c24]/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
+          <Link href="/" className="text-lg sm:text-xl font-bold text-gradient">
+            IMD 2026
+          </Link>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <span className="text-xs sm:text-sm text-white/60 hidden md:block">{session.user?.email}</span>
+            <button
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className="px-3 sm:px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs sm:text-sm font-medium rounded-lg transition"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </nav>
 
-  /* Smooth Animations */
-  .animate-float {
-    animation: float 8s ease-in-out infinite;
-  }
-  
-  .animate-blob {
-    animation: blob 20s infinite;
-  }
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <StatusBanner active={session.user.active} />
 
-  .animate-pulse-glow {
-    animation: pulseGlow 3s ease-in-out infinite;
-  }
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl font-bold mb-2">
+            Welcome, {session.user?.name || 'Participant'}!
+          </h1>
+          <p className="text-white/60 text-sm sm:text-base">Manage your team and track your competition progress.</p>
+        </div>
 
-  .animate-drift {
-    animation: drift 15s ease-in-out infinite;
-  }
-
-  .animate-spin-slow {
-    animation: spin 20s linear infinite;
-  }
-
-  .animate-fade-in {
-    animation: fadeIn 0.8s ease-out forwards;
-  }
-
-  .animate-slide-up {
-    animation: slideUp 0.6s ease-out forwards;
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 0.5s ease-out forwards;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-  }
-
-  @keyframes blob {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(30px, -50px) scale(1.1); }
-    66% { transform: translate(-20px, 20px) scale(0.9); }
-  }
-
-  @keyframes pulseGlow {
-    0%, 100% { opacity: 0.5; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.05); }
-  }
-
-  @keyframes drift {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    25% { transform: translate(10px, -10px) rotate(5deg); }
-    50% { transform: translate(-5px, -20px) rotate(-3deg); }
-    75% { transform: translate(-10px, -5px) rotate(2deg); }
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-  }
+        {teams.length === 0 ? (
+          <div className="glass-dark rounded-2xl p-8 sm:p-12 text-center">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-purple-500/10 rounded-full flex items-center justify-center mb-6">
+              <span className="text-3xl sm:text-4xl">🧬</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold mb-2">No Team Yet</h2>
+            <p className="text-white/60 mb-6 text-sm sm:text-base">
+              Register for a competition to start your microbial odyssey!
+            </p>
+            <TeamRegistrationForm session={session} />
+          </div>
+        ) : (
+          <div className="space-y-6 sm:space-y-8">
+            {teams.map((team) => (
+              <div key={team.id} className="space-y-4 sm:space-y-6">
+                <TeamProfileCard team={team} />
+                <SubmissionForm team={team} />
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
 }
 </file>
 
@@ -10493,6 +10098,330 @@ export async function sendPasswordResetEmail(email: string, token: string, name?
   `;
 
   await sendMailSafe(email, '🔐 Reset your IMD 2026 password', html);
+}
+</file>
+
+<file path="src/lib/google-sheets.ts">
+import { google, sheets_v4 } from 'googleapis';
+
+type SheetValue = string | number | boolean | null | undefined;
+
+let sheetsClient: sheets_v4.Sheets | null = null;
+
+function getSheetsClient() {
+  if (sheetsClient) return sheetsClient;
+
+  const rawCredentials = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+
+  if (!rawCredentials || !spreadsheetId) {
+    console.warn('Google Sheets: Missing credentials or spreadsheet ID');
+    return null;
+  }
+
+  try {
+    const credentials = JSON.parse(rawCredentials);
+    console.log('Google Sheets: Using service account:', credentials.client_email);
+    
+    const auth = new google.auth.GoogleAuth({
+      credentials: credentials,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+
+    sheetsClient = google.sheets({ version: 'v4', auth });
+    return sheetsClient;
+  } catch (error) {
+    console.error('Google Sheets configuration error:', error);
+    return null;
+  }
+}
+
+export async function appendToSheet(sheetName: string, values: SheetValue[]) {
+  const sheets = getSheetsClient();
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+
+  if (!sheets || !spreadsheetId) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`Skipped Google Sheets sync for ${sheetName}: missing configuration.`);
+    }
+    return;
+  }
+
+  try {
+    console.log(`Google Sheets: Attempting to append to ${sheetName} in spreadsheet ${spreadsheetId}`);
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: `${sheetName}!A1`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [values] },
+    });
+    console.log(`Google Sheets: Successfully appended to ${sheetName}`);
+  } catch (error) {
+    console.error(`Google Sheets append error for ${sheetName}:`, error);
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+    }
+  }
+}
+
+export async function updateSheetRow(sheetName: string, row: number, values: SheetValue[]) {
+  const sheets = getSheetsClient();
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+
+  if (!sheets || !spreadsheetId) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`Skipped Google Sheets update for ${sheetName}: missing configuration.`);
+    }
+    return;
+  }
+
+  try {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${sheetName}!A${row}`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [values] },
+    });
+  } catch (error) {
+    console.error('Google Sheets update error:', error);
+  }
+}
+
+export async function syncRegistrationToSheet(registration: {
+  id: string;
+  teamName?: string | null;
+  competitionType?: string | null;
+  captainEmail?: string | null;
+  captainName?: string | null;
+  institution?: string | null;
+  status?: string | null;
+  members?: Array<{
+    name: string;
+    email: string;
+    institution: string;
+    phone: string;
+    age: number | null;
+    studentProofUrl: string | null;
+    role: string;
+  }>;
+  paymentProof?: string | null;
+}) {
+  const date = new Date().toISOString();
+  const memberNames = registration.members?.map((m) => m.name).join('; ') || '';
+  const memberEmails = registration.members?.map((m) => m.email).join('; ') || '';
+  const memberInstitutions = registration.members?.map((m) => m.institution).join('; ') || '';
+  const memberPhones = registration.members?.map((m) => m.phone).join('; ') || '';
+  const memberAges = registration.members?.map((m) => m.age?.toString() || '').join('; ') || '';
+  const memberProofs = registration.members?.map((m) => m.studentProofUrl || '').join('; ') || '';
+
+  const values = [
+    date,
+    registration.id,
+    registration.teamName ?? '',
+    registration.competitionType ?? '',
+    registration.captainName ?? '',
+    registration.captainEmail ?? '',
+    registration.institution ?? '',
+    memberNames,
+    memberEmails,
+    memberInstitutions,
+    memberPhones,
+    memberAges,
+    memberProofs,
+    registration.paymentProof ?? '',
+    registration.status ?? 'PENDING',
+    'FALSE', // approved (trigger for manual verification)
+  ];
+
+  await appendToSheet('Registrations', values);
+}
+
+export async function syncSubmissionToSheet(submission: {
+  id: string;
+  teamName?: string | null;
+  phase?: string | null;
+  status?: string | null;
+  fileUrl?: string | null;
+}) {
+  const values = [
+    new Date().toISOString(),
+    submission.id,
+    submission.teamName ?? '',
+    submission.phase ?? '',
+    submission.status ?? '',
+    submission.fileUrl ?? '',
+  ];
+
+  await appendToSheet('Submissions', values);
+}
+</file>
+
+<file path="src/app/(auth)/login/page.tsx">
+'use client';
+import { motion } from 'framer-motion';
+import { useState, Suspense, useEffect } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+
+function LoginContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const verified = searchParams.get('verified');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    
+    try {
+      const result = await signIn('credentials', {
+        email: email.trim().toLowerCase(),
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError('Invalid email or password. Please check your credentials.');
+      } else if (result?.ok) {
+        router.push('/dashboard');
+        router.refresh();
+      } else {
+        setError('Login failed. Please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('An unexpected error occurred.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    // For Google OAuth, redirect to dashboard after successful login
+    signIn('google', { callbackUrl: '/dashboard' });
+  };
+
+  // Check for OAuth errors
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const error = searchParams.get('error');
+    if (error) {
+      setError('Google login failed. Please try again or use email login.');
+    }
+  }, []);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Subtle Purple Background Orbs */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px] animate-blob" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-fuchsia-600/10 rounded-full blur-[120px] animate-blob" style={{ animationDelay: '5s' }} />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative w-full max-w-md glass-strong rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl border border-purple-500/20 mx-4"
+      >
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-white">
+            Welcome Back
+          </h1>
+          <p className="text-white/60 text-xs sm:text-sm">Continue your microbial odyssey</p>
+        </div>
+
+        {verified && (
+          <div className="mb-4 sm:mb-6 bg-green-500/10 border border-green-500/30 text-green-400 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm text-center">
+            ✅ Email verified! You can now log in.
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-4 sm:mb-6 bg-red-500/10 border border-red-500/30 text-red-400 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm text-center">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+          <div>
+            <label className="block text-xs sm:text-xs font-medium text-white/50 mb-1 ml-1">Email</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input-glass text-sm"
+              placeholder="you@example.com"
+            />
+          </div>
+          <div>
+            <label className="block text-xs sm:text-xs font-medium text-white/50 mb-1 ml-1">Password</label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-glass text-sm"
+              placeholder="••••••••"
+            />
+          </div>
+          
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-glow w-full text-sm sm:text-base"
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+
+        <div className="relative my-4 sm:my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-white/5" />
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-[#0a0514]/50 px-3 text-[10px] sm:text-xs text-white/30 uppercase tracking-wider">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleGoogleLogin}
+          className="btn-glass w-full flex items-center justify-center gap-2 hover:bg-white/10 text-sm"
+        >
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+          </svg>
+          <span className="text-white/90">Google</span>
+        </button>
+
+        <div className="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-white/50">
+          Don't have an account?{' '}
+          <Link href="/register" className="text-purple-400 hover:text-fuchsia-400 font-medium transition-colors">
+            Register here
+          </Link>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-white">Loading...</div>}>
+      <LoginContent />
+    </Suspense>
+  );
 }
 </file>
 
@@ -10722,6 +10651,174 @@ model PasswordResetToken {
 }
 </file>
 
+<file path="src/app/globals.css">
+/* src/app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-[#0a0514] text-white antialiased overflow-x-hidden selection:bg-purple-500/30 selection:text-white;
+    /* Deep Purple Background - Microbial Dark Matter Theme */
+    background-image:
+      radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.08) 0px, transparent 50%),
+      radial-gradient(at 50% 50%, rgba(192, 132, 252, 0.04) 0px, transparent 60%);
+    background-attachment: fixed;
+  }
+}
+
+@layer components {
+  /* Refined Glass Effect - Purple Tint */
+  .glass {
+    @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-lg;
+  }
+  
+  .glass-strong {
+    @apply bg-[#130c24]/80 backdrop-blur-2xl border border-purple-500/20 shadow-2xl;
+  }
+
+  .glass-dark {
+    @apply bg-[#0f0720]/60 backdrop-blur-xl border border-white/[0.05] shadow-lg;
+  }
+
+  /* Purple Gradient Text */
+  .text-gradient {
+    @apply bg-gradient-to-r from-purple-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-glow {
+    @apply bg-gradient-to-r from-purple-300 via-fuchsia-300 to-indigo-300 bg-clip-text text-transparent;
+    filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.3));
+  }
+
+  /* Buttons */
+  .btn-glass {
+    @apply relative px-6 py-3 bg-white/[0.05] backdrop-blur-md border border-white/[0.1] rounded-full font-medium transition-all duration-500 hover:bg-purple-500/20 hover:border-purple-500/50 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(168,85,247,0.3)];
+  }
+
+  .btn-glow {
+    @apply relative px-8 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-bold rounded-full transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] hover:brightness-110;
+  }
+
+  .input-glass {
+    @apply w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(168,85,247,0.2)];
+  }
+
+  /* Section Title */
+  .section-title {
+    @apply text-4xl md:text-5xl font-bold text-gradient-glow text-center mb-4;
+  }
+
+  .section-subtitle {
+    @apply text-white/50 text-center max-w-2xl mx-auto mb-12;
+  }
+
+  /* Glow Effects */
+  .glow-purple {
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.15), 0 0 60px rgba(168, 85, 247, 0.05);
+  }
+
+  .glow-fuchsia {
+    box-shadow: 0 0 30px rgba(217, 70, 239, 0.15), 0 0 60px rgba(217, 70, 239, 0.05);
+  }
+
+  /* Particle Dot */
+  .particle-dot {
+    @apply absolute w-1 h-1 bg-purple-400/30 rounded-full;
+  }
+}
+
+@layer utilities {
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-[#0a0514];
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-purple-900/50 rounded-full hover:bg-purple-500/50;
+  }
+
+  /* Smooth Animations */
+  .animate-float {
+    animation: float 8s ease-in-out infinite;
+  }
+  
+  .animate-blob {
+    animation: blob 35s infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulseGlow 4s ease-in-out infinite;
+  }
+
+  .animate-drift {
+    animation: drift 25s ease-in-out infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spin 20s linear infinite;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.5s ease-out forwards;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes blob {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(15px, -20px) scale(1.05); }
+    66% { transform: translate(-10px, 10px) scale(0.95); }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(10px, -10px) rotate(5deg); }
+    50% { transform: translate(-5px, -20px) rotate(-3deg); }
+    75% { transform: translate(-10px, -5px) rotate(2deg); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+}
+</file>
+
 <file path="package.json">
 {
   "name": "imd-itb-2026",
@@ -10795,6 +10892,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      allowDangerousEmailAccountLinking: true,
     }),
     Credentials({
       name: 'Credentials',
@@ -10848,35 +10946,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user, account }) {
-      // Handle Google Sign-In: Create user if not exists
+    async signIn({ user, account, profile }) {
+      // Handle Google Sign-In: Update user data after PrismaAdapter creates the user
       if (account?.provider === 'google') {
         try {
           const email = user.email;
-          if (!email) return false;
+          if (!email) return true; // Let PrismaAdapter handle it
+
+          // Small delay to ensure PrismaAdapter has created the user
+          await new Promise(resolve => setTimeout(resolve, 100));
 
           const dbUser = await prisma.user.findUnique({ where: { email } });
           
-          if (!dbUser) {
-            await prisma.user.create({
-              data: {
-                email,
-                name: user.name ?? undefined,
-                active: true, // Google users are auto-verified
-                emailVerified: new Date(),
-                googleId: account.providerAccountId,
-                role: 'USER',
-              },
-            });
-          } else if (!dbUser.active) {
+          if (dbUser) {
+            // Update user with Google data
             await prisma.user.update({
               where: { id: dbUser.id },
-              data: { active: true, emailVerified: dbUser.emailVerified ?? new Date() },
+              data: { 
+                active: true, 
+                emailVerified: dbUser.emailVerified ?? new Date(),
+                googleId: dbUser.googleId ?? account.providerAccountId,
+                name: dbUser.name ?? user.name ?? profile?.name ?? dbUser.name,
+                institution: dbUser.institution ?? (profile as any)?.hd ?? undefined,
+                educationLevel: dbUser.educationLevel ?? 'S1',
+              },
             });
           }
         } catch (error) {
-          console.error('Google signIn error:', error);
-          return false;
+          console.error('Google signIn update error:', error);
+          // Don't return false - user was already created by PrismaAdapter
         }
       }
       return true;
@@ -10900,6 +10998,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.educationLevel = (token.educationLevel ?? null) as any;
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // Allow relative URLs
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      // Allow same-origin URLs
+      if (new URL(url).origin === baseUrl) return url;
+      // Default to dashboard
+      return `${baseUrl}/dashboard`;
     },
   },
   pages: {

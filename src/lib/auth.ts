@@ -69,34 +69,47 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      // Handle Google Sign-In: Update user data after PrismaAdapter creates the user
+      // Handle Google Sign-In
       if (account?.provider === 'google') {
         try {
           const email = user.email;
-          if (!email) return true; // Let PrismaAdapter handle it
+          if (!email) return false;
 
-          // Small delay to ensure PrismaAdapter has created the user
-          await new Promise(resolve => setTimeout(resolve, 100));
-
+          // Check if user exists
           const dbUser = await prisma.user.findUnique({ where: { email } });
           
           if (dbUser) {
-            // Update user with Google data
+            // Update existing user with Google data
             await prisma.user.update({
               where: { id: dbUser.id },
               data: { 
-                active: true, 
+                active: true,
                 emailVerified: dbUser.emailVerified ?? new Date(),
                 googleId: dbUser.googleId ?? account.providerAccountId,
                 name: dbUser.name ?? user.name ?? profile?.name ?? dbUser.name,
                 institution: dbUser.institution ?? (profile as any)?.hd ?? undefined,
-                educationLevel: dbUser.educationLevel ?? 'S1',
+                educationLevel: dbUser.educationLevel ?? 'SMA',
+              },
+            });
+          } else {
+            // Create new user with Google data
+            await prisma.user.create({
+              data: {
+                email,
+                name: user.name ?? profile?.name ?? email.split('@')[0],
+                active: true,
+                emailVerified: new Date(),
+                googleId: account.providerAccountId,
+                institution: (profile as any)?.hd ?? '',
+                educationLevel: 'SMA',
               },
             });
           }
+          
+          return true;
         } catch (error) {
-          console.error('Google signIn update error:', error);
-          // Don't return false - user was already created by PrismaAdapter
+          console.error('Google signIn error:', error);
+          return true; // Don't block sign-in
         }
       }
       return true;

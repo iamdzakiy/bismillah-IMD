@@ -1,17 +1,23 @@
-# Fix Login Issues & Other Problems
+# IMD 2026 - Fix All Issues
 
-## Issues Found & Fixed:
+## Critical Backend Fixes
+- [ ] 1. Fix Prisma Schema: Remove S2/S3, add shareProofUrl, twibbonProofUrl, groupsProofUrl fields
+- [ ] 2. Fix FileUpload: max 5MB, only pdf/jpg/jpeg/png, fix teamId error
+- [ ] 3. Fix Google Sheets Integration: full sync for registrations, approvals, rejections
+- [ ] 4. Fix Google OAuth: proper redirect, email verification flow
+- [ ] 5. Fix Registration API: proper document requirements per competition type
+- [ ] 6. Fix Admin Approve/Reject: sync to Google Sheets properly
 
-- [x] **Issue 1: NEXTAUTH_URL hardcoded to production** - Changed from `https://imd-2026-gong.vercel.app` to `http://localhost:3000` for local dev. This was causing CSRF token mismatch errors when running locally.
-
-- [x] **Issue 2: Missing `trustHost` in NextAuth config** - Added `trustHost: true` to NextAuth options. NextAuth v5 requires this when the request host doesn't match NEXTAUTH_URL. Without it, login would throw "Internal Server Error".
-
-- [x] **Issue 3: `/dashboard` in middleware publicPaths** - Removed `/dashboard` and `/dashboard/` from public paths. Dashboard was exposed to unauthenticated users. Also added `/request-password-reset` and `/reset-password` as public paths.
-
-- [x] **Issue 4: Missing `image` field in User model** - Added `image String?` field to Prisma User schema. The `@auth/prisma-adapter` expects this field for user profile images (especially from Google OAuth). Without it, Google sign-in would fail with adapter errors.
-
-- [x] **Issue 5: Duplicate `emailVerified` field** - Removed the duplicate `emailVerified` declaration at the bottom of the User model (it was already defined at the top).
-
-- [x] **Issue 6: Applied Prisma migration** - Created and applied migration `20260709235542_add_image_field` to sync the database schema.
-
-## Build Status: ✅ PASSED (0 errors, 0 warnings)
+## Frontend Fixes
+- [ ] 7. Fix Timeline: sequential, no left/right buttons
+- [ ] 8. Fix Gallery: pause on hover, add real images
+- [ ] 9. Fix Partner/Sponsor: always scrolling with images
+- [ ] 10. Fix FAQ: 2 admin WA links + interactive FAQ sheet link
+- [ ] 11. Fix Footer: remove Partners & Sponsors, add "Built by Mikrobiologi 2023 ITB"
+- [ ] 12. Fix Countdown: center, add registration CTA
+- [ ] 13. Fix Hero/Design: make it influencing to register
+- [ ] 14. Fix Mobile Optimization
+- [ ] 15. Fix Dashboard: after login show proper flow
+- [ ] 16. Fix Registration Form: proper document requirements per competition
+- [ ] 17. Fix Competition Pages: each competition has its own page
+- [ ] 18. Fix UI/UX: light, fast, no lagging

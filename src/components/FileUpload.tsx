@@ -9,7 +9,9 @@ interface FileUploadProps {
   teamId?: string;
 }
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB max
+const ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
+const ALLOWED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg'];
 
 export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload, teamId }: FileUploadProps) {
   const inputId = useId();
@@ -23,9 +25,19 @@ export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload, t
 
     setError('');
 
+    // Validate file type
+    const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(fileExt)) {
+      setFileName('');
+      setError('Only PDF, JPG, JPEG, and PNG files are allowed.');
+      e.target.value = '';
+      return;
+    }
+
+    // Validate file size (5MB max)
     if (file.size > MAX_FILE_SIZE) {
       setFileName('');
-      setError('Maximum file size is 50MB.');
+      setError('Maximum file size is 5MB.');
       e.target.value = '';
       return;
     }
@@ -83,7 +95,7 @@ export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload, t
           <p className="text-white/70 text-sm font-medium">
             {uploading ? 'Uploading...' : fileName || 'Click to upload'}
           </p>
-          <p className="text-xs text-white/30 mt-1">PDF, PNG, JPG, MP4, or MOV (Max 50MB)</p>
+          <p className="text-xs text-white/30 mt-1">PDF, JPG, JPEG, PNG (Max 5MB)</p>
         </label>
       </div>
       {error && <p className="text-red-400 text-xs mt-2">{error}</p>}

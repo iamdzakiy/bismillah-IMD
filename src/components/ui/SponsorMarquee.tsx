@@ -1,70 +1,86 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-interface SponsorMarqueeProps {
-  items: { name: string; icon?: string; image?: string }[];
-  direction?: 'left' | 'right';
-  speed?: number; // pixels per frame
+interface SponsorItem {
+  name: string;
+  image?: string;
+  icon?: string;
 }
 
-export function SponsorMarquee({
-  items,
-  direction = 'left',
-  speed = 1,
-}: SponsorMarqueeProps) {
+interface SponsorMarqueeProps {
+  items: SponsorItem[];
+  direction?: 'left' | 'right';
+  speed?: number;
+}
+
+export function SponsorMarquee({ items, direction = 'left', speed = 0.5 }: SponsorMarqueeProps) {
   const trackRef = useRef<HTMLDivElement>(null);
+  const [scrollPos, setScrollPos] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
 
-    let pos = 0;
     const totalWidth = track.scrollWidth / 2;
 
     const animate = () => {
-      pos += direction === 'left' ? speed : -speed;
-      if (pos >= totalWidth) pos = 0;
-      if (pos <= -totalWidth) pos = 0;
-      track.style.transform = `translateX(${direction === 'left' ? -pos : pos}px)`;
+      if (!isPaused) {
+        setScrollPos((prev) => {
+          let newPos = direction === 'left' ? prev + speed : prev - speed;
+          if (newPos >= totalWidth) newPos = 0;
+          if (newPos <= -totalWidth) newPos = 0;
+          return newPos;
+        });
+      }
       requestAnimationFrame(animate);
     };
 
     const animId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animId);
+  }, [direction, speed, isPaused]);
 
-    const handleMouseEnter = () => cancelAnimationFrame(animId);
-    const handleMouseLeave = () => requestAnimationFrame(animate);
+  useEffect(() => {
+    if (trackRef.current) {
+      trackRef.current.style.transform = `translateX(${-scrollPos}px)`;
+    }
+  }, [scrollPos]);
 
-    track.addEventListener('mouseenter', handleMouseEnter);
-    track.addEventListener('mouseleave', handleMouseLeave);
-
-    return () => {
-      cancelAnimationFrame(animId);
-      track.removeEventListener('mouseenter', handleMouseEnter);
-      track.removeEventListener('mouseleave', handleMouseLeave);
-    };
-  }, [direction, speed]);
-
-  const doubled = [...items, ...items];
+  const duplicated = [...items, ...items];
 
   return (
-    <div className="overflow-hidden mask-gradient">
+    <div
+      className="overflow-hidden"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       <div
         ref={trackRef}
-        className="flex gap-8 whitespace-nowrap will-change-transform"
+        className="flex gap-8 items-center transition-none will-change-transform"
         style={{ width: 'max-content' }}
       >
-        {doubled.map((item, i) => (
+        {duplicated.map((item, i) => (
           <div
             key={i}
-            className="flex items-center gap-3 px-6 py-4 glass rounded-2xl border border-white/10 hover:border-bio-cyan/50 transition-all hover:-translate-y-1"
+            className="flex-shrink-0 flex items-center gap-3 px-6 py-3 glass rounded-xl hover:bg-white/5 transition-all"
           >
             {item.image ? (
-              <img src={item.image} alt={item.name} className="h-8 w-auto object-contain" />
+              <img
+                src={item.image}
+                alt={item.name}
+                className="w-10 h-10 object-contain rounded-lg"
+                loading="lazy"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
             ) : (
-              <i className={`fas ${item.icon} text-2xl text-bio-cyan`}></i>
+              <div className="w-10 h-10 flex items-center justify-center text-2xl text-white/30">
+                <i className={`fas ${item.icon || 'fa-building'}`}></i>
+              </div>
             )}
-            <span className="font-medium text-white/80">{item.name}</span>
+            <span className="text-sm font-medium text-white/70 whitespace-nowrap">{item.name}</span>
           </div>
         ))}
       </div>

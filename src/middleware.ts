@@ -24,6 +24,7 @@ export async function middleware(request: NextRequest) {
     '/_next',
     '/favicon.ico',
     '/competitions',
+    '/competitions/',
   ];
 
   // Always allow NextAuth internal endpoints
