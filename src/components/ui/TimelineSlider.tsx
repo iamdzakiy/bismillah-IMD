@@ -68,28 +68,37 @@ export function TimelineSlider() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-6 mt-6">
+      <div className="flex items-center justify-center gap-4 mt-6">
         <button
           onClick={handlePrev}
           disabled={currentIndex === 0}
-          className="w-12 h-12 rounded-full glass flex items-center justify-center hover:bg-bio-cyan/20 disabled:opacity-30 transition-all"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full glass flex items-center justify-center hover:bg-bio-cyan/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          aria-label="Previous"
         >
-          <i className="fas fa-chevron-left"></i>
+          <i className="fas fa-chevron-left text-sm sm:text-base"></i>
         </button>
 
-        <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-bio-cyan to-bio-emerald rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
+        <div className="flex-1 max-w-xs">
+          <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-bio-cyan to-bio-emerald rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className="text-center mt-2">
+            <span className="text-xs text-white/50">
+              {currentIndex + 1} / {maxIndex + 1}
+            </span>
+          </div>
         </div>
 
         <button
           onClick={handleNext}
           disabled={currentIndex === maxIndex}
-          className="w-12 h-12 rounded-full glass flex items-center justify-center hover:bg-bio-cyan/20 disabled:opacity-30 transition-all"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full glass flex items-center justify-center hover:bg-bio-cyan/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          aria-label="Next"
         >
-          <i className="fas fa-chevron-right"></i>
+          <i className="fas fa-chevron-right text-sm sm:text-base"></i>
         </button>
       </div>
     </div>

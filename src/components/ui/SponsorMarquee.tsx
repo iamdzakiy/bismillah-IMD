@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 
 interface SponsorMarqueeProps {
-  items: { name: string; icon: string }[];
+  items: { name: string; icon?: string; image?: string }[];
   direction?: 'left' | 'right';
   speed?: number; // pixels per frame
 }
@@ -59,7 +59,11 @@ export function SponsorMarquee({
             key={i}
             className="flex items-center gap-3 px-6 py-4 glass rounded-2xl border border-white/10 hover:border-bio-cyan/50 transition-all hover:-translate-y-1"
           >
-            <i className={`fas ${item.icon} text-2xl text-bio-cyan`}></i>
+            {item.image ? (
+              <img src={item.image} alt={item.name} className="h-8 w-auto object-contain" />
+            ) : (
+              <i className={`fas ${item.icon} text-2xl text-bio-cyan`}></i>
+            )}
             <span className="font-medium text-white/80">{item.name}</span>
           </div>
         ))}

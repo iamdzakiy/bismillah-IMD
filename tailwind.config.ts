@@ -10,15 +10,15 @@ const config: Config = {
     extend: {
       colors: {
         space: {
-          900: '#030014',
-          800: '#0a0520',
-          700: '#120a2e',
-          600: '#1a1040',
+          900: '#0a0514',
+          800: '#120a2e',
+          700: '#1a1040',
+          600: '#2d1b69',
         },
         bio: {
-          cyan: '#00f5ff',
-          emerald: '#00ff9d',
-          teal: '#14ffec',
+          cyan: '#22d3ee',
+          emerald: '#34d399',
+          teal: '#2dd4bf',
           purple: '#a855f7',
           pink: '#ec4899',
         },

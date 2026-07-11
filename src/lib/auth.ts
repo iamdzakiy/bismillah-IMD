@@ -14,6 +14,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      allowDangerousEmailAccountLinking: true,
     }),
     Credentials({
       name: 'Credentials',
@@ -67,7 +68,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
       // Handle Google Sign-In: Create user if not exists
       if (account?.provider === 'google') {
         try {
@@ -77,20 +78,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const dbUser = await prisma.user.findUnique({ where: { email } });
           
           if (!dbUser) {
+            // Create new user with Google data
             await prisma.user.create({
               data: {
                 email,
-                name: user.name ?? undefined,
+                name: user.name ?? profile?.name ?? 'Google User',
                 active: true, // Google users are auto-verified
                 emailVerified: new Date(),
                 googleId: account.providerAccountId,
                 role: 'USER',
+                institution: (profile as any)?.hd ?? undefined, // Get domain if available
+                educationLevel: 'S1', // Default for Google users
               },
             });
-          } else if (!dbUser.active) {
+          } else {
+            // Update existing user with Google ID if not set
             await prisma.user.update({
               where: { id: dbUser.id },
-              data: { active: true, emailVerified: dbUser.emailVerified ?? new Date() },
+              data: { 
+                active: true, 
+                emailVerified: dbUser.emailVerified ?? new Date(),
+                googleId: dbUser.googleId ?? account.providerAccountId,
+                name: dbUser.name ?? user.name ?? profile?.name ?? dbUser.name,
+              },
             });
           }
         } catch (error) {
@@ -119,6 +129,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.educationLevel = (token.educationLevel ?? null) as any;
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // Allow relative URLs
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      // Allow same-origin URLs
+      if (new URL(url).origin === baseUrl) return url;
+      // Default to dashboard
+      return `${baseUrl}/dashboard`;
     },
   },
   pages: {

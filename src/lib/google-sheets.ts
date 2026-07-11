@@ -11,12 +11,16 @@ function getSheetsClient() {
   const spreadsheetId = process.env.GOOGLE_SHEET_ID;
 
   if (!rawCredentials || !spreadsheetId) {
+    console.warn('Google Sheets: Missing credentials or spreadsheet ID');
     return null;
   }
 
   try {
+    const credentials = JSON.parse(rawCredentials);
+    console.log('Google Sheets: Using service account:', credentials.client_email);
+    
     const auth = new google.auth.GoogleAuth({
-      credentials: JSON.parse(rawCredentials),
+      credentials: credentials,
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 
@@ -40,14 +44,19 @@ export async function appendToSheet(sheetName: string, values: SheetValue[]) {
   }
 
   try {
+    console.log(`Google Sheets: Attempting to append to ${sheetName} in spreadsheet ${spreadsheetId}`);
     await sheets.spreadsheets.values.append({
       spreadsheetId,
       range: `${sheetName}!A1`,
       valueInputOption: 'USER_ENTERED',
       requestBody: { values: [values] },
     });
+    console.log(`Google Sheets: Successfully appended to ${sheetName}`);
   } catch (error) {
-    console.error('Google Sheets append error:', error);
+    console.error(`Google Sheets append error for ${sheetName}:`, error);
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+    }
   }
 }
 

@@ -71,25 +71,13 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Partners & Sponsors */}
-        <div className="border-t border-white/5 pt-8 mb-8">
-          <h4 className="text-sm font-semibold text-white/60 uppercase tracking-wider text-center mb-6">Partners & Sponsors</h4>
-          <div className="flex flex-wrap justify-center gap-6 items-center">
-            {['ITB', 'Archaea', 'Microbiology', 'Research'].map((name, i) => (
-              <div key={i} className="glass rounded-xl px-6 py-3 text-white/40 text-sm font-medium hover:bg-white/5 transition-all">
-                {name}
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Bottom */}
         <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs text-white/30">
             © {currentYear} IMD 2026 — Archaea ITB. All rights reserved.
           </p>
           <div className="flex gap-4 text-xs text-white/30">
-            <span>Built with 🧬 for the microbial explorers</span>
+            <span>Built by Mikrobiologi 2023 ITB</span>
           </div>
         </div>
       </div>

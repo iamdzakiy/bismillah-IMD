@@ -6,11 +6,12 @@ interface FileUploadProps {
   label: string;
   accept?: string;
   onUpload: (url: string) => void;
+  teamId?: string;
 }
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
-export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload }: FileUploadProps) {
+export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload, teamId }: FileUploadProps) {
   const inputId = useId();
   const [uploading, setUploading] = useState(false);
   const [fileName, setFileName] = useState<string>('');
@@ -33,10 +34,13 @@ export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload }:
     setUploading(true);
 
     try {
+      const body: any = { fileName: file.name, fileType: file.type, fileSize: file.size };
+      if (teamId) body.teamId = teamId;
+      
       const res = await fetch('/api/upload/presign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: file.name, fileType: file.type, fileSize: file.size }),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();

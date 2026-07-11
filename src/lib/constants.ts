@@ -84,16 +84,16 @@ export const TIMELINE_DATA = [
 ];
 
 export const MEMORIES_DATA = [
-  { title: 'Grand Final 2025', date: 'August 2025', year: '2025', emoji: '🏆', color: '#6e8efb' },
-  { title: 'Keynote Speaker', date: 'July 2025', year: '2025', emoji: '🎤', color: '#a777e3' },
-  { title: 'Laboratory Session', date: 'July 2024', year: '2024', emoji: '🔬', color: '#f093fb' },
-  { title: 'Networking Night', date: 'August 2024', year: '2024', emoji: '🤝', color: '#4facfe' },
-  { title: 'Workshop 2023', date: 'June 2023', year: '2023', emoji: '📚', color: '#6e8efb' },
-  { title: 'Awarding Night', date: 'August 2023', year: '2023', emoji: '🎉', color: '#a777e3' },
-  { title: 'Hackathon 2022', date: 'July 2022', year: '2022', emoji: '💻', color: '#f093fb' },
-  { title: 'Exhibition Day', date: 'August 2022', year: '2022', emoji: '🎨', color: '#4facfe' },
-  { title: 'Opening Ceremony', date: 'June 2021', year: '2021', emoji: '🚀', color: '#6e8efb' },
-  { title: 'Team Photo', date: 'August 2021', year: '2021', emoji: '📸', color: '#a777e3' },
+  { title: 'Grand Final 2025', date: 'August 2025', year: '2025', image: '/memories/2025-grand-final.jpg', color: '#6e8efb' },
+  { title: 'Keynote Speaker', date: 'July 2025', year: '2025', image: '/memories/2025-keynote.jpg', color: '#a777e3' },
+  { title: 'Laboratory Session', date: 'July 2024', year: '2024', image: '/memories/2024-lab.jpg', color: '#f093fb' },
+  { title: 'Networking Night', date: 'August 2024', year: '2024', image: '/memories/2024-networking.jpg', color: '#4facfe' },
+  { title: 'Workshop 2023', date: 'June 2023', year: '2023', image: '/memories/2023-workshop.jpg', color: '#6e8efb' },
+  { title: 'Awarding Night', date: 'August 2023', year: '2023', image: '/memories/2023-awarding.jpg', color: '#a777e3' },
+  { title: 'Hackathon 2022', date: 'July 2022', year: '2022', image: '/memories/2022-hackathon.jpg', color: '#f093fb' },
+  { title: 'Exhibition Day', date: 'August 2022', year: '2022', image: '/memories/2022-exhibition.jpg', color: '#4facfe' },
+  { title: 'Opening Ceremony', date: 'June 2021', year: '2021', image: '/memories/2021-opening.jpg', color: '#6e8efb' },
+  { title: 'Team Photo', date: 'August 2021', year: '2021', image: '/memories/2021-team.jpg', color: '#a777e3' },
 ];
 
 export const MEDIA_PARTNERS = [
@@ -108,12 +108,12 @@ export const MEDIA_PARTNERS = [
 ];
 
 export const INDUSTRY_PARTNERS = [
-  { name: 'BioFarma', icon: 'fa-pills' },
-  { name: 'Kalbe Farma', icon: 'fa-prescription-bottle' },
-  { name: 'Kimia Farma', icon: 'fa-flask' },
-  { name: 'Nutrifood', icon: 'fa-leaf' },
-  { name: 'Indofood', icon: 'fa-utensils' },
-  { name: 'Unilever', icon: 'fa-soap' },
-  { name: 'Danone', icon: 'fa-tint' },
-  { name: 'Nestle', icon: 'fa-mug-hot' },
+  { name: 'BioFarma', image: '/partners/biofarma.png' },
+  { name: 'Kalbe Farma', image: '/partners/kalbe.png' },
+  { name: 'Kimia Farma', image: '/partners/kimia-farma.png' },
+  { name: 'Nutrifood', image: '/partners/nutrifood.png' },
+  { name: 'Indofood', image: '/partners/indofood.png' },
+  { name: 'Unilever', image: '/partners/unilever.png' },
+  { name: 'Danone', image: '/partners/danone.png' },
+  { name: 'Nestle', image: '/partners/nestle.png' },
 ];

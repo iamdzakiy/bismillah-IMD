@@ -23,22 +23,24 @@ export async function POST(req: Request) {
 
     const { teamId, fileName, fileType } = await req.json();
 
-    if (!teamId || !fileName || !fileType) {
+    if (!fileName || !fileType) {
       return NextResponse.json(
-        { error: 'teamId, fileName and fileType are required' },
+        { error: 'fileName and fileType are required' },
         { status: 400 }
       );
     }
 
-    // Verify user is captain of this team
-    const team = await prisma.team.findUnique({
-      where: { id: teamId, captainId: session.user.id },
-    });
-    if (!team) {
-      return NextResponse.json(
-        { error: 'You are not authorized to upload for this team' },
-        { status: 403 }
-      );
+    // teamId is optional - if provided, verify user is captain
+    if (teamId) {
+      const team = await prisma.team.findUnique({
+        where: { id: teamId, captainId: session.user.id },
+      });
+      if (!team) {
+        return NextResponse.json(
+          { error: 'You are not authorized to upload for this team' },
+          { status: 403 }
+        );
+      }
     }
 
     const allowedTypes = [

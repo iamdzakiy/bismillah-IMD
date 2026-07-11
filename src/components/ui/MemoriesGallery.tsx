@@ -67,9 +67,18 @@ export function MemoriesGallery() {
                 background: `linear-gradient(135deg, ${mem.color}22, ${mem.color}44)`,
               }}
             >
-              <div className="absolute inset-0 flex items-center justify-center text-7xl filter drop-shadow-lg">
-                {mem.emoji}
-              </div>
+              {mem.image ? (
+                <img
+                  src={mem.image}
+                  alt={mem.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-7xl filter drop-shadow-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20">
+                  📸
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                 <p className="font-bold text-white text-lg">{mem.title}</p>
                 <p className="text-white/60 text-sm">{mem.date}</p>
