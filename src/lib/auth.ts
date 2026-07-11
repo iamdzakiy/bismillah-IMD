@@ -69,30 +69,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      // Handle Google Sign-In: Create user if not exists
+      // Handle Google Sign-In: Update user data after PrismaAdapter creates the user
       if (account?.provider === 'google') {
         try {
           const email = user.email;
-          if (!email) return false;
+          if (!email) return true; // Let PrismaAdapter handle it
+
+          // Small delay to ensure PrismaAdapter has created the user
+          await new Promise(resolve => setTimeout(resolve, 100));
 
           const dbUser = await prisma.user.findUnique({ where: { email } });
           
-          if (!dbUser) {
-            // Create new user with Google data
-            await prisma.user.create({
-              data: {
-                email,
-                name: user.name ?? profile?.name ?? 'Google User',
-                active: true, // Google users are auto-verified
-                emailVerified: new Date(),
-                googleId: account.providerAccountId,
-                role: 'USER',
-                institution: (profile as any)?.hd ?? undefined, // Get domain if available
-                educationLevel: 'S1', // Default for Google users
-              },
-            });
-          } else {
-            // Update existing user with Google ID if not set
+          if (dbUser) {
+            // Update user with Google data
             await prisma.user.update({
               where: { id: dbUser.id },
               data: { 
@@ -100,12 +89,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 emailVerified: dbUser.emailVerified ?? new Date(),
                 googleId: dbUser.googleId ?? account.providerAccountId,
                 name: dbUser.name ?? user.name ?? profile?.name ?? dbUser.name,
+                institution: dbUser.institution ?? (profile as any)?.hd ?? undefined,
+                educationLevel: dbUser.educationLevel ?? 'S1',
               },
             });
           }
         } catch (error) {
-          console.error('Google signIn error:', error);
-          return false;
+          console.error('Google signIn update error:', error);
+          // Don't return false - user was already created by PrismaAdapter
         }
       }
       return true;
