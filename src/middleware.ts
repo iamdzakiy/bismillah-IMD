@@ -13,6 +13,7 @@ export async function middleware(request: NextRequest) {
     '/verify-email',
     '/request-password-reset',
     '/reset-password',
+    '/events',
     '/api/auth',
     '/api/auth/',
     '/api/auth/callback',

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { useEffect, useRef } from 'react';
 
 const TIMELINE = [
   {
@@ -34,11 +35,86 @@ const TIMELINE = [
   },
 ];
 
+function StarField() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const stars: { x: number; y: number; size: number; opacity: number; speed: number }[] = [];
+    const numStars = 150;
+
+    // Generate random stars
+    for (let i = 0; i < numStars; i++) {
+      stars.push({
+        x: Math.random() * (canvas.width || window.innerWidth),
+        y: Math.random() * 600,
+        size: Math.random() * 2 + 0.5,
+        opacity: Math.random() * 0.8 + 0.2,
+        speed: Math.random() * 0.02 + 0.005,
+      });
+    }
+
+    let animationId: number;
+
+    const animate = () => {
+      if (!canvas || !ctx) return;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      stars.forEach((star) => {
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        ctx.fill();
+
+        // Twinkle effect
+        star.opacity += (Math.random() - 0.5) * 0.02;
+        star.opacity = Math.max(0.2, Math.min(1, star.opacity));
+      });
+
+      animationId = requestAnimationFrame(animate);
+    };
+
+    // Set canvas size
+    const resize = () => {
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = 600;
+      }
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    animate();
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ height: '600px' }}
+    />
+  );
+}
+
 export function TimelineSection() {
   return (
     <section id="timeline" className="relative py-32 px-4 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-space-900 via-space-800 to-space-900" />
       <div className="absolute top-0 left-1/2 w-[800px] h-[800px] bg-bio-purple/10 rounded-full blur-[150px] -translate-x-1/2" />
+      
+      {/* Star Field Background */}
+      <StarField />
 
       <div className="relative max-w-5xl mx-auto">
         <motion.div

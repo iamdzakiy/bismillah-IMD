@@ -61,6 +61,29 @@ export function FAQSection() {
           Everything you need to know about IMD 2026
         </motion.p>
 
+        {/* Check Interactive Sheets First Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-bio-blue/10 via-bio-purple/10 to-bio-pink/10 border border-bio-purple/30 text-center"
+        >
+          <div className="text-3xl mb-3">📋</div>
+          <h3 className="text-lg font-bold text-white mb-2">Before Asking, Check Our Interactive FAQ Sheet!</h3>
+          <p className="text-white/60 text-sm mb-4">
+            We have an interactive Google Sheets FAQ with detailed answers. Check it first to find instant answers!
+          </p>
+          <a
+            href="https://docs.google.com/spreadsheets/d/1YOUR_SHEET_ID_HERE"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-bio-purple/20 text-bio-purple border border-bio-purple/30 rounded-full text-sm font-bold hover:bg-bio-purple/30 transition-all"
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+            Open Interactive FAQ Sheet
+          </a>
+        </motion.div>
+
         <div className="space-y-3">
           {faqs.map((faq, index) => (
             <motion.div
@@ -113,7 +136,7 @@ export function FAQSection() {
           viewport={{ once: true }}
           className="mt-10 text-center"
         >
-          <p className="text-white/50 text-sm mb-4">Still have questions? Contact our admins:</p>
+          <p className="text-white/50 text-sm mb-4">Still have questions after checking the FAQ sheet? Contact our admins:</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <a
               href="https://wa.me/6281234567890?text=Halo%20IMD%202026%2C%20saya%20ingin%20bertanya..."
@@ -135,11 +158,11 @@ export function FAQSection() {
             </a>
           </div>
           <p className="text-white/40 text-xs mt-4">
-            Or view our{' '}
+            📋 First check our{' '}
             <a href="https://docs.google.com/spreadsheets/d/1YOUR_SHEET_ID_HERE" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 underline">
               interactive FAQ sheet
-            </a>{' '}
-            for more details
+            </a>
+            {' '}— your question may already be answered!
           </p>
         </motion.div>
       </div>

@@ -52,8 +52,8 @@ export default function RegisterPage() {
   };
 
   const handleGoogleRegister = () => {
-    // For Google OAuth, redirect to dashboard after successful registration
-    signIn('google', { callbackUrl: '/dashboard' });
+    // Registration with OAuth is disabled - must use email registration
+    setError('Google registration is not available. Please use email registration below.');
   };
 
   return (
@@ -104,7 +104,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Institution</label>
+            <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Institution <span className="text-white/30 font-normal">(Example: Universitas Indonesia (UI) / Institut Teknologi Bandung (ITB))</span></label>
             <input
               type="text"
               name="institution"
@@ -112,7 +112,7 @@ export default function RegisterPage() {
               value={formData.institution}
               onChange={handleChange}
               className="input-glass text-sm"
-              placeholder="e.g. SMA N 1 Bandung / Institut Teknologi Bandung"
+              placeholder="e.g. SMA N 1 Bandung / Universitas Indonesia (UI) / Institut Teknologi Bandung (ITB)"
             />
           </div>
 
@@ -123,10 +123,11 @@ export default function RegisterPage() {
               required
               value={formData.educationLevel}
               onChange={handleChange}
-              className="input-glass text-sm"
+              className="w-full px-4 py-3 bg-purple-900/40 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder:text-white/50 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-purple-900/60 focus:shadow-[0_0_15px_rgba(168,85,247,0.2)] appearance-none"
+              style={{ colorScheme: 'dark' }}
             >
-              <option value="SMA">SMA / MA / SMK / Sederajat</option>
-              <option value="S1">S1 / D3 / D4 / Diploma</option>
+              <option value="SMA" className="bg-space-900 text-white">SMA / MA / SMK / Sederajat</option>
+              <option value="S1" className="bg-space-900 text-white">S1 / D3 / D4 / Diploma</option>
             </select>
           </div>
 

@@ -21,6 +21,8 @@ const config: Config = {
           teal: '#2dd4bf',
           purple: '#a855f7',
           pink: '#ec4899',
+          blue: '#3b82f6',
+          green: '#10b981',
         },
       },
       fontFamily: {
@@ -32,6 +34,8 @@ const config: Config = {
         blob: 'blob 12s infinite',
         gradient: 'gradient 8s ease infinite',
         'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+        'twinkle': 'twinkle 3s ease-in-out infinite',
+        'drift': 'drift 25s ease-in-out infinite',
       },
       keyframes: {
         float: {
@@ -51,6 +55,16 @@ const config: Config = {
         pulseGlow: {
           '0%, 100%': { opacity: '1', transform: 'scale(1)' },
           '50%': { opacity: '0.7', transform: 'scale(1.05)' },
+        },
+        twinkle: {
+          '0%, 100%': { opacity: '0.3', transform: 'scale(0.5)' },
+          '50%': { opacity: '1', transform: 'scale(1)' },
+        },
+        drift: {
+          '0%, 100%': { transform: 'translate(0, 0) rotate(0deg)' },
+          '25%': { transform: 'translate(10px, -10px) rotate(5deg)' },
+          '50%': { transform: 'translate(-5px, -20px) rotate(-3deg)' },
+          '75%': { transform: 'translate(-10px, -5px) rotate(2deg)' },
         },
       },
       backdropBlur: {

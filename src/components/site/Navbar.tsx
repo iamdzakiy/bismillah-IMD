@@ -118,8 +118,16 @@ export function Navbar() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full mt-2 left-0 w-56 glass-strong rounded-2xl p-2 shadow-2xl border border-purple-500/20"
+                  className="absolute top-full mt-2 left-0 w-64 glass-strong rounded-2xl p-2 shadow-2xl border border-purple-500/20"
                 >
+                  <Link
+                    href="/events"
+                    onClick={() => setEventDropdown(false)}
+                    className="block p-3 rounded-xl hover:bg-white/5 transition-all group border-b border-white/5 mb-1"
+                  >
+                    <div className="text-sm font-medium text-white/80 group-hover:text-white">All Events</div>
+                    <div className="text-xs text-white/40">View all IMD 2026 events</div>
+                  </Link>
                   {events.map((event, i) => (
                     <div key={i} className="p-3 rounded-xl hover:bg-white/5 transition-all">
                       <div className="text-sm font-medium text-white/80">{event.name}</div>
@@ -139,7 +147,7 @@ export function Navbar() {
           </Link>
 
           {session ? (
-            <div className="flex items-center gap-2 ml-4">
+            <div className="flex flex-col items-end ml-4">
               <Link
                 href="/dashboard"
                 className="px-5 py-2 text-sm glass rounded-full hover:bg-white/10 transition-all font-medium"
@@ -148,7 +156,7 @@ export function Navbar() {
               </Link>
               <button
                 onClick={() => signOut({ callbackUrl: '/' })}
-                className="px-4 py-2 text-sm text-white/60 hover:text-white transition-colors"
+                className="px-5 py-1 text-xs text-white/50 hover:text-red-400 transition-colors"
               >
                 Logout
               </button>
@@ -195,6 +203,9 @@ export function Navbar() {
                 </Link>
               ))}
               <div className="px-4 py-2 text-xs text-white/30 uppercase tracking-wider mt-2">Events</div>
+              <Link href="/events" onClick={() => setMobileOpen(false)} className="block px-4 py-3 text-white/70 hover:bg-white/5 rounded-xl">
+                All Events →
+              </Link>
               {events.map((event, i) => (
                 <div key={i} className="block px-4 py-3 text-white/70 rounded-xl">
                   {event.name} <span className="text-white/30 text-xs">({event.date})</span>
@@ -208,14 +219,14 @@ export function Navbar() {
                 FAQ
               </Link>
               {session ? (
-                <>
+                <div className="space-y-1">
                   <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="block px-4 py-3 text-purple-400 hover:bg-white/5 rounded-xl">
                     Dashboard
                   </Link>
-                  <button onClick={() => signOut({ callbackUrl: '/' })} className="block w-full text-left px-4 py-3 text-white/60 hover:bg-white/5 rounded-xl">
+                  <button onClick={() => signOut({ callbackUrl: '/' })} className="block w-full text-left px-4 py-2 text-xs text-white/40 hover:text-red-400 hover:bg-white/5 rounded-xl">
                     Logout
                   </button>
-                </>
+                </div>
               ) : (
                 <>
                   <Link href="/login" onClick={() => setMobileOpen(false)} className="block px-4 py-3 text-white/70 hover:bg-white/5 rounded-xl">

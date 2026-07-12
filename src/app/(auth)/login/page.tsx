@@ -43,15 +43,16 @@ function LoginContent() {
   };
 
   const handleGoogleLogin = () => {
-    // For Google OAuth, redirect to dashboard after successful login
+    // For Google OAuth, sign in redirects to dashboard after successful login
+    // The user stays on the login page and then gets redirected
     signIn('google', { callbackUrl: '/dashboard' });
   };
 
   // Check for OAuth errors
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const error = searchParams.get('error');
-    if (error) {
+    const params = new URLSearchParams(window.location.search);
+    const oauthError = params.get('error');
+    if (oauthError) {
       setError('Google login failed. Please try again or use email login.');
     }
   }, []);
