@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { teamId, fileName, fileType } = await req.json();
+    const { teamId, fileName, fileType, fileSize } = await req.json();
 
     if (!fileName || !fileType) {
       return NextResponse.json(
@@ -54,9 +54,6 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-
-    // Validate file size (5MB max)
-    const { fileSize } = await req.json();
     if (fileSize && fileSize > 5 * 1024 * 1024) {
       return NextResponse.json(
         { error: 'Maximum file size is 5MB.' },

@@ -1,21 +1,52 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
-const authPaths = ['/login', '/register', '/verify-email', '/reset-password', '/request-password-reset'];
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  delay: number;
+}
 
 export function FloatingOrbs() {
   const pathname = usePathname();
-  const shouldHide = authPaths.some(path => pathname.startsWith(path));
-  
-  if (shouldHide) return null;
-  
+  const [particles, setParticles] = useState<Particle[]>([]);
+
+  // Hide on auth pages
+  const isAuthPage = ['/login', '/register', '/verify-email', '/request-password-reset', '/reset-password'].includes(pathname);
+
+  useEffect(() => {
+    // Generate particles only on client side to avoid hydration mismatch
+    const generatedParticles = [...Array(20)].map((_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 20 + 10,
+      delay: Math.random() * 5,
+    }));
+    setParticles(generatedParticles);
+  }, []);
+
+  if (isAuthPage || particles.length === 0) return null;
+
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-      <div className="orb w-96 h-96 bg-bio-cyan/20 top-1/4 -left-20 animate-blob" />
-      <div className="orb w-80 h-80 bg-bio-purple/20 top-1/2 right-10 animate-blob" style={{ animationDelay: '2s' }} />
-      <div className="orb w-72 h-72 bg-bio-emerald/20 bottom-1/4 left-1/3 animate-blob" style={{ animationDelay: '4s' }} />
-      <div className="orb w-64 h-64 bg-bio-pink/15 top-3/4 right-1/4 animate-blob" style={{ animationDelay: '6s' }} />
+    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      {particles.map((particle) => (
+        <div
+          key={particle.id}
+          className="particle-dot animate-drift absolute rounded-full bg-purple-500/10 blur-sm"
+          style={{
+            left: `${particle.x}%`,
+            top: `${particle.y}%`,
+            width: `${particle.size}px`,
+            height: `${particle.size}px`,
+            animationDelay: `${particle.delay}s`,
+          }}
+        />
+      ))}
     </div>
   );
 }

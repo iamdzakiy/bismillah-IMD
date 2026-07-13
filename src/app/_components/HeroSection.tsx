@@ -4,8 +4,37 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { GradientText } from '@/components/ui/GradientText';
 import { Countdown } from '@/components/ui/Countdown';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
+
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  delay: number;
+  duration: number;
+  size: number;
+}
 
 export function HeroSection() {
+  const [particles, setParticles] = useState<Particle[]>([]);
+
+  useEffect(() => {
+    const generatedParticles = [...Array(20)].map((_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      delay: Math.random() * 10,
+      duration: 15 + Math.random() * 10,
+      size: 2 + Math.random() * 3,
+    }));
+    setParticles(generatedParticles);
+  }, []);
+
+  if (particles.length === 0) {
+    return null;
+  }
+
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden pt-24 pb-12 px-4">
       {/* Immersive Background - Microbial Dark Matter */}
@@ -14,18 +43,18 @@ export function HeroSection() {
         <div className="absolute bottom-1/4 right-1/4 w-[700px] h-[700px] bg-fuchsia-600/15 rounded-full blur-[150px] animate-blob" style={{ animationDelay: '3s' }} />
         <div className="absolute top-1/2 left-1/2 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] animate-blob" style={{ animationDelay: '5s' }} />
         
-        {/* Floating particles */}
-        {[...Array(20)].map((_, i) => (
+        {/* Floating particles - generated only on client */}
+        {particles.map((particle) => (
           <div
-            key={i}
+            key={particle.id}
             className="particle-dot animate-drift"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 10}s`,
-              animationDuration: `${15 + Math.random() * 10}s`,
-              width: `${2 + Math.random() * 3}px`,
-              height: `${2 + Math.random() * 3}px`,
+              left: `${particle.x}%`,
+              top: `${particle.y}%`,
+              animationDelay: `${particle.delay}s`,
+              animationDuration: `${particle.duration}s`,
+              width: `${particle.size}px`,
+              height: `${particle.size}px`,
             }}
           />
         ))}
@@ -141,7 +170,11 @@ export function HeroSection() {
             <div className="glass rounded-3xl p-8 max-w-md w-full relative overflow-hidden glow-fuchsia">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-fuchsia-500/5" />
               <div className="relative text-center">
-                <div className="text-8xl mb-4 animate-float">🦠</div>
+                                  <img 
+                    src="/mascot.svg" 
+                    alt="IMD 2026 Mascot" 
+                    className="w-24 h-24 mb-4 animate-float" 
+                  />
                 <h3 className="text-2xl font-bold text-gradient">IMD 2026 Mascot</h3>
                 <p className="text-white/50 text-sm">Meet our friendly microbial explorer!</p>
                 <div className="flex flex-wrap gap-2 justify-center mt-4">

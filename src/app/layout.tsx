@@ -16,17 +16,16 @@ export const metadata: Metadata = {
   keywords: 'IMD 2026, International Microorganism Day, Archaea ITB, Microbiology Competition, Olympiad, SPC, NEC',
   icons: {
     icon: [
-      { url: '/favicon.png', type: 'image/png' },
       { url: '/favicon.svg', type: 'image/svg+xml' },
     ],
-    shortcut: '/favicon.png',
+    shortcut: '/favicon.svg',
   },
   openGraph: {
     title: 'IMD 2026 – International Microorganism Day',
     description: "The Great Microbial Odyssey: Decoding the Earth's Dark Matter",
-    url: 'https://imd.itb.ac.id',
+    url: 'https://imd2026itb.co-id.id/',
     siteName: 'IMD 2026',
-    images: [{ url: 'https://imd2026itb.co-id.id/favicon.png' }],
+    images: [{ url: 'https://imd2026itb.co-id.id/favicon.svg' }],
     type: 'website',
   },
 };

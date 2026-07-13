@@ -2,41 +2,149 @@
 
 import { motion } from 'framer-motion';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
+// Correct timeline data based on user's requirements
 const TIMELINE = [
   {
     id: '1',
-    phase: 'Registration',
-    date: '1 - 31 July 2026',
-    title: 'Open Registration',
-    description: 'Register your team for Olympiad, SPC, or NEC.',
+    phase: 'MO Registration',
+    date: '13 July – 8 August 2026',
+    title: 'Open Registration Batch 1 (Early Bird: IDR 75k)',
+    description: 'Registration for Main Competition (MO) via IMD Official Website',
   },
   {
     id: '2',
-    phase: 'Preliminary',
-    date: '1 - 16 August 2026',
-    title: 'Preliminary Phase',
-    description: 'Submit initial documents and pass the first selection.',
+    phase: 'MO Registration',
+    date: '19 July – 8 August 2026',
+    title: 'Open Registration Batch 1 (Per Timeline Page)',
+    description: 'Registration for Main Competition (MO) via IMD Official Website',
   },
   {
     id: '3',
-    phase: 'Semifinal',
-    date: '17 - 31 August 2026',
-    title: 'Semifinal Phase',
-    description: 'Advanced submission for qualified teams.',
+    phase: 'SPC & NEC',
+    date: '19 July – 15 August 2026',
+    title: 'Preliminary Stage: Registration & Abstract Submission (Free)',
+    description: 'Registration for Scientific Paper Competition (SPC) & National Essay Competition (NEC) via IMD Official Website',
   },
   {
     id: '4',
-    phase: 'Final',
-    date: '14 - 15 November 2026',
-    title: 'Final & Main Event',
-    description: 'Final pitching, exhibition, symposium, and awarding night at ITB.',
+    phase: 'MO Registration',
+    date: '9 August – 31 August 2026',
+    title: 'Open Registration Batch 2 (Normal: IDR 85k)',
+    description: 'Registration for Main Competition (MO) via IMD Official Website',
+  },
+  {
+    id: '5',
+    phase: 'SPC & NEC',
+    date: '1 September 2026',
+    title: 'Semifinalist Announcement',
+    description: 'Announcement of semifinalists via IMD Official Website',
+  },
+  {
+    id: '6',
+    phase: 'SPC & NEC',
+    date: '2 September – 7 Sept 2026',
+    title: 'Semifinalist Re-registration Stage (Fee: IDR 150k)',
+    description: 'Re-registration for semifinalists via IMD Official Website',
+  },
+  {
+    id: '7',
+    phase: 'SPC',
+    date: '2 September – 30 Sept 2026',
+    title: 'Stage 2 Work Period: Proposal Writing & Elevator Pitch Video',
+    description: 'Asynchronous / Instagram',
+  },
+  {
+    id: '8',
+    phase: 'NEC',
+    date: '2 September – 30 Sept 2026',
+    title: 'Full Paper Submission Window',
+    description: 'Submission via IMD Official Website',
+  },
+  {
+    id: '9',
+    phase: 'NEC',
+    date: 'September 2026 (TBA)',
+    title: 'Full Paper Coaching Session',
+    description: 'Zoom Meeting',
+  },
+  {
+    id: '10',
+    phase: 'MO',
+    date: '3 – 4 October 2026',
+    title: 'Preliminary Round System Access Trial & Technical Meeting',
+    description: 'Online / Zoom',
+  },
+  {
+    id: '11',
+    phase: 'SPC & NEC',
+    date: '11 October 2026',
+    title: 'Finalist Announcement',
+    description: 'Announcement of finalists via IMD Official Website',
+  },
+  {
+    id: '12',
+    phase: 'SPC',
+    date: '12 October – 31 Oct 2026',
+    title: 'Prototype Development Period for Finalists',
+    description: 'Asynchronous',
+  },
+  {
+    id: '13',
+    phase: 'NEC',
+    date: '12 October – 31 Oct 2026',
+    title: 'Final Stage: Pitch Deck and Poster Digital Submission',
+    description: 'Submission via IMD Official Website',
+  },
+  {
+    id: '14',
+    phase: 'MO',
+    date: '17 October 2026',
+    title: 'Elimination / Preliminary Round Exam (35 T/F Questions)',
+    description: 'Online Examination Platform',
+  },
+  {
+    id: '15',
+    phase: 'MO',
+    date: '25 October 2026',
+    title: 'Announcement of Finalists',
+    description: 'Online',
+  },
+  {
+    id: '16',
+    phase: 'MO',
+    date: '25 – 31 October 2026',
+    title: 'Re-registration of Finalists',
+    description: 'Online',
+  },
+  {
+    id: '17',
+    phase: 'All Branches',
+    date: '7 November 2026',
+    title: 'Final Stage Technical Meeting',
+    description: 'In-person at ITB Ganesha',
+  },
+  {
+    id: '18',
+    phase: 'All Branches',
+    date: '14 November 2026',
+    title: 'Final Round / Pitching Day',
+    description: 'In-person at ITB Ganesha',
+  },
+  {
+    id: '19',
+    phase: 'All Branches',
+    date: '15 November 2026',
+    title: 'Exhibition & Grand Awarding Ceremony',
+    description: 'In-person at ITB Ganesha',
   },
 ];
 
-function StarField() {
+function SpaceBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const spaceshipRef = useRef<HTMLDivElement>(null);
+  const [stars, setStars] = useState<Array<{ x: number; y: number; size: number; opacity: number; speed: number }>>([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -45,19 +153,15 @@ function StarField() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const stars: { x: number; y: number; size: number; opacity: number; speed: number }[] = [];
-    const numStars = 150;
-
-    // Generate random stars
-    for (let i = 0; i < numStars; i++) {
-      stars.push({
-        x: Math.random() * (canvas.width || window.innerWidth),
-        y: Math.random() * 600,
-        size: Math.random() * 2 + 0.5,
-        opacity: Math.random() * 0.8 + 0.2,
-        speed: Math.random() * 0.02 + 0.005,
-      });
-    }
+    // Generate stars only once on client
+    const generatedStars = [...Array(100)].map(() => ({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * 800,
+      size: Math.random() * 2 + 0.5,
+      opacity: Math.random() * 0.8 + 0.2,
+      speed: Math.random() * 0.02 + 0.005,
+    }));
+    setStars(generatedStars);
 
     let animationId: number;
 
@@ -66,7 +170,7 @@ function StarField() {
       
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      stars.forEach((star) => {
+      generatedStars.forEach((star) => {
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
@@ -84,7 +188,7 @@ function StarField() {
     const resize = () => {
       if (canvas) {
         canvas.width = window.innerWidth;
-        canvas.height = 600;
+        canvas.height = 800;
       }
     };
     resize();
@@ -99,11 +203,40 @@ function StarField() {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ height: '600px' }}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        style={{ height: '800px' }}
+      />
+      {/* Spaceship animation */}
+      <div 
+        ref={spaceshipRef}
+        className="absolute pointer-events-none"
+        style={{
+          top: '10%',
+          left: '-100px',
+          width: '60px',
+          height: '60px',
+          animation: 'spaceship-fly 30s linear infinite',
+        }}
+      >
+        <svg viewBox="0 0 24 24" fill="none" className="w-full h-full text-blue-400">
+          <path d="M12 2L15 8H9L12 2Z" fill="currentColor"/>
+          <path d="M12 22L9 16H15L12 22Z" fill="currentColor"/>
+          <circle cx="12" cy="12" r="3" fill="currentColor"/>
+        </svg>
+      </div>
+      <style jsx>{`
+        @keyframes spaceship-fly {
+          0% { transform: translateX(-100px) translateY(0) rotate(15deg); }
+          25% { transform: translateX(calc(100vw + 100px)) translateY(-50px) rotate(15deg); }
+          50% { transform: translateX(calc(100vw + 100px)) translateY(50px) rotate(-15deg); }
+          75% { transform: translateX(-100px) translateY(100px) rotate(-15deg); }
+          100% { transform: translateX(-100px) translateY(0) rotate(15deg); }
+        }
+      `}</style>
+    </>
   );
 }
 
@@ -113,8 +246,8 @@ export function TimelineSection() {
       <div className="absolute inset-0 bg-gradient-to-b from-space-900 via-space-800 to-space-900" />
       <div className="absolute top-0 left-1/2 w-[800px] h-[800px] bg-bio-purple/10 rounded-full blur-[150px] -translate-x-1/2" />
       
-      {/* Star Field Background */}
-      <StarField />
+      {/* Space Background with Stars and Spaceship */}
+      <SpaceBackground />
 
       <div className="relative max-w-5xl mx-auto">
         <motion.div

@@ -114,16 +114,13 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
             Organizer: {comp.organizer}
           </p>
           
-          {/* Guidebook Download */}
+          {/* Guidebook Download - simple link without onClick/download attribute */}
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <a
               href={defaultGuidebookUrl}
-              download
+              target="_blank"
+              rel="noopener noreferrer"
               className="btn-glass inline-flex items-center gap-2 text-sm"
-              onClick={(e) => {
-                e.preventDefault();
-                window.open(defaultGuidebookUrl, '_blank');
-              }}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
