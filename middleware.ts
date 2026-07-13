@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { auth } from '@/lib/auth';
+import { getToken } from 'next-auth/jwt';
 
 // Halaman publik yang tidak perlu autentikasi
 const publicPaths = [
@@ -39,9 +39,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const session = await auth();
+  // Gunakan getToken (edge-compatible, tanpa prisma/bcrypt)
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
-  if (!session?.user?.id) {
+  if (!token?.sub) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(loginUrl);

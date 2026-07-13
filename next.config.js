@@ -73,9 +73,6 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
-  eslint: {
-    configFile: './eslint.config.mjs',
-  },
 };
 
 module.exports = nextConfig;
