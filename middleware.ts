@@ -17,6 +17,16 @@ const publicPaths = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // BYPASS ABSOLUTE untuk semua rute API — jangan sentuh sama sekali
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
+  // BYPASS untuk Next.js internal
+  if (pathname.startsWith('/_next/')) {
+    return NextResponse.next();
+  }
+
   // Cek apakah ini halaman publik
   const isPublicPath = publicPaths.some(
     (path) => pathname === path || (path !== '/' && pathname.startsWith(path))

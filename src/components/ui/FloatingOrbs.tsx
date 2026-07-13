@@ -11,12 +11,17 @@ interface Particle {
   delay: number;
 }
 
+const authPaths = ['/login', '/register', '/verify-email', '/request-password-reset', '/reset-password'];
+
 export function FloatingOrbs() {
   const pathname = usePathname();
   const [particles, setParticles] = useState<Particle[]>([]);
+  const [isAuthPage, setIsAuthPage] = useState(true); // Default ke true agar render server = null
 
-  // Hide on auth pages
-  const isAuthPage = ['/login', '/register', '/verify-email', '/request-password-reset', '/reset-password'].includes(pathname);
+  useEffect(() => {
+    // Tentukan auth page di client-side saja
+    setIsAuthPage(authPaths.includes(pathname));
+  }, [pathname]);
 
   useEffect(() => {
     // Generate particles only on client side to avoid hydration mismatch
@@ -30,6 +35,7 @@ export function FloatingOrbs() {
     setParticles(generatedParticles);
   }, []);
 
+  // Render null di server & saat pertama hydrate, baru tampil setelah client-side
   if (isAuthPage || particles.length === 0) return null;
 
   return (
