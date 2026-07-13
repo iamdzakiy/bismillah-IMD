@@ -2,9 +2,16 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+const authPaths = ['/login', '/register', '/verify-email', '/reset-password', '/request-password-reset'];
 
 export function EmailVerificationBanner() {
   const { data: session } = useSession();
+  const pathname = usePathname();
+
+  // Hide on auth pages
+  if (authPaths.includes(pathname)) return null;
 
   if (!session || session.user.active) return null;
 

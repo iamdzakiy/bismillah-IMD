@@ -1,4 +1,15 @@
+'use client';
+
+import { usePathname } from 'next/navigation';
+
+const authPaths = ['/login', '/register', '/verify-email', '/reset-password', '/request-password-reset'];
+
 export function FloatingOrbs() {
+  const pathname = usePathname();
+  const shouldHide = authPaths.some(path => pathname.startsWith(path));
+  
+  if (shouldHide) return null;
+  
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       <div className="orb w-96 h-96 bg-bio-cyan/20 top-1/4 -left-20 animate-blob" />

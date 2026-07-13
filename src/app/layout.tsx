@@ -15,7 +15,10 @@ export const metadata: Metadata = {
   description: "The Great Microbial Odyssey: Decoding the Earth's Dark Matter to Orchestrate a Sustainable Future",
   keywords: 'IMD 2026, International Microorganism Day, Archaea ITB, Microbiology Competition, Olympiad, SPC, NEC',
   icons: {
-    icon: '/favicon.png',
+    icon: [
+      { url: '/favicon.png', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
     shortcut: '/favicon.png',
   },
   openGraph: {

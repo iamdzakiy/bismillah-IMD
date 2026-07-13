@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -17,7 +18,14 @@ const events = [
   { name: 'Awarding Night', date: 'TBA' },
 ];
 
+const authPaths = ['/login', '/register', '/verify-email', '/reset-password', '/request-password-reset'];
+
 export function Navbar() {
+  const pathname = usePathname();
+  const isAuthPage = authPaths.some(path => pathname.startsWith(path));
+  
+  if (isAuthPage) return null;
+  
   const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
