@@ -170,11 +170,11 @@ export function HeroSection() {
             <div className="glass rounded-3xl p-8 max-w-md w-full relative overflow-hidden glow-fuchsia">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-fuchsia-500/5" />
               <div className="relative text-center">
-                              <img 
-                    src="/6.svg" 
-                    alt="IMD 2026 Mascot" 
-                    className="w-24 h-24 mb-4 animate-float" 
-                  />
+                     <img 
+                        src="/6.svg" 
+                        alt="IMD 2026 Mascot" 
+                        className="w-40 h-40 mb-4 animate-float"  // Ubah dari w-24 h-24 menjadi w-40 h-40
+                      />
                 <h3 className="text-2xl font-bold text-gradient">IMD 2026 Mascot</h3>
                 <p className="text-white/50 text-sm">Meet our friendly microbial explorer!</p>
                 <div className="flex flex-wrap gap-2 justify-center mt-4">
