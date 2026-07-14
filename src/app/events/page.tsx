@@ -89,75 +89,73 @@ export default function EventsPage() {
           <MascotDecoration count={4} size="md" className="justify-center" />
         </div>
 
-        {/*
-          {events.map((event, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+        {events.map((event, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+          >
+            <GlassCard
+              glow={
+                event.type === 'competition' 
+                  ? (event.name.includes('Olympiad') ? 'blue' as any : event.name.includes('SPC') ? 'pink' as any : 'green' as any)
+                  : 'purple' as any
+              }
+              className="p-6 sm:p-8 hover:scale-[1.01] transition-all duration-300"
             >
-              <GlassCard
-                glow={
-                  event.type === 'competition' 
-                    ? (event.name.includes('Olympiad') ? 'blue' as any : event.name.includes('SPC') ? 'pink' as any : 'green' as any)
-                    : 'purple' as any
-                }
-                className="p-6 sm:p-8 hover:scale-[1.01] transition-all duration-300"
-              >
-                <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
-                  {/* Icon */}
-                  <div className="w-16 h-16 glass-strong rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
-                    {event.icon}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
-                      {event.name}
-                    </h3>
-                    <p className="text-white/60 text-sm sm:text-base leading-relaxed mb-3">
-                      {event.description}
-                    </p>
-                    <div className="flex flex-wrap gap-3 text-xs sm:text-sm">
-                      <span className="px-3 py-1 glass rounded-full text-bio-cyan">
-                        📅 {event.date}
-                      </span>
-                      <span className="px-3 py-1 glass rounded-full text-bio-purple">
-                        📍 {event.venue}
-                      </span>
-                      <span className={`px-3 py-1 rounded-full font-medium ${
-                        event.type === 'main' 
-                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                          : event.type === 'workshop'
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                          : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                      }`}>
-                        {event.type === 'main' ? 'Main Event' : event.type === 'workshop' ? 'Workshop' : 'Competition'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* CTAs */}
-                  {event.type === 'competition' && (
-                    <div className="flex-shrink-0 self-start sm:self-center">
-                      <Link
-                        href={`/competitions/${
-                          event.name.includes('Olympiad') ? 'olympiad' :
-                          event.name.includes('SPC') ? 'spc' : 'nec'
-                        }`}
-                        className="btn-glass text-sm inline-flex items-center gap-1"
-                      >
-                        View Details →
-                      </Link>
-                    </div>
-                  )}
+              <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+                {/* Icon */}
+                <div className="w-16 h-16 glass-strong rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
+                  {event.icon}
                 </div>
-              </GlassCard>
-            </motion.div>
-          ))}
-        </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
+                    {event.name}
+                  </h3>
+                  <p className="text-white/60 text-sm sm:text-base leading-relaxed mb-3">
+                    {event.description}
+                  </p>
+                  <div className="flex flex-wrap gap-3 text-xs sm:text-sm">
+                    <span className="px-3 py-1 glass rounded-full text-bio-cyan">
+                      📅 {event.date}
+                    </span>
+                    <span className="px-3 py-1 glass rounded-full text-bio-purple">
+                      📍 {event.venue}
+                    </span>
+                    <span className={`px-3 py-1 rounded-full font-medium ${
+                      event.type === 'main' 
+                        ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                        : event.type === 'workshop'
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    }`}>
+                      {event.type === 'main' ? 'Main Event' : event.type === 'workshop' ? 'Workshop' : 'Competition'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* CTAs */}
+                {event.type === 'competition' && (
+                  <div className="flex-shrink-0 self-start sm:self-center">
+                    <Link
+                      href={`/competitions/${
+                        event.name.includes('Olympiad') ? 'olympiad' :
+                        event.name.includes('SPC') ? 'spc' : 'nec'
+                      }`}
+                      className="btn-glass text-sm inline-flex items-center gap-1"
+                    >
+                      View Details →
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </GlassCard>
+          </motion.div>
+        ))}
 
         {/* ===== CTA ===== */}
         <motion.div
