@@ -208,3 +208,19 @@ export const INDUSTRY_PARTNERS = [
   { name: 'Danone', image: '/partners/danone.png' },
   { name: 'Nestle', image: '/partners/nestle.png' },
 ];
+
+// Powered by logos (placeholder)
+export const POWERED_BY = [
+  { name: 'Archaea #Eksis', image: '/logo_archaea.svg' },
+  { name: 'SITH', image: '/logo_SITH.svg' },
+  { name: 'ITB', image: '/logo-3.svg' },
+  { name: 'IMD', image: '/favicon.svg' },
+];
+
+// Mascot placeholders
+export const MASCOTS = [
+  { id: 'mascot-1', name: 'Microbe Alpha', image: '/5.svg', color: '#6e8efb' },
+  { id: 'mascot-2', name: 'Microbe Beta', image: '/2.svg', color: '#a777e3' },
+  { id: 'mascot-3', name: 'Microbe Gamma', image: '/3.svg', color: '#f093fb' },
+  { id: 'mascot-4', name: 'Microbe Delta', image: '/4.svg', color: '#4facfe' },
+];

@@ -173,7 +173,7 @@ export function HeroSection() {
                      <img 
                         src="/6.svg" 
                         alt="IMD 2026 Mascot" 
-                        className="w-40 h-40 mb-4 animate-float"  // Ubah dari w-24 h-24 menjadi w-40 h-40
+                        className="w-48 h-48 mx-auto mb-4 animate-float" 
                       />
                 <h3 className="text-2xl font-bold text-gradient">IMD 2026 Mascot</h3>
                 <p className="text-white/50 text-sm">Meet our friendly microbial explorer!</p>

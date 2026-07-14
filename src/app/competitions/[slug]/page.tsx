@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientText } from '@/components/ui/GradientText';
+import { MascotDecoration } from '@/components/ui/MascotDecoration';
 import { COMPETITIONS, GRAND_THEME, PAYMENT_INFO, SOCIAL_MEDIA } from '@/lib/competitions-data';
 import { Metadata } from 'next';
 import Link from 'next/link';
@@ -91,6 +92,11 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
   return (
     <div className="min-h-screen bg-space-900 text-white pt-24 pb-12 px-4">
       <div className="max-w-6xl mx-auto">
+        {/* ===== MASCOTS ===== */}
+        <div className="mb-8">
+          <MascotDecoration count={4} size="sm" className="justify-center" />
+        </div>
+
         {/* ===== HERO ===== */}
         <div className="text-center mb-16">
           <div className="flex flex-wrap justify-center gap-2 mb-4">

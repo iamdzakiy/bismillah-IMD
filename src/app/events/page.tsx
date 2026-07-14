@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientText } from '@/components/ui/GradientText';
+import { MascotDecoration } from '@/components/ui/MascotDecoration';
 
 const events = [
   {
@@ -83,8 +84,12 @@ export default function EventsPage() {
           </p>
         </motion.div>
 
-        {/* ===== UPCOMING EVENTS ===== */}
-        <div className="space-y-6">
+        {/* Mascots around hero */}
+        <div className="mb-8">
+          <MascotDecoration count={4} size="md" className="justify-center" />
+        </div>
+
+        {/*
           {events.map((event, index) => (
             <motion.div
               key={index}

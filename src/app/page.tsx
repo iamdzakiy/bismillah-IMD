@@ -7,6 +7,8 @@ import { SponsorMarquee } from '@/components/ui/SponsorMarquee';
 import { TimelineSlider } from '@/components/ui/TimelineSlider';
 import { RoadshowPopup } from '@/components/ui/RoadshowPopup';
 import { CursorGlow } from '@/components/ui/CursorGlow';
+import { PoweredBy } from '@/components/ui/PoweredBy';
+import { MascotDecoration } from '@/components/ui/MascotDecoration';
 import { MEDIA_PARTNERS, INDUSTRY_PARTNERS } from '@/lib/constants';
 
 export default function HomePage() {
@@ -15,6 +17,11 @@ export default function HomePage() {
       <CursorGlow />
       <RoadshowPopup />
       <HeroSection />
+
+      {/* Mascots around hero */}
+      <div className="relative max-w-7xl mx-auto px-4 -mt-8 mb-8">
+        <MascotDecoration count={4} size="md" className="justify-center" />
+      </div>
       
       {/* What is IMD - bisa ditambahkan di sini jika mau */}
       
@@ -74,6 +81,15 @@ export default function HomePage() {
       </section>
 
       <CompetitionsSection />
+
+      {/* Mascots around competitions */}
+      <div className="relative max-w-7xl mx-auto px-4 py-8">
+        <MascotDecoration count={4} size="lg" className="justify-center" />
+      </div>
+
+      {/* Powered By */}
+      <PoweredBy />
+
       <FAQSection />
     </main>
   );

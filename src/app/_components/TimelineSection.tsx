@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { MascotDecoration } from '@/components/ui/MascotDecoration';
 import { useEffect, useRef, useState } from 'react';
 
 // Correct timeline data based on user's requirements
@@ -318,6 +319,10 @@ export function TimelineSection() {
               </motion.div>
             ))}
           </div>
+        </div>
+        {/* Mascot decorations at the bottom of timeline */}
+        <div className="mt-16">
+          <MascotDecoration count={4} size="md" className="justify-center" />
         </div>
       </div>
     </section>
