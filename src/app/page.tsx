@@ -9,14 +9,17 @@ import { RoadshowPopup } from '@/components/ui/RoadshowPopup';
 import { CursorGlow } from '@/components/ui/CursorGlow';
 import { PoweredBy } from '@/components/ui/PoweredBy';
 import { MascotDecoration } from '@/components/ui/MascotDecoration';
+import { StarBackground } from '@/components/ui/StarBackground';
 import { MEDIA_PARTNERS, INDUSTRY_PARTNERS } from '@/lib/constants';
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-space-900 text-white">
-      <CursorGlow />
-      <RoadshowPopup />
-      <HeroSection />
+    <main className="relative min-h-screen bg-space-900 text-white">
+      <StarBackground />
+      <div className="relative z-10">
+        <CursorGlow />
+        <RoadshowPopup />
+        <HeroSection />
 
       {/* Mascots around hero */}
       <div className="relative max-w-7xl mx-auto px-4 -mt-8 mb-8">
@@ -91,6 +94,7 @@ export default function HomePage() {
       <PoweredBy />
 
       <FAQSection />
+      </div>
     </main>
   );
 }

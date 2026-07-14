@@ -15,7 +15,7 @@ const authPaths = ['/login', '/register', '/verify-email', '/request-password-re
 
 export function FloatingOrbs() {
   const pathname = usePathname();
-  const [particles, setParticles] = useState<Particle[]>([]);
+  const [particles, setParticles] = useState<Array<Particle>>([]);
   const [isAuthPage, setIsAuthPage] = useState(true); // Default ke true agar render server = null
 
   useEffect(() => {

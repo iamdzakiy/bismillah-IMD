@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微生物星空 · 不可培养的星尘</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #070b17;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            background: #0a101f;
+            border-radius: 40px;
+            padding: 25px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            padding: 0 8px;
+            flex-wrap: wrap;
+            gap: 10px 20px;
+        }
+
+        .header h1 {
+            color: #e8edf5;
+            font-weight: 400;
+            font-size: 1.9rem;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .header h1 small {
+            font-size: 0.9rem;
+            font-weight: 300;
+            color: #6a7fa3;
+            letter-spacing: 0.5px;
+        }
+
+        .header .info {
+            color: #6a7fa3;
+            font-size: 0.9rem;
+            background: #141c30;
+            padding: 6px 18px;
+            border-radius: 40px;
+            border: 1px solid #1f2a44;
+            white-space: nowrap;
+        }
+
+        .header .info strong {
+            color: #b7caee;
+            font-weight: 500;
+        }
+
+        .canvas-wrapper {
+            background: #050914;
+            border-radius: 28px;
+            padding: 12px;
+            border: 1px solid #1a2340;
+            box-shadow: inset 0 0 60px rgba(0, 10, 40, 0.8);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16 / 9;
+            background: #050914;
+            border-radius: 20px;
+            cursor: default;
+            touch-action: none;
+        }
+
+        .footer {
+            margin-top: 18px;
+            text-align: center;
+            color: #2d3857;
+            font-size: 0.75rem;
+            letter-spacing: 0.4px;
+            border-top: 1px solid #121b30;
+            padding-top: 16px;
+        }
+
+        .footer a {
+            color: #4a5f89;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: #7a94c9;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 12px; border-radius: 24px; }
+            .header h1 { font-size: 1.4rem; }
+            .header .info { font-size: 0.75rem; padding: 4px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>
+            ✦ 微生物星空
+            <small>— 不可培养的星尘</small>
+        </h1>
+        <div class="info">
+            ⭐ <strong id="starCount">0</strong> 颗星星 · 悬停查看名字
+        </div>
+    </div>
+
+    <div class="canvas-wrapper">
+        <canvas id="starCanvas" width="1600" height="900"></canvas>
+    </div>
+
+    <div class="footer">
+        ✦ 灵感来自 <a href="https://neal.fun/constellation-draw/" target="_blank">neal.fun/constellation-draw</a>
+        · 名字来自 <a href="https://en.wikipedia.org/wiki/Candidate_phyla_radiation" target="_blank">CPR</a>、
+        <a href="https://en.wikipedia.org/wiki/Biological_dark_matter" target="_blank">微生物暗物质</a>
+        与环境宏基因组
+    </div>
+</div>
+
+<script>
+    (function() {
+        const canvas = document.getElementById('starCanvas');
+        const ctx = canvas.getContext('2d');
+        const starCountSpan = document.getElementById('starCount');
+
+        // ============================================================
+        //  1. 微生物名字 —— 不再只有 Candidatus，更加多样化！
+        //     包含：未培养的属/种、环境克隆、候选门、以及各种有趣的名字
+        // ============================================================
+        const MICROBE_NAMES = [
+            // ---- 未培养的属 / 种 (来自环境样本) ----
+            "uncultured Nitrospira",
+            "uncultured Gemmatimonas",
+            "uncultured Planctomyces",
+            "uncultured Acidobacterium",
+            "uncultured Chloroflexus",
+            "uncultured Dehalococcoides",
+            "uncultured Methylobacterium",
+            "uncultured Sphingomonas",
+            "uncultured Pseudomonas",
+            "uncultured Bacillus",
+            "uncultured Clostridium",
+            "uncultured Streptomyces",
+            "uncultured Mycobacterium",
+            "uncultured Bradyrhizobium",
+            "uncultured Rhizobium",
+            "uncultured Mesorhizobium",
+            "uncultured Sinorhizobium",
+            "uncultured Azospirillum",
+            "uncultured Herbaspirillum",
+            "uncultured Burkholderia",
+            "uncultured Ralstonia",
+            "uncultured Cupriavidus",
+            "uncultured Variovorax",
+            "uncultured Polaromonas",
+            "uncultured Acidovorax",
+            "uncultured Comamonas",
+            "uncultured Delftia",
+            "uncultured Diaphorobacter",
+            "uncultured Hydrogenophaga",
+            "uncultured Leptothrix",
+            "uncultured Sideroxydans",
+            "uncultured Gallionella",
+            "uncultured Ferritrophicum",
+            "uncultured Magnetobacterium",
+            "uncultured Candidatus Omnitrophus",
+            "uncultured Candidatus Cloacamonas",
+            "uncultured Candidatus Auribacter",
+            "uncultured Candidatus Rokubacter",
+            "uncultured Candidatus Melainabacter",
+            "uncultured Candidatus Poribacter",
+            "uncultured Candidatus Latescibacter",
+            "uncultured Candidatus Endomicrobium",
+            "uncultured Candidatus Tectomicrobium",
+            "uncultured Candidatus Entotheonella",
+
+            // ---- 环境克隆 / 宏基因组中的神秘名字 ----
+            "SAR11 clade",
+            "SAR324 clade",
+            "SAR406 clade",
+            "SAR86 clade",
+            "Marine Group I",
+            "Marine Group II",
+            "Marine Group III",
+            "Marine Group IV",
+            "Freshwater Group A",
+            "Freshwater Group B",
+            "Soil Group 1",
+            "Soil Group 2",
+            "Rhizosphere cluster",
+            "Deep Sea epsilonproteobacterium",
+            "Deep Sea gammaproteobacterium",
+            "Hydrothermal vent archaeon",
+            "Cold seep methanotroph",
+            "Antarctic lake bacterium",
+            "Arctic sea ice bacterium",
+            "Hot spring cyanobacterium",
+            "Acid mine drainage archaeon",
+            "Wastewater sludge bacterium",
+            "Anaerobic digester methanogen",
+            "Rice paddy soil bacterium",
+            "Forest humus acidobacterium",
+            "Grassland soil verrucomicrobium",
+            "Desert crust cyanobacterium",
+            "Coral reef symbiont",
+            "Sponge symbiont",
+            "Termite gut spirochete",
+
+            // ---- 候选门 / 不可培养的门 (CPR & 其他) ----
+            "Patescibacteria",
+            "Parcubacteria (OD1)",
+            "Gracilibacteria (GN02)",
+            "Absconditabacteria (SR1)",
+            "Peregrinibacteria (PER)",
+            "Microgenomates (OP11)",
+            "Saccharibacteria (TM7)",
+            "Kaiserbacteria",
+            "Woesebacteria",
+            "Yanofskybacteria",
+            "Berkelbacteria",
+            "Campbellbacteria",
+            "Dojkabacteria",
+            "Falkowbacteria",
+            "Harrisonbacteria",
+            "Jorgensenbacteria",
+            "Katanobacteria",
+            "Levybacteria",
+            "Lindowbacteria",
+            "Maxwellbacteria",
+            "Moranbacteria",
+            "Nashbacteria",
+            "Nealsonbacteria",
+            "Nomurabacteria",
+            "Pacebacteria",
+            "Portnoybacteria",
+            "Saganbacteria",
+            "Shapirobacteria",
+            "Spechtbacteria",
+            "Stokesbacteria",
+            "Taylorbacteria",
+            "Woykebacteria",
+            "Zambryskibacteria",
+            "Zixibacteria",
+
+            // ---- 其他未培养的古菌 ----
+            "Lokiarchaeum",
+            "Thorarchaeum",
+            "Odinarchaeum",
+            "Heimdallarchaeum",
+            "Aenigmarchaeota",
+            "Geoarchaeota",
+            "Bathyarchaeota",
+            "Nanohaloarchaea",
+            "Altiarchaeum",
+            "Diapherotrites",
+            "Korarchaeum",
+            "Nitrosopumilus",
+            "Methanomethylophilus",
+            "Parvarchaeum",
+            "Pacearchaeota",
+
+            // ---- 一些有趣且独特的名字 ----
+            "uncultured marine actinobacterium",
+            "uncultured freshwater betaproteobacterium",
+            "uncultured soil alphaproteobacterium",
+            "uncultured sediment deltaproteobacterium",
+            "uncultured biofilm bacterium",
+            "uncultured endophytic bacterium",
+            "uncultured rhizobiaceae",
+            "uncultured methanobacterium",
+            "uncultured thermoplasmatota",
+            "uncultured verrucomicrobiaceae",
+            "uncultured chlamydiae",
+            "uncultured planctomycetaceae",
+        ];
+
+        // ============================================================
+        //  2. 星星参数 —— 更小，更像真实星空！
+        // ============================================================
+        const STAR_COUNT = 180;          // 星星数量
+        const STAR_MIN_RADIUS = 2.0;     // 最小半径 (更小)
+        const STAR_MAX_RADIUS = 5.0;     // 最大半径 (更小)
+        const HIT_RADIUS_EXTRA = 12;     // 悬停检测额外半径 (方便点击小星星)
+
+        let stars = [];
+        let hoveredIndex = null;
+
+        // 星星颜色池 (暖色、冷色、亮色)
+        const COLOR_PALETTE = [
+            '#f7e9d7', '#ffd9b3', '#ffe5b4', '#d4e1f5', '#b5d3e7',
+            '#c8d9e6', '#f2dcd3', '#e8d5c4', '#c9d4c5', '#d4c9d4',
+            '#fce4d6', '#e2dce8', '#d9e0e8', '#f5e6d3', '#cfe0e8',
+            '#f0e6d0', '#e8dcc8', '#d4dce8', '#c8d4e0', '#e0d8c8'
+        ];
+
+        // ============================================================
+        //  3. 生成星星
+        // ============================================================
+        function generateStars(count) {
+            const w = canvas.width;
+            const h = canvas.height;
+            const pad = 50;
+            const newStars = [];
+
+            const shuffledNames = [...MICROBE_NAMES];
+            for (let i = shuffledNames.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledNames[i], shuffledNames[j]] = [shuffledNames[j], shuffledNames[i]];
+            }
+
+            for (let i = 0; i < count; i++) {
+                const name = shuffledNames[i % shuffledNames.length];
+                const x = Math.random() * (w - pad * 2) + pad;
+                const y = Math.random() * (h - pad * 2) + pad;
+                const radius = STAR_MIN_RADIUS + Math.random() * (STAR_MAX_RADIUS - STAR_MIN_RADIUS);
+                const color = COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)];
+                const glowIntensity = 0.4 + Math.random() * 0.6;
+
+                newStars.push({
+                    x, y,
+                    radius,
+                    color,
+                    glowIntensity,
+                    name,
+                    phaseX: Math.random() * Math.PI * 2,
+                    phaseY: Math.random() * Math.PI * 2,
+                    amp: 0.2 + Math.random() * 0.4,
+                });
+            }
+            return newStars;
+        }
+
+        // ============================================================
+        //  4. 绘制星空
+        // ============================================================
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 4.1 星云背景 (微光)
+            const nebulaCenters = [
+                { x: canvas.width * 0.2, y: canvas.height * 0.3, r: 400, color: 'rgba(40, 60, 120, 0.08)' },
+                { x: canvas.width * 0.7, y: canvas.height * 0.6, r: 500, color: 'rgba(80, 40, 100, 0.06)' },
+                { x: canvas.width * 0.5, y: canvas.height * 0.2, r: 350, color: 'rgba(30, 80, 130, 0.05)' },
+                { x: canvas.width * 0.1, y: canvas.height * 0.8, r: 450, color: 'rgba(100, 50, 80, 0.04)' },
+                { x: canvas.width * 0.9, y: canvas.height * 0.9, r: 400, color: 'rgba(20, 70, 110, 0.06)' },
+            ];
+            for (const nb of nebulaCenters) {
+                const grad = ctx.createRadialGradient(nb.x, nb.y, 10, nb.x, nb.y, nb.r);
+                grad.addColorStop(0, nb.color);
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            // 4.2 背景小星点 (景深)
+            ctx.fillStyle = 'rgba(255,255,255,0.12)';
+            for (let i = 0; i < 500; i++) {
+                const seed = i * 1234.567;
+                const x = (Math.sin(seed) * 0.5 + 0.5) * canvas.width;
+                const y = (Math.cos(seed * 1.3) * 0.5 + 0.5) * canvas.height;
+                const r = 0.3 + Math.sin(seed * 0.7) * 0.4;
+                ctx.beginPath();
+                ctx.arc(x, y, Math.max(0.2, r), 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 4.3 主星星 (小星星)
+            for (let i = 0; i < stars.length; i++) {
+                const s = stars[i];
+                const isHovered = (hoveredIndex === i);
+
+                // 光晕 (glow) — 比星星大一些
+                const glowSize = s.radius * (isHovered ? 5 : 3.5);
+                const grad = ctx.createRadialGradient(
+                    s.x, s.y, s.radius * 0.2,
+                    s.x, s.y, glowSize
+                );
+                const baseAlpha = isHovered ? 0.6 : 0.25;
+                const alpha = baseAlpha * s.glowIntensity;
+                const hexAlpha = Math.round(alpha * 255).toString(16).padStart(2, '0');
+                grad.addColorStop(0, s.color + hexAlpha);
+                grad.addColorStop(0.4, s.color + Math.round(alpha * 0.5 * 255).toString(16).padStart(2, '0'));
+                grad.addColorStop(1, s.color + '00');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, glowSize, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 星星本体 (很小)
+                ctx.shadowColor = s.color;
+                ctx.shadowBlur = isHovered ? 20 : 8;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+                const fillGrad = ctx.createRadialGradient(
+                    s.x - s.radius * 0.3, s.y - s.radius * 0.3, s.radius * 0.1,
+                    s.x, s.y, s.radius
+                );
+                const brightColor = isHovered ? '#ffffff' : s.color;
+                fillGrad.addColorStop(0, brightColor);
+                fillGrad.addColorStop(0.7, s.color);
+                fillGrad.addColorStop(1, s.color);
+                ctx.fillStyle = fillGrad;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // ---- 悬停时显示名字 ----
+                if (isHovered) {
+                    const name = s.name;
+                    ctx.font = '600 15px "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+                    const metrics = ctx.measureText(name);
+                    const textWidth = metrics.width;
+                    const textHeight = 22;
+                    const paddingX = 20;
+                    const paddingY = 12;
+                    const bgX = s.x - textWidth / 2 - paddingX;
+                    const bgY = s.y - s.radius - 20 - textHeight - paddingY * 2;
+                    const bgW = textWidth + paddingX * 2;
+                    const bgH = textHeight + paddingY * 2;
+
+                    // 毛玻璃背景
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = 'rgba(8, 12, 28, 0.82)';
+                    ctx.beginPath();
+                    ctx.roundRect(bgX, bgY, bgW, bgH, 14);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.10)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.roundRect(bgX, bgY, bgW, bgH, 14);
+                    ctx.stroke();
+
+                    // 名字文字
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.font = '600 15px "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+                    ctx.fillText(name, s.x, bgY + bgH - paddingY);
+
+                    // 指示线
+                    ctx.beginPath();
+                    ctx.moveTo(s.x, bgY + bgH);
+                    ctx.lineTo(s.x, s.y - s.radius - 4);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([3, 5]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+
+            starCountSpan.textContent = stars.length;
+        }
+
+        // --- roundRect polyfill ---
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                if (r > w / 2) r = w / 2;
+                if (r > h / 2) r = h / 2;
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                return this;
+            };
+        }
+
+        // ============================================================
+        //  5. 交互
+        // ============================================================
+        function getCanvasCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+                e.preventDefault();
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        function findStarAt(pos) {
+            for (let i = stars.length - 1; i >= 0; i--) {
+                const s = stars[i];
+                const dx = pos.x - s.x;
+                const dy = pos.y - s.y;
+                const hitRadius = s.radius + HIT_RADIUS_EXTRA;
+                if (dx * dx + dy * dy < hitRadius * hitRadius) {
+                    return i;
+                }
+            }
+            return null;
+        }
+
+        function onPointerMove(e) {
+            const pos = getCanvasCoords(e);
+            const idx = findStarAt(pos);
+            if (idx !== hoveredIndex) {
+                hoveredIndex = idx;
+                canvas.style.cursor = (idx !== null) ? 'pointer' : 'default';
+                draw();
+            }
+        }
+
+        function onPointerLeave(e) {
+            if (hoveredIndex !== null) {
+                hoveredIndex = null;
+                canvas.style.cursor = 'default';
+                draw();
+            }
+        }
+
+        canvas.addEventListener('mousemove', onPointerMove);
+        canvas.addEventListener('mouseleave', onPointerLeave);
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            onPointerMove(e);
+        }, { passive: false });
+
+        // 点击星星在控制台显示名字 (小彩蛋)
+        canvas.addEventListener('click', (e) => {
+            const pos = getCanvasCoords(e);
+            const idx = findStarAt(pos);
+            if (idx !== null) {
+                console.log(`🔬 你发现了: ${stars[idx].name}`);
+            }
+        });
+
+        // ============================================================
+        //  6. 初始化
+        // ============================================================
+        stars = generateStars(STAR_COUNT);
+        draw();
+
+        window.addEventListener('resize', draw);
+
+        console.log('🌌 微生物星空已加载！悬停星星查看它们的名字。');
+        console.log(`📋 共 ${MICROBE_NAMES.length} 种独特的微生物名字。`);
+    })();
+</script>
+</body>
+</html>

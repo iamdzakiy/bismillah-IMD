@@ -138,15 +138,6 @@ export const TIMELINE_DATA = [
   },
   {
     id: '16',
-    phase: 'Final',
-    date: '25 – 31 Oct 2026',
-    title: 'MO Finalist Re-registration',
-    desc: 'Re-registration of Finalists • Online',
-    branch: 'MO',
-    icon: '✅',
-  },
-  {
-    id: '17',
     phase: 'Technical Meeting',
     date: '7 Nov 2026',
     title: 'All Branches Final Technical Meeting',
@@ -155,7 +146,7 @@ export const TIMELINE_DATA = [
     icon: '🎯',
   },
   {
-    id: '18',
+    id: '17',
     phase: 'Final',
     date: '14 Nov 2026',
     title: 'Final Round / Pitching Day',
@@ -164,7 +155,7 @@ export const TIMELINE_DATA = [
     icon: '🏆',
   },
   {
-    id: '19',
+    id: '18',
     phase: 'Finale',
     date: '15 Nov 2026',
     title: 'Exhibition & Grand Awarding Ceremony',
