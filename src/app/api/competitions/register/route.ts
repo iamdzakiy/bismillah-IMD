@@ -21,6 +21,8 @@ const registerSchema = z.object({
   teamName: z.string().trim().min(3).max(50),
   competitionType: z.enum(['OLYMPIAD', 'SPC', 'NEC']),
   members: z.array(memberDataSchema).min(0).max(4),
+  captainPhone: z.string().min(5).max(20).optional(),
+  captainAge: z.number().int().min(10).max(99).optional(),
   ktmUrl: z.string().url().optional(),
   pdfMergeUrl: z.string().url().optional(),
   paymentProofUrl: z.string().url().optional(),
@@ -55,7 +57,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { teamName, competitionType, members, ktmUrl, pdfMergeUrl, paymentProofUrl, shareProofUrl, twibbonProofUrl, groupsProofUrl } = parsed.data;
+    const { teamName, competitionType, members, captainPhone, captainAge, ktmUrl, pdfMergeUrl, paymentProofUrl, shareProofUrl, twibbonProofUrl, groupsProofUrl } = parsed.data;
 
     const captain = await prisma.user.findUnique({ where: { id: session.user.id } });
     if (!captain) {
@@ -76,13 +78,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: message }, { status: 400 });
     }
 
+    // Chairman info - use provided phone/age for SPC/NEC, otherwise leave empty
+    const isChairmanMode = competitionType === 'SPC' || competitionType === 'NEC';
+    
     const memberData = [
       {
         name: captain.name || captain.email,
         email: captain.email,
         institution: captain.institution || '',
-        phone: '',
-        age: null,
+        phone: isChairmanMode ? captainPhone || '' : '',
+        age: isChairmanMode ? captainAge || null : null,
         studentProofUrl: ktmUrl || null,
         role: 'CHAIRMAN',
       },

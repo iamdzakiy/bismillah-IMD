@@ -59,9 +59,11 @@ export async function POST(
       return NextResponse.json({ error: 'Registration not found' }, { status: 404 });
     }
 
-    if (registration.status !== 'DOCUMENT_SUBMITTED') {
+    // Allow rejection of both PENDING_DOCS and DOCUMENT_SUBMITTED statuses
+    // This allows users to re-upload after rejection
+    if (registration.status !== 'DOCUMENT_SUBMITTED' && registration.status !== 'PENDING_DOCS') {
       return NextResponse.json(
-        { error: 'Only submitted documents can be rejected.' },
+        { error: `Cannot reject registration with status: ${registration.status}. Only DOCUMENT_SUBMITTED or PENDING_DOCS can be rejected.` },
         { status: 400 }
       );
     }
