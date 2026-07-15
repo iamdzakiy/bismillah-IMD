@@ -46,25 +46,17 @@ export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload, t
     setUploading(true);
 
     try {
-      const body: any = { fileName: file.name, fileType: file.type, fileSize: file.size };
-      if (teamId) body.teamId = teamId;
-      
+      // Upload file directly via FormData (server-side upload to Supabase)
+      const formData = new FormData();
+      formData.append('file', file);
+
       const res = await fetch('/api/upload/presign', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: formData,
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to get upload URL');
-
-      const uploadRes = await fetch(data.presignedUrl, {
-        method: data.method || 'PUT',
-        body: file,
-        headers: { 'Content-Type': data.contentType || file.type },
-      });
-
-      if (!uploadRes.ok) throw new Error('Upload failed');
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
 
       onUpload(data.publicUrl);
     } catch (err) {
