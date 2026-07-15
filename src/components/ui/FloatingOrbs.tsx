@@ -16,15 +16,19 @@ const authPaths = ['/login', '/register', '/verify-email', '/request-password-re
 export function FloatingOrbs() {
   const pathname = usePathname();
   const [particles, setParticles] = useState<Array<Particle>>([]);
-  const [isAuthPage, setIsAuthPage] = useState(true); // Default ke true agar render server = null
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Tentukan auth page di client-side saja
-    setIsAuthPage(authPaths.includes(pathname));
-  }, [pathname]);
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
-    // Generate particles only on client side to avoid hydration mismatch
+    if (!mounted) return;
+    const isAuth = authPaths.includes(pathname);
+    if (isAuth) {
+      setParticles([]);
+      return;
+    }
     const generatedParticles = [...Array(20)].map((_, i) => ({
       id: i,
       x: Math.random() * 100,
@@ -33,10 +37,11 @@ export function FloatingOrbs() {
       delay: Math.random() * 5,
     }));
     setParticles(generatedParticles);
-  }, []);
+  }, [pathname, mounted]);
 
-  // Render null di server & saat pertama hydrate, baru tampil setelah client-side
-  if (isAuthPage || particles.length === 0) return null;
+  // Always return null during SSR and first client render (before mounted)
+  // This prevents hydration mismatch between server and client
+  if (!mounted || authPaths.includes(pathname) || particles.length === 0) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden">

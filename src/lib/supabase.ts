@@ -27,6 +27,27 @@ export function getSupabaseBucket() {
   return process.env.SUPABASE_STORAGE_BUCKET || 'submissions';
 }
 
+export async function ensureBucketExists() {
+  const supabase = getSupabaseClient();
+  const bucket = getSupabaseBucket();
+
+  // Check if bucket exists
+  const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+  if (listError) throw listError;
+
+  const bucketExists = buckets?.some(b => b.name === bucket);
+  if (!bucketExists) {
+    // Try to create the bucket as public
+    const { error: createError } = await supabase.storage.createBucket(bucket, {
+      public: true,
+    });
+    if (createError) {
+      throw new Error(`Bucket "${bucket}" does not exist and could not be created: ${createError.message}`);
+    }
+    console.log(`Created storage bucket: ${bucket}`);
+  }
+}
+
 export async function getPresignedUrl(fileName: string, fileType: string, userId: string) {
   const supabase = getSupabaseClient();
   const fileExt = fileName.split('.').pop()?.toLowerCase()?.replace(/[^a-z0-9]/g, '') || 'bin';

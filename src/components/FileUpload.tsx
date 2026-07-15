@@ -46,13 +46,15 @@ export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload, t
     setUploading(true);
 
     try {
-      // Upload file directly via FormData (server-side upload to Supabase)
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/upload/presign', {
+      // Upload file directly via raw binary body (server-side upload to Supabase)
+      // Avoids Content-Type issues with FormData in middleware
+      const filename = encodeURIComponent(file.name);
+      const res = await fetch(`/api/upload/presign?filename=${filename}`, {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': file.type,
+        },
+        body: await file.arrayBuffer(),
       });
 
       const data = await res.json();
