@@ -203,8 +203,8 @@ export const INDUSTRY_PARTNERS = [
 // Powered by logos (placeholder)
 export const POWERED_BY = [
   { name: 'Archaea #Eksis', image: '/logo_archaea.svg' },
-  { name: 'SITH', image: '/logo_SITH.svg' },
-  { name: 'ITB', image: '/logo-3.svg' },
+  { name: 'SITH', image: '/logo-SITH.png' },
+  { name: 'ITB', image: '/logo-itb.png' },
   { name: 'IMD', image: '/favicon.svg' },
 ];
 

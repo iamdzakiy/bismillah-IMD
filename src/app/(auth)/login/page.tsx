@@ -9,18 +9,19 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
   const verified = searchParams.get('verified');
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Redirect to dashboard if already logged in
+  // Redirect to callbackUrl if already logged in
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.id) {
-      window.location.href = '/dashboard';
+      window.location.href = callbackUrl;
     }
-  }, [status, session]);
+  }, [status, session, callbackUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +40,7 @@ function LoginContent() {
         setLoading(false);
       } else if (result?.ok) {
         setTimeout(() => {
-          window.location.href = '/dashboard';
+          window.location.href = callbackUrl;
         }, 500);
       } else {
         setError('Login failed. Please try again.');
@@ -53,7 +54,7 @@ function LoginContent() {
   };
 
   const handleGoogleLogin = () => {
-    signIn('google', { callbackUrl: '/dashboard' });
+    signIn('google', { callbackUrl });
   };
 
   useEffect(() => {
