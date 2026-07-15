@@ -12,18 +12,19 @@ interface SubmissionFormProps {
 export function SubmissionForm({ team }: SubmissionFormProps) {
   const router = useRouter();
   const [phase, setPhase] = useState<SubmissionPhase>('PRELIMINARY');
-  const [files, setFiles] = useState<Record<string, string>>({});
+  const [fileUrl, setFileUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const currentPhase = team.registration?.currentPhase;
   const existingSubmission = team.submissions?.find((submission) => submission.phase === phase);
 
-  const handleFileUpload = (key: string, url: string) => {
-    setFiles((prev) => ({ ...prev, [key]: url }));
-  };
-
   const handleSubmit = async () => {
+    if (!team.id) {
+      setMessage({ type: 'error', text: 'Team ID not found. Please try again.' });
+      return;
+    }
+
     setSubmitting(true);
     setMessage(null);
 
@@ -32,14 +33,14 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teamId: team.id, ...files }),
+        body: JSON.stringify({ teamId: team.id, fileUrl }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Submission failed');
 
       setMessage({ type: 'success', text: data.message || 'Submission successful!' });
-      setFiles({});
+      setFileUrl('');
       router.refresh();
     } catch (err) {
       setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Submission failed' });
@@ -48,43 +49,34 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
     }
   };
 
-  const getRequiredFields = () => {
+  const getUploadConfig = () => {
+    // NEC, SPC, MO: hanya 1 file submission sesuai template
     if (phase === 'PRELIMINARY') {
       if (team.competitionType === 'SPC') {
-        return [
-          { key: 'proposalUrl', label: 'Project Proposal (PDF)', accept: '.pdf' },
-          { key: 'videoPitchUrl', label: 'Video Pitch (MP4)', accept: '.mp4' },
-        ];
+        return { label: 'Project Proposal (PDF) - Gunakan template resmi', accept: '.pdf' };
       }
       if (team.competitionType === 'NEC') {
-        return [
-          { key: 'fullPaperUrl', label: 'Full Paper Essay (PDF)', accept: '.pdf' },
-          { key: 'posterUrl', label: 'Infographic Poster (PDF/PNG)', accept: '.pdf,.png,.jpg' },
-        ];
+        return { label: 'Full Paper Essay (PDF) - Gunakan template resmi', accept: '.pdf' };
       }
-      return [];
+      if (team.competitionType === 'OLYMPIAD') {
+        return null; // Exam-based, no file upload
+      }
     }
     if (phase === 'SEMIFINAL') {
-      return [
-        { key: 'fullPaperUrl', label: 'Full Paper (PDF)', accept: '.pdf' },
-        { key: 'videoPitchUrl', label: 'Video Pitch (MP4)', accept: '.mp4' },
-      ];
+      return { label: 'Full Paper (PDF)', accept: '.pdf' };
     }
     if (phase === 'FINAL') {
-      return [
-        { key: 'pitchDeckUrl', label: 'Pitch Deck (PDF)', accept: '.pdf' },
-        { key: 'videoPitchUrl', label: 'Final Video (MP4)', accept: '.mp4' },
-      ];
+      return { label: 'Pitch Deck / Final Submission (PDF)', accept: '.pdf' };
     }
-    return [];
+    return null;
   };
 
-  const fields = getRequiredFields();
+  const uploadConfig = getUploadConfig();
 
   if (team.competitionType === 'OLYMPIAD' && phase === 'PRELIMINARY') {
     return (
       <div className="glass-dark rounded-2xl p-6">
-        <h3 className="text-xl font-bold mb-2">Preliminary Phase</h3>
+        <h3 className="text-xl font-bold mb-2">Preliminary Phase - MO</h3>
         <p className="text-white/60 text-sm">
           The Olympiad preliminary phase is exam-based. Please check your email for exam access details.
         </p>
@@ -110,7 +102,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
         <h3 className="text-xl font-bold">Submit Your Work</h3>
         <select
           value={phase}
-          onChange={(e) => setPhase(e.target.value as SubmissionPhase)}
+          onChange={(e) => { setPhase(e.target.value as SubmissionPhase); setFileUrl(''); }}
           className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm text-white"
         >
           <option value="PRELIMINARY">Preliminary</option>
@@ -140,24 +132,26 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
             Status: <span className="font-semibold text-bio-emerald">{existingSubmission.status}</span>
           </p>
         </div>
-      ) : fields.length === 0 ? (
+      ) : !uploadConfig ? (
         <p className="text-white/60 text-sm">No submission required for this phase.</p>
       ) : (
         <>
           <div className="space-y-4 mb-6">
-            {fields.map((field) => (
-              <FileUpload
-                key={field.key}
-                label={field.label}
-                accept={field.accept}
-                onUpload={(url) => handleFileUpload(field.key, url)}
-              />
-            ))}
+            <p className="text-xs text-white/40">
+              {team.competitionType === 'SPC' && phase === 'PRELIMINARY' && 'Upload 1 file PDF (Proposal) menggunakan template resmi yang disediakan panitia.'}
+              {team.competitionType === 'NEC' && phase === 'PRELIMINARY' && 'Upload 1 file PDF (Full Paper/Essay) menggunakan template resmi yang disediakan panitia.'}
+            </p>
+            <FileUpload
+              key={uploadConfig.label}
+              label={uploadConfig.label}
+              accept={uploadConfig.accept}
+              onUpload={(url) => setFileUrl(url)}
+            />
           </div>
 
           <button
             onClick={handleSubmit}
-            disabled={submitting || Object.keys(files).length < fields.length}
+            disabled={submitting || !fileUrl}
             className="btn-glow w-full"
           >
             {submitting ? 'Submitting...' : 'Submit'}

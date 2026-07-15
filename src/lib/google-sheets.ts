@@ -32,7 +32,7 @@ function getSheetsClient() {
   }
 }
 
-export async function appendToSheet(sheetName: string, values: SheetValue[]) {
+export async function appendToSheet(sheetName: string, values: SheetValue[]): Promise<number | undefined> {
   const sheets = getSheetsClient();
   const spreadsheetId = process.env.GOOGLE_SHEET_ID;
 
@@ -40,23 +40,34 @@ export async function appendToSheet(sheetName: string, values: SheetValue[]) {
     if (process.env.NODE_ENV === 'development') {
       console.warn(`Skipped Google Sheets sync for ${sheetName}: missing configuration.`);
     }
-    return;
+    return undefined;
   }
 
   try {
     console.log(`Google Sheets: Attempting to append to ${sheetName} in spreadsheet ${spreadsheetId}`);
-    await sheets.spreadsheets.values.append({
+    const response = await sheets.spreadsheets.values.append({
       spreadsheetId,
       range: `${sheetName}!A1`,
       valueInputOption: 'USER_ENTERED',
       requestBody: { values: [values] },
     });
     console.log(`Google Sheets: Successfully appended to ${sheetName}`);
+
+    // Extract row number from response (e.g., "Registrations!A19" -> 19)
+    const updatedRange = response.data.updates?.updatedRange;
+    if (updatedRange) {
+      const match = updatedRange.match(/!A(\d+)/);
+      if (match) {
+        return parseInt(match[1], 10);
+      }
+    }
+    return undefined;
   } catch (error) {
     console.error(`Google Sheets append error for ${sheetName}:`, error);
     if (error instanceof Error) {
       console.error('Error details:', error.message);
     }
+    return undefined;
   }
 }
 
@@ -104,7 +115,7 @@ export async function syncRegistrationToSheet(registration: {
   shareProofUrl?: string | null;
   twibbonProofUrl?: string | null;
   groupsProofUrl?: string | null;
-}) {
+}): Promise<number | undefined> {
   const date = new Date().toISOString();
   const memberNames = registration.members?.map((m) => m.name).join('; ') || '';
   const memberEmails = registration.members?.map((m) => m.email).join('; ') || '';
@@ -135,7 +146,8 @@ export async function syncRegistrationToSheet(registration: {
     'FALSE', // approved (trigger for manual verification)
   ];
 
-  await appendToSheet('Registrations', values);
+  const row = await appendToSheet('Registrations', values);
+  return row;
 }
 
 export async function syncSubmissionToSheet(submission: {

@@ -30,31 +30,13 @@ const registerSchema = z.object({
 });
 
 function isEligible(user: Pick<User, 'educationLevel'>, competitionType: CompetitionType) {
-  // MO (Olympiad) and SPC for SMA/sederajat only
   if (competitionType === 'OLYMPIAD' || competitionType === 'SPC') {
     return user.educationLevel === 'SMA';
   }
-  // NEC for S1/Diploma sederajat only (NO S2/S3)
   if (competitionType === 'NEC') {
     return user.educationLevel?.startsWith('S1') || user.educationLevel === 'S1';
   }
   return false;
-}
-
-function validateTeamSize(competitionType: CompetitionType, totalMembers: number) {
-  // MO (Olympiad) = individual only, no members
-  if (competitionType === 'OLYMPIAD') return totalMembers === 1; // only captain
-  // SPC = 2-4 members (captain + 1-3 others)
-  if (competitionType === 'SPC') return totalMembers >= 1 && totalMembers <= 4;
-  // NEC = individual only (MO type for uni)
-  if (competitionType === 'NEC') return totalMembers === 1; // only captain, individual
-  return false;
-}
-
-function teamSizeMessage(competitionType: CompetitionType) {
-  if (competitionType === 'OLYMPIAD') return 'MO is individual only (1 person).';
-  if (competitionType === 'SPC') return 'SPC requires 2-4 team members.';
-  return 'NEC is individual only (1 person).';
 }
 
 export async function POST(req: Request) {
@@ -94,10 +76,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: message }, { status: 400 });
     }
 
-    // Build memberData including captain as first entry
-    // MO = individual (captain only, no additional members)
-    // SPC = team of 2-4 (captain + 1-3 members)
-    // NEC = individual (captain only, no additional members)
     const memberData = [
       {
         name: captain.name || captain.email,
@@ -119,7 +97,6 @@ export async function POST(req: Request) {
       })),
     ];
 
-    // For MO and NEC, no additional members allowed
     if ((competitionType === 'OLYMPIAD' || competitionType === 'NEC') && members.length > 0) {
       return NextResponse.json(
         { error: 'This competition is individual only. No additional members allowed.' },
@@ -127,7 +104,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // For SPC, members are allowed
     if (competitionType === 'SPC' && (members.length < 1 || members.length > 3)) {
       return NextResponse.json(
         { error: 'SPC requires 2-4 members total (you + 1-3 team members).' },
@@ -140,6 +116,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Team name already taken.' }, { status: 400 });
     }
 
+    // Create team FIRST to get the real ID
     const team = await prisma.team.create({
       data: {
         teamName,
@@ -163,21 +140,35 @@ export async function POST(req: Request) {
       },
     });
 
-    // Sync to Google Sheets with all proof fields
-    await syncRegistrationToSheet({
-      id: team.id,
-      teamName: team.teamName,
-      competitionType: team.competitionType,
-      captainEmail: team.captain.email,
-      captainName: team.captain.name,
-      institution: team.captain.institution,
-      status: team.registration?.status,
-      members: memberData,
-      paymentProof: paymentProofUrl,
-      shareProofUrl,
-      twibbonProofUrl,
-      groupsProofUrl,
-    });
+    // Sync to Google Sheets with the real team ID
+    let googleSheetRow: number | null = null;
+    try {
+      const sheetRow = await syncRegistrationToSheet({
+        id: team.id,
+        teamName: team.teamName,
+        competitionType: team.competitionType,
+        captainEmail: team.captain.email,
+        captainName: team.captain.name,
+        institution: team.captain.institution,
+        status: team.registration?.status,
+        members: memberData,
+        paymentProof: paymentProofUrl,
+        shareProofUrl,
+        twibbonProofUrl,
+        groupsProofUrl,
+      });
+      googleSheetRow = sheetRow ?? null;
+    } catch (sheetError) {
+      console.warn('Google Sheets sync failed (non-fatal):', sheetError);
+    }
+
+    // Update registration with googleSheetRow if we got one
+    if (googleSheetRow && team.registration) {
+      await prisma.registration.update({
+        where: { id: team.registration.id },
+        data: { googleSheetRow },
+      });
+    }
 
     return NextResponse.json({
       success: true,

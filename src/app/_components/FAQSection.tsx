@@ -159,7 +159,7 @@ export function FAQSection() {
           </div>
           <p className="text-white/40 text-xs mt-4">
             📋 First check our{' '}
-            <a href="https://docs.google.com/spreadsheets/d/1YOUR_SHEET_ID_HERE" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 underline">
+            <a href="https://docs.google.com/spreadsheets/d/1WRGHkBPQw12YpXxbFsX_AxPuOVwgFgTiBUP7eImx3XQ/edit?usp=sharing" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 underline">
               interactive FAQ sheet
             </a>
             {' '}— your question may already be answered!

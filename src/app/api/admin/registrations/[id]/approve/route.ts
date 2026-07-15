@@ -30,9 +30,10 @@ export async function POST(
       return NextResponse.json({ error: 'Registration not found' }, { status: 404 });
     }
 
-    if (registration.status !== 'DOCUMENT_SUBMITTED') {
+    // Allow approval from PENDING_DOCS (just registered) or DOCUMENT_SUBMITTED (user clicked submit docs)
+    if (registration.status !== 'PENDING_DOCS' && registration.status !== 'DOCUMENT_SUBMITTED') {
       return NextResponse.json(
-        { error: 'Only submitted documents can be approved.' },
+        { error: `Cannot approve registration with status: ${registration.status}. Only PENDING_DOCS or DOCUMENT_SUBMITTED can be approved.` },
         { status: 400 }
       );
     }

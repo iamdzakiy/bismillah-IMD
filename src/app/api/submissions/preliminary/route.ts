@@ -8,10 +8,7 @@ import { syncSubmissionToSheet } from '@/lib/google-sheets';
 
 const preliminarySchema = z.object({
   teamId: z.string(),
-  proposalUrl: z.string().url().optional(),
-  videoPitchUrl: z.string().url().optional(),
-  fullPaperUrl: z.string().url().optional(),
-  posterUrl: z.string().url().optional(),
+  fileUrl: z.string().url().optional(),
 });
 
 export async function POST(req: Request) {
@@ -30,7 +27,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { teamId, proposalUrl, videoPitchUrl, fullPaperUrl, posterUrl } = parsed.data;
+    const { teamId, fileUrl } = parsed.data;
 
     const team = await prisma.team.findUnique({
       where: { id: teamId },
@@ -77,21 +74,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Validate required files based on competition type
-    if (team.competitionType === 'SPC' && (!proposalUrl || !videoPitchUrl)) {
-      return NextResponse.json(
-        { error: 'SPC requires proposal and video pitch.' },
-        { status: 400 }
-      );
-    }
-
-    if (team.competitionType === 'NEC' && (!fullPaperUrl || !posterUrl)) {
-      return NextResponse.json(
-        { error: 'NEC requires full paper and infographic poster.' },
-        { status: 400 }
-      );
-    }
-
     // For Olympiad, no file upload is required – handled separately
     if (team.competitionType === 'OLYMPIAD') {
       return NextResponse.json(
@@ -100,14 +82,21 @@ export async function POST(req: Request) {
       );
     }
 
+    // For SPC and NEC, file is required
+    if (!fileUrl) {
+      return NextResponse.json(
+        { error: 'File submission is required.' },
+        { status: 400 }
+      );
+    }
+
+    // Store fileUrl in proposalUrl (SPC) or fullPaperUrl (NEC) based on competition type
     const submission = await prisma.submission.create({
       data: {
         teamId,
         phase: 'PRELIMINARY',
-        proposalUrl,
-        videoPitchUrl,
-        fullPaperUrl,
-        posterUrl,
+        proposalUrl: team.competitionType === 'SPC' ? fileUrl : null,
+        fullPaperUrl: team.competitionType === 'NEC' ? fileUrl : null,
         status: 'PENDING',
       },
       include: { team: true },
@@ -118,7 +107,7 @@ export async function POST(req: Request) {
       teamName: team.teamName,
       phase: 'PRELIMINARY',
       status: 'PENDING',
-      fileUrl: proposalUrl || fullPaperUrl || '',
+      fileUrl,
     });
 
     return NextResponse.json({

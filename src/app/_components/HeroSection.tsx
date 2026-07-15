@@ -172,10 +172,10 @@ export function HeroSection() {
               <div className="relative text-center">
                      <img 
                         src="/6.svg" 
-                        alt="IMD 2026 Mascot" 
+                        alt="Archaea ITB Mascot" 
                         className="w-48 h-48 mx-auto mb-4 animate-float" 
                       />
-                <h3 className="text-2xl font-bold text-gradient">IMD 2026 Mascot</h3>
+                <h3 className="text-2xl font-bold text-gradient">Archaea ITB Mascot</h3>
                 <p className="text-white/50 text-sm">Meet our friendly microbial explorer!</p>
                 <div className="flex flex-wrap gap-2 justify-center mt-4">
                   <span className="px-3 py-1 glass rounded-full text-xs">✨ Microbial Explorer</span>
