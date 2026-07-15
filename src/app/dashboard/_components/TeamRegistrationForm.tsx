@@ -7,6 +7,14 @@ import { SuccessPopup } from '@/components/ui/SuccessPopup';
 
 type CompetitionType = 'OLYMPIAD' | 'SPC' | 'NEC';
 
+interface TeamMember {
+  name: string;
+  email: string;
+  institution: string;
+  phone: string;
+  studentProofUrl: string;
+}
+
 interface TeamRegistrationFormProps {
   session: Session;
 }
@@ -43,8 +51,36 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // SPC Members (1-3 additional members)
+  const [members, setMembers] = useState<TeamMember[]>([{
+    name: '',
+    email: '',
+    institution: '',
+    phone: '',
+    studentProofUrl: '',
+  }]);
+
   const templateLink = TEMPLATE_LINKS[competitionType];
   const isChairmanMode = competitionType === 'SPC' || competitionType === 'NEC'; // Chairman only for SPC and NEC
+  const isSPC = competitionType === 'SPC';
+
+  const addMember = () => {
+    if (members.length < 3) {
+      setMembers([...members, { name: '', email: '', institution: '', phone: '', studentProofUrl: '' }]);
+    }
+  };
+
+  const removeMember = (index: number) => {
+    if (members.length > 1) {
+      setMembers(members.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateMember = (index: number, field: keyof TeamMember, value: string) => {
+    const updatedMembers = [...members];
+    updatedMembers[index] = { ...updatedMembers[index], [field]: value };
+    setMembers(updatedMembers);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,16 +100,40 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
       return;
     }
 
-    try {
-      const members = isChairmanMode ? [] : [];
+    // Validate SPC members (need at least 1 member, max 3)
+    if (isSPC && members.length < 1) {
+      setMessage({ type: 'error', text: 'SPC membutuhkan minimal 1 anggota tim (total 2 orang dengan ketua).' });
+      setSubmitting(false);
+      return;
+    }
 
+    // Validate all SPC members have required fields
+    if (isSPC) {
+      for (let i = 0; i < members.length; i++) {
+        const m = members[i];
+        if (!m.name.trim() || !m.email.trim() || !m.institution.trim() || !m.phone.trim() || !m.studentProofUrl) {
+          setMessage({ type: 'error', text: `Data anggota tim #${i + 1} belum lengkap. Harap isi semua field.` });
+          setSubmitting(false);
+          return;
+        }
+      }
+    }
+
+    try {
       const res = await fetch('/api/competitions/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           teamName,
           competitionType,
-          members,
+          members: isSPC ? members.map(m => ({
+            name: m.name,
+            email: m.email,
+            institution: m.institution,
+            phone: m.phone,
+            age: null,
+            studentProofUrl: m.studentProofUrl,
+          })) : [],
           captainPhone: isChairmanMode ? captainPhone : undefined,
           captainAge: isChairmanMode ? captainAge : undefined,
           pdfMergeUrl: mergedPdfUrl,
@@ -121,7 +181,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
           <h2 className="text-2xl font-bold mb-2">Register</h2>
           <p className="text-white/60 text-sm">
             {competitionType === 'OLYMPIAD' && 'MO is individual. Upload 1 merged PDF from registration template.'}
-            {competitionType === 'SPC' && 'SPC is a team competition. Upload 1 file PDF (max 5MB) dari template abstrak.'}
+            {competitionType === 'SPC' && 'SPC is a team competition (2-4 members). Upload 1 file PDF (max 5MB) dari template abstrak.'}
             {competitionType === 'NEC' && 'NEC is individual. Upload 1 file PDF (max 5MB) dari template abstrak.'}
           </p>
         </div>
@@ -168,7 +228,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
         {/* Captain Info - with age/phone for SPC/NEC only */}
         <div className="glass rounded-xl p-4 space-y-3">
           <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
-            {isChairmanMode ? 'Chairman / Ketua Tim' : 'Participant'}
+            Chairman / Ketua Tim
           </h3>
           <div className="grid md:grid-cols-2 gap-3">
             <div>
@@ -224,6 +284,96 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
           </div>
         </div>
 
+        {/* SPC Team Members */}
+        {isSPC && (
+          <div className="glass rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+                Anggota Tim ({members.length}/3)
+              </h3>
+              <button
+                type="button"
+                onClick={addMember}
+                disabled={members.length >= 3}
+                className="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs rounded-lg transition disabled:opacity-50"
+              >
+                + Tambah Anggota
+              </button>
+            </div>
+            
+            {members.map((member, index) => (
+              <div key={index} className="glass rounded-lg p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-white/60">Anggota #{index + 1}</span>
+                  {members.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeMember(index)}
+                      className="px-2 py-1 text-red-400 hover:text-red-300 text-xs"
+                    >
+                      Hapus
+                    </button>
+                  )}
+                </div>
+                <div className="grid md:grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs text-white/50 mb-1">Nama</label>
+                    <input
+                      type="text"
+                      required
+                      value={member.name}
+                      onChange={(e) => updateMember(index, 'name', e.target.value)}
+                      className="input-glass"
+                      placeholder="Nama lengkap"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-white/50 mb-1">Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={member.email}
+                      onChange={(e) => updateMember(index, 'email', e.target.value)}
+                      className="input-glass"
+                      placeholder="email@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-white/50 mb-1">Institusi</label>
+                    <input
+                      type="text"
+                      required
+                      value={member.institution}
+                      onChange={(e) => updateMember(index, 'institution', e.target.value)}
+                      className="input-glass"
+                      placeholder="Nama sekolah/kampus"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-white/50 mb-1">No. Telepon</label>
+                    <input
+                      type="tel"
+                      required
+                      value={member.phone}
+                      onChange={(e) => updateMember(index, 'phone', e.target.value)}
+                      className="input-glass"
+                      placeholder="081234567890"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs text-white/50 mb-1">KTM / Student Proof</label>
+                  <FileUpload
+                    label="Upload KTM (Max 5MB)"
+                    accept=".pdf,.jpg,.png"
+                    onUpload={(url) => updateMember(index, 'studentProofUrl', url)}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Upload 1 merged PDF */}
         <div className="glass rounded-xl p-4">
           <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-3">
@@ -249,7 +399,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
 
         <button
           type="submit"
-          disabled={submitting || !teamName.trim() || !mergedPdfUrl || (isChairmanMode && (!captainPhone.trim() || !captainAge))}
+          disabled={submitting || !teamName.trim() || !mergedPdfUrl || (isChairmanMode && (!captainPhone.trim() || !captainAge)) || (isSPC && members.some(m => !m.name || !m.email || !m.institution || !m.phone || !m.studentProofUrl))}
           className="btn-glow w-full disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-transform"
         >
           {submitting ? 'Registering...' : 'Register Team'}
