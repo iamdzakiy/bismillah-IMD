@@ -143,10 +143,9 @@ export function HeroSection() {
               className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10 glass rounded-2xl p-6 glow-purple"
             >
               {[
-                { target: 2100, label: 'Participants', suffix: '+' },
-                { target: 4000, label: 'Academy', suffix: '+' },
-                { target: 20, label: 'Media Partners', suffix: '+' },
-                { target: 13, label: 'Companies', suffix: '' },
+                { target: 900, label: 'Participants', suffix: '+' },
+                { target: 12, label: 'Media Partners', suffix: '+' },
+                { target: 6, label: 'Companies', suffix: '' },
               ].map((stat, i) => (
                 <div key={i} className="text-center">
                   <div className="text-3xl md:text-4xl font-black text-gradient">

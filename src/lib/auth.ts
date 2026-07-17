@@ -135,6 +135,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
     async redirect({ url, baseUrl }) {
+      // Handle signOut - redirect to baseUrl (homepage)
+      if (url === '/') return `${baseUrl}/`;
       // Allow relative URLs
       if (url.startsWith('/')) return `${baseUrl}${url}`;
       // Allow same-origin URLs

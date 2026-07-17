@@ -20,7 +20,7 @@ const memberDataSchema = z.object({
 const registerSchema = z.object({
   teamName: z.string().trim().min(3).max(50),
   competitionType: z.enum(['OLYMPIAD', 'SPC', 'NEC']),
-  members: z.array(memberDataSchema).min(0).max(4),
+  members: z.array(memberDataSchema).min(0).max(2),
   captainPhone: z.string().min(5).max(20).optional(),
   captainAge: z.number().int().min(10).max(99).optional(),
   ktmUrl: z.string().url().optional(),
@@ -29,6 +29,10 @@ const registerSchema = z.object({
   shareProofUrl: z.string().url().optional(),
   twibbonProofUrl: z.string().url().optional(),
   groupsProofUrl: z.string().url().optional(),
+  teacherName: z.string().optional(),
+  teacherInstitution: z.string().optional(),
+  teacherEmail: z.string().email().optional().or(z.literal('')),
+  teacherPhone: z.string().optional(),
 });
 
 function isEligible(user: Pick<User, 'educationLevel'>, competitionType: CompetitionType) {
@@ -109,9 +113,9 @@ export async function POST(req: Request) {
       );
     }
 
-    if (competitionType === 'SPC' && (members.length < 1 || members.length > 3)) {
+    if (competitionType === 'SPC' && (members.length < 1 || members.length > 2)) {
       return NextResponse.json(
-        { error: 'SPC requires 2-4 members total (you + 1-3 team members).' },
+        { error: 'SPC requires 3 members total (you + 1-2 team members).' },
         { status: 400 }
       );
     }

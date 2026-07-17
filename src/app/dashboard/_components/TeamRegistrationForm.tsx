@@ -51,7 +51,13 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // SPC Members (1-3 additional members)
+  // Teacher Advisor fields (SPC only)
+  const [teacherName, setTeacherName] = useState('');
+  const [teacherInstitution, setTeacherInstitution] = useState('');
+  const [teacherEmail, setTeacherEmail] = useState('');
+  const [teacherPhone, setTeacherPhone] = useState('');
+
+  // SPC Members (1-2 additional members, total 3 including chairman)
   const [members, setMembers] = useState<TeamMember[]>([{
     name: '',
     email: '',
@@ -65,7 +71,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
   const isSPC = competitionType === 'SPC';
 
   const addMember = () => {
-    if (members.length < 3) {
+    if (members.length < 2) {
       setMembers([...members, { name: '', email: '', institution: '', phone: '', studentProofUrl: '' }]);
     }
   };
@@ -181,7 +187,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
           <h2 className="text-2xl font-bold mb-2">Register</h2>
           <p className="text-white/60 text-sm">
             {competitionType === 'OLYMPIAD' && 'MO is individual. Upload 1 merged PDF from registration template.'}
-            {competitionType === 'SPC' && 'SPC is a team competition (2-4 members). Upload 1 file PDF (max 5MB) dari template abstrak.'}
+            {competitionType === 'SPC' && 'SPC is a team competition (3 members, including chairman). Upload 1 file PDF (max 5MB) dari template Registration Proof.'}
             {competitionType === 'NEC' && 'NEC is individual. Upload 1 file PDF (max 5MB) dari template abstrak.'}
           </p>
         </div>
@@ -289,12 +295,12 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
           <div className="glass rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
-                Anggota Tim ({members.length}/3)
+                Anggota Tim ({members.length + 1}/3)
               </h3>
               <button
                 type="button"
                 onClick={addMember}
-                disabled={members.length >= 3}
+                disabled={members.length >= 2}
                 className="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs rounded-lg transition disabled:opacity-50"
               >
                 + Tambah Anggota
@@ -361,16 +367,64 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="block text-xs text-white/50 mb-1">KTM / Student Proof</label>
-                  <FileUpload
-                    label="Upload KTM (Max 5MB)"
-                    accept=".pdf,.jpg,.png"
-                    onUpload={(url) => updateMember(index, 'studentProofUrl', url)}
-                  />
-                </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Teacher Advisor Section - SPC only */}
+        {isSPC && (
+          <div className="glass rounded-xl p-4 space-y-3">
+            <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+              Guru Pendamping
+            </h3>
+            <p className="text-xs text-white/40">Data guru pendamping untuk tim SPC Anda.</p>
+            <div className="grid md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-white/50 mb-1">Nama <span className="text-red-400">*</span></label>
+                <input
+                  type="text"
+                  required
+                  value={teacherName}
+                  onChange={(e) => setTeacherName(e.target.value)}
+                  className="input-glass"
+                  placeholder="Nama lengkap guru"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-white/50 mb-1">Institusi <span className="text-red-400">*</span></label>
+                <input
+                  type="text"
+                  required
+                  value={teacherInstitution}
+                  onChange={(e) => setTeacherInstitution(e.target.value)}
+                  className="input-glass"
+                  placeholder="Nama sekolah"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-white/50 mb-1">Email <span className="text-red-400">*</span></label>
+                <input
+                  type="email"
+                  required
+                  value={teacherEmail}
+                  onChange={(e) => setTeacherEmail(e.target.value)}
+                  className="input-glass"
+                  placeholder="guru@sekolah.sch.id"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-white/50 mb-1">No. Telepon <span className="text-red-400">*</span></label>
+                <input
+                  type="tel"
+                  required
+                  value={teacherPhone}
+                  onChange={(e) => setTeacherPhone(e.target.value)}
+                  className="input-glass"
+                  placeholder="081234567890"
+                />
+              </div>
+            </div>
           </div>
         )}
 

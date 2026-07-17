@@ -28,9 +28,23 @@ export default function RegisterPage() {
     setLoading(true);
     setError('');
 
-    // Validate password length
+    // Validate password requirements
     if (formData.password.length < 8) {
       setError('Password must be at least 8 characters');
+      setLoading(false);
+      return;
+    }
+
+    // Check for uppercase letter
+    if (!/[A-Z]/.test(formData.password)) {
+      setError('Password must contain at least one uppercase letter');
+      setLoading(false);
+      return;
+    }
+
+    // Check for symbol/special character
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
+      setError('Password must contain at least one symbol (e.g., !@#$%^&*)');
       setLoading(false);
       return;
     }

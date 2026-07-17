@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Link from 'next/link';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientText } from '@/components/ui/GradientText';
 import { MascotDecoration } from '@/components/ui/MascotDecoration';
@@ -23,43 +22,52 @@ const events = [
     venue: 'ITB',
     description: 'Creative art competition showcasing microbial-themed artworks.',
     icon: '🎨',
-    type: 'main',
+    type: 'competition',
   },
   {
     name: 'Opening Ceremony',
     date: '14 November 2026',
     time: 'TBA',
     venue: 'Institut Teknologi Bandung',
-    description: 'The grand opening ceremony of IMD 2026.',
+    description: 'The grand opening ceremony of IMD 2026, part of the Celebration series.',
     icon: '🎉',
-    type: 'main',
+    type: 'celebration',
   },
   {
     name: 'Exhibition',
     date: '15 November 2026',
     time: 'TBA',
     venue: 'Institut Teknologi Bandung',
-    description: 'Showcase of innovative projects from all competition branches.',
+    description: 'Showcase of innovative projects from all competition branches, including scientific posters and demonstrations.',
     icon: '🖼️',
-    type: 'main',
+    type: 'exhibition',
   },
   {
     name: 'Symposium',
     date: '15 November 2026',
     time: 'TBA',
     venue: 'Institut Teknologi Bandung',
-    description: 'Scientific symposium featuring keynote speakers and research presentations.',
-    icon: '🔬',
-    type: 'workshop',
+    description: 'Scientific symposium featuring keynote speakers, research presentations, and academic discussions.',
+    icon: '🎤',
+    type: 'symposium',
   },
   {
-    name: 'Closing Ceremony / Awarding Night',
+    name: 'ITB Day',
     date: '15 November 2026',
     time: 'TBA',
     venue: 'Institut Teknologi Bandung',
-    description: 'The closing ceremony where winners of all competitions are announced and celebrated.',
+    description: 'Special ITB Day celebration with campus activities and institutional showcases.',
+    icon: '🏛️',
+    type: 'itb',
+  },
+  {
+    name: 'Closing Ceremony',
+    date: '15 November 2026',
+    time: 'TBA',
+    venue: 'Institut Teknologi Bandung',
+    description: 'The closing ceremony of IMD 2026, part of the Celebration series. Winners of all competitions are announced and celebrated.',
     icon: '🏅',
-    type: 'main',
+    type: 'celebration',
   },
 ];
 
@@ -99,9 +107,11 @@ export default function EventsPage() {
           >
             <GlassCard
               glow={
-                event.type === 'competition' 
-                  ? (event.name.includes('Olympiad') ? 'blue' as any : event.name.includes('SPC') ? 'pink' as any : 'green' as any)
-                  : 'purple' as any
+                event.type === 'celebration' ? 'pink' as any :
+                event.type === 'exhibition' ? 'blue' as any :
+                event.type === 'symposium' ? 'green' as any :
+                event.type === 'itb' ? 'purple' as any :
+                event.type === 'workshop' ? 'amber' as any : 'purple' as any
               }
               className="p-6 sm:p-8 hover:scale-[1.01] transition-all duration-300"
             >
@@ -127,31 +137,26 @@ export default function EventsPage() {
                       📍 {event.venue}
                     </span>
                     <span className={`px-3 py-1 rounded-full font-medium ${
-                      event.type === 'main' 
+                      event.type === 'celebration'
+                        ? 'bg-pink-500/20 text-pink-300 border border-pink-500/30'
+                        : event.type === 'exhibition'
+                        ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                        : event.type === 'symposium'
+                        ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                        : event.type === 'itb'
                         ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
                         : event.type === 'workshop'
                         ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                         : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                     }`}>
-                      {event.type === 'main' ? 'Main Event' : event.type === 'workshop' ? 'Workshop' : 'Competition'}
+                      {event.type === 'celebration' ? 'Celebration' :
+                       event.type === 'exhibition' ? 'Exhibition' :
+                       event.type === 'symposium' ? 'Symposium' :
+                       event.type === 'itb' ? 'ITB Day' :
+                       event.type === 'workshop' ? 'Workshop' : 'Competition'}
                     </span>
                   </div>
                 </div>
-
-                {/* CTAs */}
-                {event.type === 'competition' && (
-                  <div className="flex-shrink-0 self-start sm:self-center">
-                    <Link
-                      href={`/competitions/${
-                        event.name.includes('Olympiad') ? 'olympiad' :
-                        event.name.includes('SPC') ? 'spc' : 'nec'
-                      }`}
-                      className="btn-glass text-sm inline-flex items-center gap-1"
-                    >
-                      View Details →
-                    </Link>
-                  </div>
-                )}
               </div>
             </GlassCard>
           </motion.div>
@@ -170,12 +175,12 @@ export default function EventsPage() {
               Register now to secure your spot in IMD 2026 competitions
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/register" className="btn-glow">
+              <a href="/register" className="btn-glow">
                 Register Now
-              </Link>
-              <Link href="/" className="btn-glass">
+              </a>
+              <a href="/" className="btn-glass">
                 Back to Home
-              </Link>
+              </a>
             </div>
           </GlassCard>
         </motion.div>

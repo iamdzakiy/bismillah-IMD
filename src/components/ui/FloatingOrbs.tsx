@@ -19,6 +19,15 @@ export function FloatingOrbs() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Generate deterministic particles on mount to avoid hydration mismatch
+    const generatedParticles = [...Array(20)].map((_, i) => ({
+      id: i,
+      x: (i * 5.1) % 100,
+      y: (i * 7.3) % 100,
+      size: ((i * 3.7) % 15) + 10,
+      delay: (i * 0.25) % 5,
+    }));
+    setParticles(generatedParticles);
     setMounted(true);
   }, []);
 

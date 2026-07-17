@@ -31,21 +31,19 @@ export function TeamProfileCard({ team }: TeamProfileCardProps) {
     REGISTERED: 'Registered',
   };
 
-  const handleDeleteAccount = async () => {
-    if (!confirm('Apakah Anda yakin ingin menghapus akun? Semua data tim dan submission akan dihapus secara permanen.')) {
-      return;
-    }
+  const handleDeleteRegistration = async () => {
+    if (!team.registration?.id) return;
     
     setDeleting(true);
     try {
-      const res = await fetch('/api/account/delete', { method: 'DELETE' });
+      const res = await fetch(`/api/registrations/${team.registration.id}/delete`, { method: 'DELETE' });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal menghapus akun');
+      if (!res.ok) throw new Error(data.error || 'Gagal menghapus registrasi');
       
-      alert('Akun berhasil dihapus. Anda akan dialihkan ke halaman utama.');
-      window.location.href = '/';
+      alert('Registrasi berhasil dihapus. Anda akan dialihkan ke halaman dashboard.');
+      window.location.reload();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Gagal menghapus akun');
+      alert(error instanceof Error ? error.message : 'Gagal menghapus registrasi');
     } finally {
       setDeleting(false);
     }
@@ -135,13 +133,13 @@ export function TeamProfileCard({ team }: TeamProfileCardProps) {
           </div>
         </div>
 
-        {/* Delete Account Button */}
+        {/* Delete Registration Button */}
         <div className="mt-6 pt-4 border-t border-white/5">
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs rounded-lg transition"
           >
-            🗑️ Hapus Akun
+            🗑️ Hapus Registrasi
           </button>
         </div>
       </div>
@@ -150,10 +148,10 @@ export function TeamProfileCard({ team }: TeamProfileCardProps) {
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="glass-strong rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">⚠️ Konfirmasi Hapus Akun</h3>
+            <h3 className="text-xl font-bold mb-4">⚠️ Konfirmasi Hapus Registrasi</h3>
             <p className="text-white/70 mb-6">
-              Menghapus akun akan menghapus semua data tim, submission, dan registrasi Anda secara permanen. 
-              Tindakan ini tidak dapat dibatalkan.
+              Menghapus registrasi akan menghapus data tim, submission, dan pendaftaran Anda. 
+              Akun Anda tetap aktif dan Anda dapat mendaftar kembali. Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className="flex gap-2">
               <button
@@ -163,11 +161,11 @@ export function TeamProfileCard({ team }: TeamProfileCardProps) {
                 Batal
               </button>
               <button
-                onClick={handleDeleteAccount}
+                onClick={handleDeleteRegistration}
                 disabled={deleting}
                 className="flex-1 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white rounded-lg"
               >
-                {deleting ? 'Menghapus...' : 'Hapus Akun'}
+                {deleting ? 'Menghapus...' : 'Hapus Registrasi'}
               </button>
             </div>
           </div>

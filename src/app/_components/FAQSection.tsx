@@ -74,7 +74,7 @@ export function FAQSection() {
             We have an interactive Google Sheets FAQ with detailed answers. Check it first to find instant answers!
           </p>
           <a
-            href="https://docs.google.com/spreadsheets/d/1YOUR_SHEET_ID_HERE"
+            href="https://https://docs.google.com/spreadsheets/d/1WRGHkBPQw12YpXxbFsX_AxPuOVwgFgTiBUP7eImx3XQ/edit?"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 bg-bio-purple/20 text-bio-purple border border-bio-purple/30 rounded-full text-sm font-bold hover:bg-bio-purple/30 transition-all"
