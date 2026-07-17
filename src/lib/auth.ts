@@ -83,8 +83,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             await prisma.user.update({
               where: { id: dbUser.id },
               data: { 
-                active: true,
-                emailVerified: dbUser.emailVerified ?? new Date(),
+                // Only set active=true if they already have a password or already verified
+                active: dbUser.active || !!dbUser.password,
+                emailVerified: dbUser.emailVerified ?? (dbUser.active ? new Date() : undefined),
                 googleId: dbUser.googleId ?? account.providerAccountId,
                 name: dbUser.name ?? user.name ?? profile?.name ?? dbUser.name,
                 institution: dbUser.institution ?? (profile as any)?.hd ?? undefined,
@@ -92,13 +93,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               },
             });
           } else {
-            // Create new user with Google data
+            // Create new user with Google data - require email verification and password setup
             await prisma.user.create({
               data: {
                 email,
                 name: user.name ?? profile?.name ?? email.split('@')[0],
-                active: true,
-                emailVerified: new Date(),
+                active: false, // User needs to verify email AND set password
                 googleId: account.providerAccountId,
                 institution: (profile as any)?.hd ?? '',
                 educationLevel: 'SMA',
@@ -106,7 +106,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             });
           }
           
-          return true;
+          return true; // Allow sign-in - user can login with Google but must set password
         } catch (error) {
           console.error('Google signIn error:', error);
           return true; // Don't block sign-in

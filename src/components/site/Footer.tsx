@@ -28,8 +28,8 @@ export function Footer() {
             </Link>
             <p className="text-white/50 text-sm leading-relaxed">
               International Microorganism Day 2026<br />
-              Organized by School of Life Sciences and Technology - Science Program (SITH-S), Institut Teknologi Bandung<br />
-              Organized by HIMAMIKRO "Archaea" ITB SITH-S ITB
+              Organized by HIMAMIKRO "Archaea" - School of Life Sciences and Technology - Science Program (SITH-S), Institut Teknologi Bandung<br />
+            
             </p>
             <div className="flex gap-3 mt-4">
               <a href="https://www.instagram.com/imd.itb/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 glass rounded-full flex items-center justify-center hover:bg-purple-500/20 transition-all group">
