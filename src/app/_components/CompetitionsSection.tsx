@@ -114,12 +114,22 @@ export function CompetitionsSection() {
           className="text-center mt-12"
         >
           <p className="text-white/50 text-sm mb-4">
-            Organized by School of Life Sciences and Technology - Science Program (SITH-S), Institut Teknologi Bandung
+            Organized by HIMAMIKRO "Archaea" ITB - School of Life Sciences and Technology - Science Program (SITH-S), Institut Teknologi Bandung
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <span className="px-4 py-2 glass rounded-full text-white/60 text-sm">📸 @imd.itb</span>
-            <span className="px-4 py-2 glass rounded-full text-white/60 text-sm">🦠 @archaea_itb</span>
-          </div>
+              <button
+                onClick={() => window.open('https://instagram.com/imd.itb', '_blank')}
+                className="px-4 py-2 glass rounded-full text-white/60 text-sm hover:text-white hover:bg-white/10 transition-colors"
+              >
+                📸 @imd.itb
+              </button>
+              <button
+                onClick={() => window.open('https://instagram.com/archaea_itb', '_blank')}
+                className="px-4 py-2 glass rounded-full text-white/60 text-sm hover:text-white hover:bg-white/10 transition-colors"
+              >
+                🦠 @archaea_itb
+              </button>
+            </div>
         </motion.div>
       </div>
     </section>
