@@ -30,6 +30,7 @@ export default function HomePage() {
       
       {/* Timeline Slider */}
       <section className="py-20 px-4 max-w-7xl mx-auto">
+        <h2 className="text-3xl md:text-5xl font-extrabold text-white text-center mb-10 tracking-tight">IMD 2026 ITB Event Timeline</h2>
         <div className="text-center mb-12">
           <span className="inline-block px-4 py-1.5 glass rounded-full text-bio-cyan text-xs font-semibold uppercase tracking-widest mb-4">
             Your Journey
@@ -44,6 +45,7 @@ export default function HomePage() {
 
       {/* Memories Gallery */}
       <section className="py-20 px-4 max-w-7xl mx-auto">
+        <h2 className="text-3xl md:text-5xl font-extrabold text-white text-center mb-10 tracking-tight">IMD 2026 ITB Gallery</h2>
         <div className="text-center mb-12">
           <span className="inline-block px-4 py-1.5 glass rounded-full text-bio-emerald text-xs font-semibold uppercase tracking-widest mb-4">
             Memories
@@ -58,6 +60,7 @@ export default function HomePage() {
 
       {/* Sponsors */}
       <section className="py-20 px-4 max-w-7xl mx-auto">
+        <h2 className="text-3xl md:text-5xl font-extrabold text-white text-center mb-10 tracking-tight">IMD 2026 ITB Partners</h2>
         <div className="text-center mb-12">
           <span className="inline-block px-4 py-1.5 glass rounded-full text-bio-purple text-xs font-semibold uppercase tracking-widest mb-4">
             Partners
@@ -83,6 +86,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      <h2 className="text-3xl md:text-5xl font-extrabold text-white text-center mb-10 tracking-tight">IMD 2026 ITB Competitions</h2>
       <CompetitionsSection />
 
       {/* Mascots around competitions */}

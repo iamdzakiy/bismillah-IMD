@@ -11,9 +11,9 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-display' });
 
 export const metadata: Metadata = {
-  title: 'IMD 2026 – International Microorganism Day | ITB',
-  description: "The Great Microbial Odyssey: Decoding the Earth's Dark Matter to Orchestrate a Sustainable Future",
-  keywords: 'IMD 2026, International Microorganism Day, Archaea ITB, Microbiology Competition, Olympiad, SPC, NEC',
+  title: 'IMD 2026 ITB | International Microorganism Day',
+  description: 'Register for IMD 2026 ITB at Institut Teknologi Bandung. Join Olympiad, SPC, NEC microbiology competitions today.',
+  keywords: 'IMD 2026 ITB, International Microorganism Day, ITB, Institut Teknologi Bandung, microbiology competition, Olympiad, SPC, NEC, Indonesia',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -21,10 +21,10 @@ export const metadata: Metadata = {
     shortcut: '/favicon.svg',
   },
   openGraph: {
-    title: 'IMD 2026 – International Microorganism Day',
-    description: "The Great Microbial Odyssey: Decoding the Earth's Dark Matter",
+    title: 'IMD 2026 ITB | International Microorganism Day',
+    description: 'Register for IMD 2026 ITB at Institut Teknologi Bandung. Join Olympiad, SPC, NEC microbiology competitions today.',
     url: 'https://imd2026itb.vercel.app/',
-    siteName: 'IMD 2026',
+    siteName: 'IMD 2026 ITB',
     images: [{ url: 'https://imd2026itb.vercel.app/favicon.svg' }],
     type: 'website',
   },

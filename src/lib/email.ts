@@ -25,6 +25,9 @@ const STYLES = {
     -webkit-text-fill-color: transparent;
     background-clip: text;
   `,
+  whiteText: `
+    color: #ffffff;
+  `,
   ctaButton: `
     display: inline-block;
     padding: 16px 40px;
@@ -61,19 +64,16 @@ function renderHeader() {
               />
             </td>
           </tr>
-          <tr>
-            <td align="center">
-              <p style="
-                background: linear-gradient(135deg, #6366f1, #a855f7);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-                font-size: 20px;
-                font-weight: 800;
-                letter-spacing: 1px;
-                margin: 0;
-                line-height: 1.3;
-              ">
+              <tr>
+                <td align="center">
+                  <p style="
+                    color: #ffffff;
+                    font-size: 20px;
+                    font-weight: 800;
+                    letter-spacing: 1px;
+                    margin: 0;
+                    line-height: 1.3;
+                  ">
                 IMD 2026 ITB
               </p>
               <p style="
@@ -159,7 +159,7 @@ export async function sendVerificationEmail(email: string, token: string) {
               <tr>
                 <td align="center" style="padding-bottom: 16px;">
                   <h1 style="
-                    ${STYLES.gradientText}
+                    ${STYLES.whiteText}
                     font-size: 32px;
                     font-weight: 800;
                     line-height: 1.2;
@@ -365,7 +365,7 @@ export async function sendVerifiedEmail(email: string, name?: string) {
               <tr>
                 <td align="center" style="padding-bottom: 16px;">
                   <h1 style="
-                    ${STYLES.gradientText}
+                    ${STYLES.whiteText}
                     font-size: 34px;
                     font-weight: 800;
                     line-height: 1.2;
