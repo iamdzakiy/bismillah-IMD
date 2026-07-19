@@ -26,11 +26,11 @@ const faqs = [
   },
   {
     q: "Can I change my team members after registration?",
-    a: "Team changes must be requested via email to imd@itb.ac.id. Changes are subject to approval and may not be allowed after the semifinal phase."
+    a: "Team changes must be requested via email to archaea_itb@km.itb.ac.id. Changes are subject to approval and may not be allowed after the semifinal phase."
   },
   {
     q: "When and where will IMD 2026 be held?",
-    a: "The main event will be held at Institut Teknologi Bandung in July 2026. Preliminary rounds are conducted online. Specific dates will be announced on our timeline."
+    a: "The main event will be held at Institut Teknologi Bandung in November 2026. Preliminary rounds are conducted online. Specific dates will be announced on our timeline."
   },
 ];
 

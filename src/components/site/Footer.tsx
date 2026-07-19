@@ -59,7 +59,7 @@ export function Footer() {
             <h4 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-4">Support</h4>
             <ul className="space-y-2">
               <li><a href="/#faq" className="text-sm text-white/50 hover:text-purple-400 transition-colors">FAQ</a></li>
-              <li><a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Contact via WhatsApp</a></li>
+              <li><a href="https://wa.me/628135837623" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Contact via WhatsApp</a></li>
               <li><a href="mailto:imd@itb.ac.id" className="text-sm text-white/50 hover:text-purple-400 transition-colors">Email Us</a></li>
             </ul>
           </div>
@@ -72,8 +72,8 @@ export function Footer() {
               <li>Institut Teknologi Bandung</li>
               <li>Ganesha 10, Bandung</li>
               <li className="pt-2">
-                <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors">
-                  WA: +62 812-3456-7890
+                <a href="https://wa.me/628135837623" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors">
+                  WA: +62 813-5837-623
                 </a>
               </li>
             </ul>
