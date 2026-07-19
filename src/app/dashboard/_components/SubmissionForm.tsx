@@ -13,9 +13,7 @@ interface SubmissionFormProps {
 
 const TEMPLATE_LINKS: Record<string, string> = {
   'SPC_PRELIMINARY': 'https://bit.ly/AbstrakSPCIMD',
-  'NEC_PRELIMINARY': 'https://bit.ly/AbstrakNECIMD',
-  'SPC_SEMIFINAL': 'https://bit.ly/FullPaperSPC',
-  'NEC_SEMIFINAL': 'https://bit.ly/FullPaperNEC',
+  'NEC_PRELIMINARY': 'https://bit.ly/CompeIMD2026',
 };
 
 export function SubmissionForm({ team }: SubmissionFormProps) {
@@ -137,12 +135,6 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
     }
     if (phase === 'PRELIMINARY' && team.competitionType === 'NEC') {
       return TEMPLATE_LINKS['NEC_PRELIMINARY'];
-    }
-    if (phase === 'SEMIFINAL' && team.competitionType === 'SPC') {
-      return TEMPLATE_LINKS['SPC_SEMIFINAL'];
-    }
-    if (phase === 'SEMIFINAL' && team.competitionType === 'NEC') {
-      return TEMPLATE_LINKS['NEC_SEMIFINAL'];
     }
     return '';
   };
