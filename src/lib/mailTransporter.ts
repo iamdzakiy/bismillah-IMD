@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import * as nodemailer from 'nodemailer';
 
 export const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -10,4 +10,4 @@ export const transporter = nodemailer.createTransport({
   },
 });
 
-export const EMAIL_FROM = process.env.EMAIL_FROM || 'IMD 2026 <no-reply@imd-itb.com>';
+export const EMAIL_FROM = process.env.EMAIL_FROM || 'IMD 2026 <no-reply-archaea_itb@km.itb.ac.id>';
