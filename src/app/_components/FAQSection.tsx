@@ -139,7 +139,7 @@ export function FAQSection() {
           <p className="text-white/50 text-sm mb-4">Still have questions after checking the FAQ sheet? Contact our admins:</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <a
-              href="https://wa.me/6281234567890?text=Halo%20IMD%202026%2C%20saya%20ingin%20bertanya..."
+              href="https://wa.me/62881080713104?text=Halo%20IMD%202026%2C%20saya%20ingin%20bertanya..."
               target="_blank"
               rel="noopener noreferrer"
               className="btn-glass inline-flex items-center gap-2"
@@ -148,7 +148,7 @@ export function FAQSection() {
               Admin 1
             </a>
             <a
-              href="https://wa.me/628987654321?text=Halo%20IMD%202026%2C%20saya%20ingin%20bertanya..."
+              href="https://wa.me/628135837623?text=Halo%20IMD%202026%2C%20saya%20ingin%20bertanya..."
               target="_blank"
               rel="noopener noreferrer"
               className="btn-glass inline-flex items-center gap-2"
