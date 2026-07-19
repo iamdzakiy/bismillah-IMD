@@ -407,7 +407,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
                   value={teacherEmail}
                   onChange={(e) => setTeacherEmail(e.target.value)}
                   className="input-glass"
-                  placeholder="guru@sekolah.sch.id"
+                  placeholder="guru@sekolah.sch.id / @gmail.com"
                 />
               </div>
               <div>

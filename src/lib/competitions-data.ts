@@ -119,6 +119,7 @@ export interface CompetitionData {
   timeline: CompetitionTimelineItem[];
   faq: FAQItem[];
   // Extended fields from guidebook
+  guidebookUrl?: string;
   organizer?: string;
   scale?: string;
   vision?: string;
@@ -145,6 +146,7 @@ export const COMPETITIONS: CompetitionData[] = [
     id: 'olympiad',
     shortName: 'MO',
     title: 'Microbiology Olympiad (MO)',
+    guidebookUrl: 'https://drive.google.com/file/d/1eV592fbPiwyKc5mVtaAyhnNuYbJZNU9V/preview',
     category: 'SMA/Sederajat',
     icon: '🏆',
     glowColor: 'blue',
@@ -299,6 +301,7 @@ export const COMPETITIONS: CompetitionData[] = [
     id: 'spc',
     shortName: 'SPC',
     title: 'Science Project Competition (SPC)',
+    guidebookUrl: 'https://drive.google.com/file/d/1eV592fbPiwyKc5mVtaAyhnNuYbJZNU9V/preview',
     category: 'SMA/Sederajat',
     icon: '🔬',
     glowColor: 'pink',
@@ -514,6 +517,7 @@ export const COMPETITIONS: CompetitionData[] = [
     id: 'nec',
     shortName: 'NEC',
     title: 'National Essay Competition (NEC)',
+    guidebookUrl: 'https://drive.google.com/file/d/1eV592fbPiwyKc5mVtaAyhnNuYbJZNU9V/preview',
     category: 'S1/Diploma Universitas',
     icon: '📝',
     glowColor: 'green',

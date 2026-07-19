@@ -87,7 +87,8 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
   const isSPC = comp.id === 'spc';
   const isNEC = comp.id === 'nec';
 
-  const defaultGuidebookUrl = '#'; // Placeholder - replace with actual URL
+  const guidebookUrl = comp.guidebookUrl || '#';
+  const guidebookDownloadUrl = guidebookUrl !== '#' ? guidebookUrl.replace('/preview', '/view') : '#';
 
   return (
     <div className="min-h-screen bg-space-900 text-white pt-24 pb-12 px-4">
@@ -123,7 +124,7 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
           {/* Guidebook Download - simple link without onClick/download attribute */}
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <a
-              href={defaultGuidebookUrl}
+              href={guidebookDownloadUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-glass inline-flex items-center gap-2 text-sm"
@@ -144,7 +145,7 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
           <SectionTitle glow={comp.glowColor}>Guidebook Preview</SectionTitle>
           <div className="text-center mb-6">
             <a
-              href={defaultGuidebookUrl}
+              href={guidebookDownloadUrl}
               target="_blank"
               rel="noopener noreferrer"
               className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all border ${getCompBadge(isOlympiad, isSPC, isNEC)}`}
@@ -157,7 +158,7 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
           </div>
           <div className="relative w-full rounded-xl overflow-hidden border border-white/10" style={{ height: '500px' }}>
             <iframe
-              src={`${defaultGuidebookUrl}#view=FitH`}
+              src={guidebookUrl}
               className="absolute inset-0 w-full h-full"
               style={{ border: 'none' }}
               title={`${comp.shortName} Guidebook`}
@@ -168,7 +169,7 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
                 <div className="text-6xl mb-4">📄</div>
                 <p className="text-white/70 mb-4">Guidebook preview not available</p>
                 <a
-                  href={defaultGuidebookUrl}
+                  href={guidebookDownloadUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all border ${getCompBadge(isOlympiad, isSPC, isNEC)}`}
