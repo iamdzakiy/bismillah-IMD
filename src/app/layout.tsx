@@ -23,9 +23,9 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'IMD 2026 – International Microorganism Day',
     description: "The Great Microbial Odyssey: Decoding the Earth's Dark Matter",
-    url: 'https://imd2026itb.co-id.id/',
+    url: 'https://imd2026itb.vercel.app/',
     siteName: 'IMD 2026',
-    images: [{ url: 'https://imd2026itb.co-id.id/favicon.svg' }],
+    images: [{ url: 'https://imd2026itb.vercel.app/favicon.svg' }],
     type: 'website',
   },
 };
