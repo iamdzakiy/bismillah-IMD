@@ -12,7 +12,6 @@ interface TeamMember {
   email: string;
   institution: string;
   phone: string;
-  studentProofUrl: string;
 }
 
 interface TeamRegistrationFormProps {
@@ -27,9 +26,9 @@ const competitionOptions: Record<CompetitionType, string> = {
 
 // Template links for each competition
 const TEMPLATE_LINKS: Record<CompetitionType, string> = {
-  OLYMPIAD: 'https://bit.ly/TemplateRegistration',
-  SPC: 'https://bit.ly/AbstrakSPCIMD',
-  NEC: 'https://bit.ly/AbstrakNECIMD',
+  OLYMPIAD: 'https://bit.ly/CompeIMD2026',
+  SPC: 'https://bit.ly/CompeIMD2026',
+  NEC: 'https://bit.ly/CompeIMD2026',
 };
 
 export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
@@ -37,7 +36,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
   
   const availableCompetitions: CompetitionType[] = (() => {
     if (educationLevel === 'SMA') return ['OLYMPIAD', 'SPC'];
-    if (educationLevel === 'S1' || educationLevel?.startsWith('S1')) return ['NEC'];
+    if (educationLevel === 'S1 / Diploma' || educationLevel?.startsWith('S1')) return ['NEC'];
     return [];
   })();
 
@@ -63,7 +62,6 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
     email: '',
     institution: '',
     phone: '',
-    studentProofUrl: '',
   }]);
 
   const templateLink = TEMPLATE_LINKS[competitionType];
@@ -72,7 +70,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
 
   const addMember = () => {
     if (members.length < 2) {
-      setMembers([...members, { name: '', email: '', institution: '', phone: '', studentProofUrl: '' }]);
+      setMembers([...members, { name: '', email: '', institution: '', phone: '' }]);
     }
   };
 
@@ -117,7 +115,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
     if (isSPC) {
       for (let i = 0; i < members.length; i++) {
         const m = members[i];
-        if (!m.name.trim() || !m.email.trim() || !m.institution.trim() || !m.phone.trim() || !m.studentProofUrl) {
+        if (!m.name.trim() || !m.email.trim() || !m.institution.trim() || !m.phone.trim()) {
           setMessage({ type: 'error', text: `Data anggota tim #${i + 1} belum lengkap. Harap isi semua field.` });
           setSubmitting(false);
           return;
@@ -138,7 +136,6 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
             institution: m.institution,
             phone: m.phone,
             age: null,
-            studentProofUrl: m.studentProofUrl,
           })) : [],
           captainPhone: isChairmanMode ? captainPhone : undefined,
           captainAge: isChairmanMode ? captainAge : undefined,
@@ -453,7 +450,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
 
         <button
           type="submit"
-          disabled={submitting || !teamName.trim() || !mergedPdfUrl || (isChairmanMode && (!captainPhone.trim() || !captainAge)) || (isSPC && members.some(m => !m.name || !m.email || !m.institution || !m.phone || !m.studentProofUrl))}
+          disabled={submitting || !teamName.trim() || !mergedPdfUrl || (isChairmanMode && (!captainPhone.trim() || !captainAge)) || (isSPC && members.some(m => !m.name || !m.email || !m.institution || !m.phone))}
           className="btn-glow w-full disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-transform"
         >
           {submitting ? 'Registering...' : 'Register Team'}

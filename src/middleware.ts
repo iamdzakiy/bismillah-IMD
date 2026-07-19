@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { auth } from '@/lib/auth';
 
 // Halaman publik yang tidak perlu autentikasi
 const publicPaths = [
@@ -14,8 +14,8 @@ const publicPaths = [
   '/competitions',
 ];
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+export default auth((req) => {
+  const { pathname } = req.nextUrl;
 
   // BYPASS ABSOLUTE untuk semua rute API — jangan sentuh sama sekali
   if (pathname.startsWith('/api/')) {
@@ -39,33 +39,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Gunakan NextAuth JWT token untuk validasi session yang proper
-  try {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    if (token?.sub) {
-      // User terautentikasi, lanjutkan
-      return NextResponse.next();
-    }
-  } catch {
-    // Jika getToken gagal, fallback ke cookie check
-    const sessionCookie =
-      request.cookies.get('__Secure-next-auth.session-token') ||
-      request.cookies.get('next-auth.session-token');
-
-    if (sessionCookie?.value) {
-      return NextResponse.next();
-    }
+  // Gunakan auth() dari NextAuth v5 untuk validasi session
+  if (req.auth?.user?.id) {
+    // User terautentikasi, lanjutkan
+    return NextResponse.next();
   }
 
   // Tidak terautentikasi — redirect ke login
-  const loginUrl = new URL('/login', request.url);
+  const loginUrl = new URL('/login', req.url);
   loginUrl.searchParams.set('callbackUrl', pathname);
   return NextResponse.redirect(loginUrl);
-}
+});
 
 export const config = {
   matcher: [

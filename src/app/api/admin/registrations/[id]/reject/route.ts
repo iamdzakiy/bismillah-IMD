@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { sendRejectionEmail } from '@/lib/email';
+import { updateSheetRow } from '@/lib/google-sheets';
 import { z } from 'zod';
 
 const rejectSchema = z.object({
@@ -75,6 +76,31 @@ export async function POST(
         adminNote: parsed.data.notes,
       },
     });
+
+    // Sync to Google Sheets - update the status row
+    if (registration.googleSheetRow) {
+      await updateSheetRow('Registrations', registration.googleSheetRow, [
+        registration.createdAt.toISOString(),
+        registration.id,
+        registration.team.teamName,
+        registration.team.competitionType,
+        registration.team.captain.name || '',
+        registration.team.captain.email,
+        registration.team.captain.institution || '',
+        '', // member names (keep empty to not overwrite)
+        '', // member emails
+        '', // member institutions
+        '', // member phones
+        '', // member ages
+        '', // member proofs
+        registration.paymentProofUrl || '',
+        '', // share proof
+        '', // twibbon proof
+        '', // groups proof
+        'DOCUMENT_REJECTED',
+        'FALSE', // approved
+      ]);
+    }
 
     await sendRejectionEmail(
       registration.team.captain.email,

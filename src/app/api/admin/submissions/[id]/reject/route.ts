@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { sendRejectionEmail } from '@/lib/email';
+import { syncSubmissionToSheet } from '@/lib/google-sheets';
 import { z } from 'zod';
 
 const rejectSchema = z.object({
@@ -74,6 +75,14 @@ export async function POST(
         reviewedById: session.user.id,
         reviewedAt: new Date(),
       },
+    });
+
+    await syncSubmissionToSheet({
+      id: submission.id,
+      teamName: submission.team.teamName,
+      phase: submission.phase,
+      status: 'REJECTED',
+      fileUrl: submission.proposalUrl || submission.fullPaperUrl || submission.pitchDeckUrl || '',
     });
 
     await sendRejectionEmail(

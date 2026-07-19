@@ -11,7 +11,6 @@ const memberDataSchema = z.object({
   institution: z.string().min(1).max(200),
   phone: z.string().min(5).max(20),
   age: z.number().int().min(10).max(99).nullable(),
-  studentProofUrl: z.string().url().optional(),
   shareProofUrl: z.string().url().optional(),
   twibbonProofUrl: z.string().url().optional(),
   groupsProofUrl: z.string().url().optional(),
@@ -40,7 +39,7 @@ function isEligible(user: Pick<User, 'educationLevel'>, competitionType: Competi
     return user.educationLevel === 'SMA';
   }
   if (competitionType === 'NEC') {
-    return user.educationLevel?.startsWith('S1') || user.educationLevel === 'S1';
+    return user.educationLevel?.startsWith('S1') || user.educationLevel === 'S1 / Diploma';
   }
   return false;
 }
@@ -92,7 +91,6 @@ export async function POST(req: Request) {
         institution: captain.institution || '',
         phone: isChairmanMode ? captainPhone || '' : '',
         age: isChairmanMode ? captainAge || null : null,
-        studentProofUrl: ktmUrl || null,
         role: 'CHAIRMAN',
       },
       ...members.map((m) => ({
@@ -101,7 +99,6 @@ export async function POST(req: Request) {
         institution: m.institution,
         phone: m.phone,
         age: m.age,
-        studentProofUrl: m.studentProofUrl || null,
         role: 'MEMBER',
       })),
     ];

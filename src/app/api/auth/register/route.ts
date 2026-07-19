@@ -15,7 +15,7 @@ const registerSchema = z.object({
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
     .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least one symbol'),
   institution: z.string().min(2).transform((value) => value.trim()),
-  educationLevel: z.enum(['SMA', 'S1']),
+  educationLevel: z.enum(['SMA', 'S1 / Diploma']),
 });
 
 export async function POST(req: Request) {

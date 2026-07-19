@@ -233,7 +233,7 @@ export const COMPETITIONS: CompetitionData[] = [
         { name: 'Batch 1', period: '13 July - 8 August 2026', fee: 'IDR 75,000' },
         { name: 'Batch 2', period: '9 - 31 August 2026', fee: 'IDR 85,000' },
       ],
-      link: 'https://imd-2026-gong.vercel.app/',
+      link: 'https://imd2026itb.co-id.id/',
       socialMediaRequirements: [
         'Follow official Instagram accounts: @imd.itb and @archaea.itb.',
         'Post official IMD 2026 Twibbon as a regular Instagram post (account must be public).',

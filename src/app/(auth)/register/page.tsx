@@ -212,7 +212,7 @@ export default function RegisterPage() {
                 style={{ colorScheme: 'dark' }}
               >
                 <option value="SMA" className="bg-gray-900 text-white">SMA / MA / SMK / Sederajat</option>
-                <option value="S1" className="bg-gray-900 text-white">S1 / D3 / D4 / Diploma</option>
+                <option value="S1 / Diploma" className="bg-gray-900 text-white">S1 / D3 / D4 / Diploma</option>
               </select>
             </div>
 

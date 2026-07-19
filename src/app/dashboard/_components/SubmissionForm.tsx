@@ -165,7 +165,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
           {isRejected && (
             <div className="glass rounded-xl p-4 space-y-3">
               <p className="text-xs text-white/40 mb-2">
-                Buat salinan dari template: <a href="https://bit.ly/TemplateRegistration" target="_blank" rel="noopener noreferrer" className="text-bio-emerald hover:underline">bit.ly/TemplateRegistration</a>
+                Buat salinan dari template: <a href="https://bit.ly/CompeIMD2026" target="_blank" rel="noopener noreferrer" className="text-bio-emerald hover:underline">https://bit.ly/CompeIMD2026</a>
               </p>
               <FileUpload
                 label="Re-upload Registration PDF (Max 5MB)"
@@ -281,7 +281,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
         
         <div className="glass rounded-xl p-4 space-y-3">
           <p className="text-xs text-white/40 mb-2">
-            Buat salinan dari template: <a href={templateLink || 'https://bit.ly/TemplateRegistration'} target="_blank" rel="noopener noreferrer" className="text-bio-emerald hover:underline">Template Registration</a>
+            Buat salinan dari template: <a href={templateLink || 'https://bit.ly/CompeIMD2026'} target="_blank" rel="noopener noreferrer" className="text-bio-emerald hover:underline">Template Registration</a>
           </p>
           <FileUpload
             label="Upload Registration PDF (Max 5MB)"
@@ -337,7 +337,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
             </div>
             
             <p className="text-xs text-white/40">
-              Template: <a href="https://bit.ly/TemplateRegistration" target="_blank" rel="noopener noreferrer" className="text-bio-emerald hover:underline">bit.ly/TemplateRegistration</a>
+              Template: <a href="https://bit.ly/CompeIMD2026" target="_blank" rel="noopener noreferrer" className="text-bio-emerald hover:underline">bit.ly/CompeIMD2026</a>
             </p>
             
             <FileUpload
@@ -435,8 +435,14 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
             Status: <span className="font-semibold text-bio-emerald">{existingSubmission.status}</span>
           </p>
           {existingSubmission.status === 'REJECTED' && (
-            <div className="mt-3 pt-3 border-t border-white/10">
-              <p className="text-xs text-yellow-400 mb-2">Submission ditolak - Anda dapat mengupload ulang:</p>
+            <div className="mt-3 pt-3 border-t border-white/10 space-y-3">
+              {existingSubmission.notes && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                  <p className="text-red-400 text-xs font-medium">Catatan Admin:</p>
+                  <p className="text-white/70 text-sm mt-1">{existingSubmission.notes}</p>
+                </div>
+              )}
+              <p className="text-xs text-yellow-400">Submission ditolak - Anda dapat mengupload ulang:</p>
               <FileUpload
                 label="Upload Ulang (Max 5MB)"
                 accept=".pdf"

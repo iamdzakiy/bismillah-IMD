@@ -108,7 +108,7 @@ export async function syncRegistrationToSheet(registration: {
     institution: string;
     phone: string;
     age: number | null;
-    studentProofUrl: string | null;
+    studentProofUrl?: string | null;
     role: string;
   }>;
   paymentProof?: string | null;
