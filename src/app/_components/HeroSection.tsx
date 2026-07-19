@@ -68,7 +68,7 @@ export function HeroSection() {
           transition={{ duration: 0.6 }}
           className="glass rounded-2xl p-4 md:p-6 mb-12 max-w-md mx-auto lg:mx-0 glow-purple"
         >
-          <Countdown targetDate="2026-07-31T23:59:59" />
+          <Countdown targetDate="2026-08-15T23:59:59" />
         </motion.div>
 
         {/* Hero Content */}
