@@ -75,13 +75,13 @@ export default function HomePage() {
             <h3 className="text-center text-sm font-semibold text-white/40 uppercase tracking-wider mb-6">
               Media Partners
             </h3>
-            <SponsorMarquee items={MEDIA_PARTNERS} direction="left" speed={1.2} />
+            <SponsorMarquee items={} direction="left" speed={1.2} />
           </div>
           <div>
             <h3 className="text-center text-sm font-semibold text-white/40 uppercase tracking-wider mb-6">
               Industry Partners
             </h3>
-            <SponsorMarquee items={INDUSTRY_PARTNERS} direction="right" speed={1} />
+            <SponsorMarquee items={} direction="right" speed={1} />
           </div>
         </div>
       </section>

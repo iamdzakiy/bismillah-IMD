@@ -65,7 +65,7 @@ export function Navbar() {
           <div className="relative">
             <div className="absolute inset-0 bg-purple-500/30 rounded-full blur-lg group-hover:bg-purple-500/50 transition-all" />
             <div className="relative w-10 h-10 glass-strong rounded-full flex items-center justify-center">
-              <span className="text-xl">🧬</span>
+              <img src="/favicon.svg" alt="IMD 2026" className="w-5 h-5 md:w-6 md:h-6" />
             </div>
           </div>
           <span className="text-xl font-black text-gradient hidden sm:block">
