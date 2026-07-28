@@ -183,9 +183,9 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
         <div className="text-center mb-2">
           <h2 className="text-2xl font-bold mb-2">Register</h2>
           <p className="text-white/60 text-sm">
-            {competitionType === 'OLYMPIAD' && 'MO is individual. Upload 1 merged PDF from registration template.'}
+            {competitionType === 'OLYMPIAD' && 'MO is individual. Upload 1 merged PDF from template Registration Proof.'}
             {competitionType === 'SPC' && 'SPC is a team competition (3 members, including chairman). Upload 1 file PDF (max 5MB) dari template Registration Proof.'}
-            {competitionType === 'NEC' && 'NEC is individual. Upload 1 file PDF (max 5MB) dari template abstrak.'}
+            {competitionType === 'NEC' && 'NEC is individual. Upload 1 file PDF (max 5MB) dari template Registration Proof.'}
           </p>
         </div>
 
@@ -432,8 +432,8 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
           </h3>
           <p className="text-xs text-white/40 mb-3">
             {competitionType === 'OLYMPIAD' && 'Gabungkan semua dokumen registrasi (KTA, bukti bayar, twibbon, dll) menjadi 1 file PDF.'}
-            {competitionType === 'SPC' && 'Upload 1 file PDF abstrak menggunakan template resmi. Maksimal 5MB.'}
-            {competitionType === 'NEC' && 'Upload 1 file PDF abstrak menggunakan template resmi. Maksimal 5MB.'}
+            {competitionType === 'SPC' && 'Upload 1 file PDF template Registration Proof menggunakan template resmi. Maksimal 5MB.'}
+            {competitionType === 'NEC' && 'Upload 1 file PDF template Registration Proof menggunakan template resmi. Maksimal 5MB.'}
           </p>
           {templateLink && (
             <a href={templateLink} target="_blank" rel="noopener noreferrer" 

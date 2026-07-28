@@ -12,7 +12,7 @@ interface SubmissionFormProps {
 }
 
 const TEMPLATE_LINKS: Record<string, string> = {
-  'SPC_PRELIMINARY': 'https://bit.ly/AbstrakSPCIMD',
+  'SPC_PRELIMINARY': 'https://bit.ly/CompeIMD2026',
   'NEC_PRELIMINARY': 'https://bit.ly/CompeIMD2026',
 };
 
