@@ -185,7 +185,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
           <p className="text-white/60 text-sm">
             {competitionType === 'OLYMPIAD' && 'MO is individual. Upload 1 merged PDF from template Registration Proof.'}
             {competitionType === 'SPC' && 'SPC is a team competition (3 members, including chairman). Upload 1 file PDF (max 5MB) dari template Registration Proof.'}
-            {competitionType === 'NEC' && 'NEC is individual. Upload 1 file PDF (max 5MB) dari template Registration Proof.'}
+            {competitionType === 'NEC' && 'NEC is a team competition. Upload 1 file PDF (max 5MB) dari template Registration Proof.'}
           </p>
         </div>
 
