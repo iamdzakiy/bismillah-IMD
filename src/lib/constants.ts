@@ -166,9 +166,9 @@ export const TIMELINE_DATA = [
 ];
 
 export const MEMORIES_DATA = [
-  { title: 'Grand Final 2025', date: 'August 2025', year: '2025', image: '/memories/2025-grand-final.jpg', color: '#6e8efb' },
-  { title: 'Keynote Speaker', date: 'July 2025', year: '2025', image: '/memories/2025-keynote.jpg', color: '#a777e3' },
-  { title: 'Laboratory Session', date: 'July 2024', year: '2024', image: '/memories/2024-lab.jpg', color: '#f093fb' },
+  { title: 'PetriDish Art 2024', date: '2024', year: '2024', image: '31.png', color: '#6e8efb' },
+  { title: 'Awarding Microverse 2025', date: 'September 2025', year: '2025', image: '32.png', color: '#a777e3' },
+  { title: 'Petri Dish Art 2025', date: 'September 2025', year: '2025', image: '28.jpg', color: '#f093fb' },
   { title: 'Networking Night', date: 'August 2024', year: '2024', image: '/memories/2024-networking.jpg', color: '#4facfe' },
   { title: 'Workshop 2023', date: 'June 2023', year: '2023', image: '/memories/2023-workshop.jpg', color: '#6e8efb' },
   { title: 'Awarding Night', date: 'August 2023', year: '2023', image: '/memories/2023-awarding.jpg', color: '#a777e3' },
