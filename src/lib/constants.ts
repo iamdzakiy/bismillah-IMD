@@ -167,15 +167,15 @@ export const TIMELINE_DATA = [
 
 export const MEMORIES_DATA = [
   { title: 'PetriDish Art 2024', date: '2024', year: '2024', image: '31.png', color: '#6e8efb' },
-  { title: 'Awarding Microverse 2025', date: 'September 2025', year: '2025', image: '32.png', color: '#a777e3' },
+  { title: 'Awarding Night 2025', date: 'September 2025', year: '2025', image: '32.png', color: '#a777e3' },
   { title: 'Petri Dish Art 2025', date: 'September 2025', year: '2025', image: '28.jpg', color: '#f093fb' },
-  { title: 'Networking Night', date: 'August 2024', year: '2024', image: '/memories/2024-networking.jpg', color: '#4facfe' },
-  { title: 'Workshop 2023', date: 'June 2023', year: '2023', image: '/memories/2023-workshop.jpg', color: '#6e8efb' },
-  { title: 'Awarding Night', date: 'August 2023', year: '2023', image: '/memories/2023-awarding.jpg', color: '#a777e3' },
-  { title: 'Hackathon 2022', date: 'July 2022', year: '2022', image: '/memories/2022-hackathon.jpg', color: '#f093fb' },
-  { title: 'Exhibition Day', date: 'August 2022', year: '2022', image: '/memories/2022-exhibition.jpg', color: '#4facfe' },
-  { title: 'Opening Ceremony', date: 'June 2021', year: '2021', image: '/memories/2021-opening.jpg', color: '#6e8efb' },
-  { title: 'Team Photo', date: 'August 2021', year: '2021', image: '/memories/2021-team.jpg', color: '#a777e3' },
+  { title: 'Exhibition Microverse', date: 'September 2025', year: '2025', image: '27.jpg', color: '#4facfe' },
+  { title: 'Art Collaborator', date: 'September 2025', year: '2025', image: '33.png', color: '#6e8efb' },
+  { title: 'Exhibition Microverse', date: 'September 2025', year: '2025', image: '25.jpg', color: '#a777e3' },
+  { title: 'Exhibition Microverse', date: 'September 2025', image: '24.jpg', color: '#f093fb' },
+  { title: 'Exhibition Microverse', date: 'September 2025', image: '22.jpg', color: '#4facfe' },
+  { title: 'Exhibition Microverse', date: 'September 2025', image: '23.jpg', color: '#6e8efb' },
+  { title: 'Petri Dish Art 2025', date: 'September 2025', year: '2025', image: '30.jpg', color: '#a777e3' },
 ];
 
 export const MEDIA_PARTNERS = [
