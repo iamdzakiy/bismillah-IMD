@@ -166,16 +166,16 @@ export const TIMELINE_DATA = [
 ];
 
 export const MEMORIES_DATA = [
-  { title: 'PetriDish Art 2024', date: '2024', year: '2024', image: '31.png', color: '#6e8efb' },
-  { title: 'Awarding Night 2025', date: 'September 2025', year: '2025', image: '32.png', color: '#a777e3' },
-  { title: 'Petri Dish Art 2025', date: 'September 2025', year: '2025', image: '28.jpg', color: '#f093fb' },
-  { title: 'Exhibition Microverse', date: 'September 2025', year: '2025', image: '27.jpg', color: '#4facfe' },
-  { title: 'Art Collaborator', date: 'September 2025', year: '2025', image: '33.png', color: '#6e8efb' },
-  { title: 'Exhibition Microverse', date: 'September 2025', year: '2025', image: '25.jpg', color: '#a777e3' },
-  { title: 'Exhibition Microverse', date: 'September 2025', image: '24.jpg', color: '#f093fb' },
-  { title: 'Exhibition Microverse', date: 'September 2025', image: '22.jpg', color: '#4facfe' },
-  { title: 'Exhibition Microverse', date: 'September 2025', image: '23.jpg', color: '#6e8efb' },
-  { title: 'Petri Dish Art 2025', date: 'September 2025', year: '2025', image: '30.jpg', color: '#a777e3' },
+  { title: 'PetriDish Art 2024', date: '2024', year: '2024', image: '/31.png', color: '#6e8efb' },
+  { title: 'Awarding Night 2025', date: 'September 2025', year: '2025', image: '/32.png', color: '#a777e3' },
+  { title: 'Petri Dish Art 2025', date: 'September 2025', year: '2025', image: '/28.jpg', color: '#f093fb' },
+  { title: 'Exhibition Microverse', date: 'September 2025', year: '2025', image: '/27.jpg', color: '#4facfe' },
+  { title: 'Art Collaborator', date: 'September 2025', year: '2025', image: '/33.png', color: '#6e8efb' },
+  { title: 'Exhibition Microverse', date: 'September 2025', year: '2025', image: '/25.jpg', color: '#a777e3' },
+  { title: 'Exhibition Microverse', date: 'September 2025', image: '/24.jpg', color: '#f093fb' },
+  { title: 'Exhibition Microverse', date: 'September 2025', image: '/22.jpg', color: '#4facfe' },
+  { title: 'Exhibition Microverse', date: 'September 2025', image: '/23.jpg', color: '#6e8efb' },
+  { title: 'Petri Dish Art 2025', date: 'September 2025', year: '2025', image: '/30.jpg', color: '#a777e3' },
 ];
 
 export const MEDIA_PARTNERS = [

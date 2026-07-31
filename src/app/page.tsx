@@ -55,7 +55,7 @@ export default function HomePage() {
           </h2>
           <p className="text-white/50">Relive the moments that made IMD special</p>
         </div>
-  
+        <MemoriesGallery />
       </section>
 
       {/* Sponsors */}
