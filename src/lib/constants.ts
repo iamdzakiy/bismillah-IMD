@@ -170,7 +170,7 @@ export const MEMORIES_DATA = [
   { title: 'Awarding Night 2025', date: 'September 2025', year: '2025', image: '/32.png', color: '#a777e3' },
   { title: 'Petri Dish Art 2025', date: 'September 2025', year: '2025', image: '/28.jpg', color: '#f093fb' },
   { title: 'Exhibition Microverse', date: 'September 2025', year: '2025', image: '/27.jpg', color: '#4facfe' },
-  { title: 'Art Collaborator', date: 'September 2025', year: '2025', image: '/33.png', color: '#6e8efb' },
+  { title: 'Art Collaborator', date: 'September 2025', year: '2025', image: '/22.png', color: '#6e8efb' },
   { title: 'Exhibition Microverse', date: 'September 2025', year: '2025', image: '/25.jpg', color: '#a777e3' },
   { title: 'Exhibition Microverse', date: 'September 2025', image: '/24.jpg', color: '#f093fb' },
   { title: 'Exhibition Microverse', date: 'September 2025', image: '/22.jpg', color: '#4facfe' },
