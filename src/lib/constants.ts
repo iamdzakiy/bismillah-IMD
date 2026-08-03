@@ -179,10 +179,10 @@ export const MEMORIES_DATA = [
 ];
 
 export const MEDIA_PARTNERS = [
-  { name: 'Kompas', icon: 'fa-newspaper' },
-  { name: 'Detik', icon: 'fa-globe' },
-  { name: 'Tempo', icon: 'fa-broadcast-tower' },
-  { name: 'CNN Indonesia', icon: 'fa-tv' },
+  { name: 'infolomba_SMA', icon: 'fa-newspaper' },
+  { name: 'infoBandung', icon: 'fa-globe' },
+  { name: 'infoinfo', icon: 'fa-broadcast-tower' },
+  { name: 'GaneshaFest', icon: 'fa-tv' },
   { name: 'Republika', icon: 'fa-rss' },
   { name: 'Liputan6', icon: 'fa-newspaper' },
   { name: 'Grid Network', icon: 'fa-th' },
