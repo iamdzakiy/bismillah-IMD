@@ -526,12 +526,28 @@ export async function sendVerifiedEmail(email: string, name?: string) {
 // ============================================================
 // EMAIL 3: Approval email (for registration or submission approval)
 // ============================================================
+const WHATSAPP_COMMUNITY_LINK = 'https://chat.whatsapp.com/ClwIbQfe86BILn7WBp9bEn';
+
 export async function sendApprovalEmail(
   email: string,
   name: string,
   competition: string,
   phase: string
 ) {
+  // Always include the WhatsApp community section for all approval types
+  // (registration/document approval and submission approval)
+  const waSection = `
+    <div style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25); border-radius: 14px; padding: 20px 22px; margin: 0 0 20px 0;">
+      <p style="color: #22c55e; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin: 0 0 10px 0;">📱 Join the WhatsApp Community</p>
+      <p style="color: rgba(255,255,255,0.75); font-size: 14px; line-height: 1.6; margin: 0 0 14px 0;">
+        Join the community then join the group where you belong.<br/>
+        <strong style="color: #fff;">Community Compe IMD 2026 (WhatsApp)</strong>
+      </p>
+      <a href="${WHATSAPP_COMMUNITY_LINK}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; text-decoration: none; border-radius: 60px; font-weight: 700; font-size: 14px; box-shadow: 0 8px 24px rgba(34,197,94,0.3);">Join WhatsApp Group →</a>
+      <p style="color: rgba(255,255,255,0.4); font-size: 12px; word-break: break-all; margin: 10px 0 0 0;">${WHATSAPP_COMMUNITY_LINK}</p>
+    </div>
+  `;
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a1a; padding: 40px 24px; border-radius: 16px;">
       <div style="background: linear-gradient(160deg, #13133a, #0e0e2e); border-radius: 16px; padding: 36px 32px; border: 1px solid rgba(99,102,241,0.2);">
@@ -542,6 +558,7 @@ export async function sendApprovalEmail(
         <p style="color: rgba(255,255,255,0.7); font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
           Your <strong style="color: #fff;">${phase}</strong> for <strong style="color: #fff;">${competition}</strong> has been approved by our review team.
         </p>
+        ${waSection}
         <p style="color: rgba(255,255,255,0.5); font-size: 14px; margin: 0 0 24px 0;">Check your dashboard for next steps.</p>
         <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display: inline-block; padding: 14px 36px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; text-decoration: none; border-radius: 60px; font-weight: 700; font-size: 15px; box-shadow: 0 8px 32px rgba(99,102,241,0.3);">View Dashboard →</a>
       </div>

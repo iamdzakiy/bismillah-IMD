@@ -27,7 +27,8 @@ imd-383@imd2026101.iam.gserviceaccount.com
 
 Make sure your Google Sheet has these tabs (sheets):
 - `Registrations` - for team registration data
-- `Submissions` - for competition submissions
+- `Submissions` - for competition submissions (all file URLs)
+- `Users` - for user accounts (name, email, hashed password, institution, etc.)
 - `Test` - for testing (optional)
 
 ## Step 4: Test the Integration
@@ -93,6 +94,9 @@ When a team submits work:
 - Member Ages
 - Member Proof URLs
 - Payment Proof URL
+- Share Proof URL
+- Twibbon Proof URL
+- Groups Proof URL
 - Status
 - Approved (FALSE = pending verification)
 
@@ -100,6 +104,23 @@ When a team submits work:
 - Timestamp
 - Submission ID
 - Team Name
+- Competition Type
 - Phase (PRELIMINARY/SEMIFINAL/FINAL)
 - Status
-- File URL
+- Proposal URL
+- Video Pitch URL
+- Full Paper URL
+- Poster URL
+- Pitch Deck URL
+- Captain Email
+
+### Users Tab Columns:
+- Timestamp
+- User ID
+- Name
+- Email
+- Hashed Password (for admin reference only)
+- Institution
+- Education Level
+- Active (TRUE/FALSE)
+- Role (USER/ADMIN)

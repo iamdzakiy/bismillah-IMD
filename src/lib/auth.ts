@@ -1,21 +1,18 @@
 // src/lib/auth.ts
 import NextAuth from 'next-auth';
-import Google from 'next-auth/providers/google';
 import Credentials from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from './db';
 import bcrypt from 'bcryptjs';
+
+// Use explicit APP_URL to avoid localhost redirect issues on Vercel
+const APP_URL = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || '';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma) as any,
   session: { strategy: 'jwt' },
   trustHost: true,
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      allowDangerousEmailAccountLinking: true,
-    }),
     Credentials({
       name: 'Credentials',
       credentials: {
@@ -34,7 +31,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             where: { email },
           });
 
-          // If user doesn't exist or has no password (e.g. Google only user)
+          // If user doesn't exist or has no password
           if (!user || !user.password) {
             return null;
           }
@@ -68,52 +65,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
-      // Handle Google Sign-In
-      if (account?.provider === 'google') {
-        try {
-          const email = user.email;
-          if (!email) return false;
-
-          // Check if user exists
-          const dbUser = await prisma.user.findUnique({ where: { email } });
-          
-          if (dbUser) {
-            // Update existing user with Google data
-            await prisma.user.update({
-              where: { id: dbUser.id },
-              data: { 
-                // Only set active=true if they already have a password or already verified
-                active: dbUser.active || !!dbUser.password,
-                emailVerified: dbUser.emailVerified ?? (dbUser.active ? new Date() : undefined),
-                googleId: dbUser.googleId ?? account.providerAccountId,
-                name: dbUser.name ?? user.name ?? profile?.name ?? dbUser.name,
-                institution: dbUser.institution ?? (profile as any)?.hd ?? undefined,
-                educationLevel: dbUser.educationLevel ?? 'SMA',
-              },
-            });
-          } else {
-            // Create new user with Google data - require email verification and password setup
-            await prisma.user.create({
-              data: {
-                email,
-                name: user.name ?? profile?.name ?? email.split('@')[0],
-                active: false, // User needs to verify email AND set password
-                googleId: account.providerAccountId,
-                institution: (profile as any)?.hd ?? '',
-                educationLevel: 'SMA',
-              },
-            });
-          }
-          
-          return true; // Allow sign-in - user can login with Google but must set password
-        } catch (error) {
-          console.error('Google signIn error:', error);
-          return true; // Don't block sign-in
-        }
-      }
-      return true;
-    },
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
@@ -135,14 +86,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // Handle signOut - redirect to baseUrl (homepage)
-      if (url === '/') return `${baseUrl}/`;
+      // Use explicit APP_URL if set (fixes localhost redirect on Vercel)
+      const origin = APP_URL || baseUrl;
+
+      // Handle signOut - redirect to homepage
+      if (url === '/') return `${origin}/`;
       // Allow relative URLs
-      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      if (url.startsWith('/')) return `${origin}${url}`;
       // Allow same-origin URLs
-      if (new URL(url).origin === baseUrl) return url;
+      try {
+        if (new URL(url).origin === origin) return url;
+      } catch {
+        // invalid url, fall through
+      }
       // Default to dashboard
-      return `${baseUrl}/dashboard`;
+      return `${origin}/dashboard`;
     },
   },
   pages: {

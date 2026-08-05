@@ -33,6 +33,7 @@ export async function POST(req: Request) {
       where: { id: teamId },
       include: {
         registration: true,
+        captain: true,
         submissions: { where: { phase: 'SEMIFINAL', status: 'APPROVED' } },
       },
     });
@@ -99,9 +100,12 @@ export async function POST(req: Request) {
     await syncSubmissionToSheet({
       id: submission.id,
       teamName: team.teamName,
+      competitionType: team.competitionType,
       phase: 'FINAL',
       status: 'PENDING',
-      fileUrl: pitchDeckUrl,
+      pitchDeckUrl: submission.pitchDeckUrl,
+      videoPitchUrl: submission.videoPitchUrl,
+      captainEmail: team.captain?.email,
     });
 
     return NextResponse.json({

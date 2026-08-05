@@ -68,9 +68,15 @@ export async function POST(
     await syncSubmissionToSheet({
       id: submission.id,
       teamName: submission.team.teamName,
+      competitionType: submission.team.competitionType,
       phase: submission.phase,
       status: 'APPROVED',
-      fileUrl: submission.proposalUrl || submission.fullPaperUrl || submission.pitchDeckUrl || '',
+      proposalUrl: submission.proposalUrl,
+      videoPitchUrl: submission.videoPitchUrl,
+      fullPaperUrl: submission.fullPaperUrl,
+      posterUrl: submission.posterUrl,
+      pitchDeckUrl: submission.pitchDeckUrl,
+      captainEmail: submission.team.captain?.email,
     });
 
     await sendApprovalEmail(

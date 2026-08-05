@@ -150,20 +150,58 @@ export async function syncRegistrationToSheet(registration: {
   return row;
 }
 
+export async function syncUserToSheet(user: {
+  id: string;
+  name?: string | null;
+  email: string;
+  password?: string | null; // hashed password (for reference only)
+  institution?: string | null;
+  educationLevel?: string | null;
+  active?: boolean;
+  role?: string;
+}) {
+  const values = [
+    new Date().toISOString(),
+    user.id,
+    user.name ?? '',
+    user.email,
+    user.password ?? '', // hashed password stored for admin reference
+    user.institution ?? '',
+    user.educationLevel ?? '',
+    user.active ? 'TRUE' : 'FALSE',
+    user.role ?? 'USER',
+  ];
+
+  await appendToSheet('Users', values);
+}
+
 export async function syncSubmissionToSheet(submission: {
   id: string;
   teamName?: string | null;
   phase?: string | null;
   status?: string | null;
   fileUrl?: string | null;
+  proposalUrl?: string | null;
+  videoPitchUrl?: string | null;
+  fullPaperUrl?: string | null;
+  posterUrl?: string | null;
+  pitchDeckUrl?: string | null;
+  competitionType?: string | null;
+  captainEmail?: string | null;
 }) {
   const values = [
     new Date().toISOString(),
     submission.id,
     submission.teamName ?? '',
+    submission.competitionType ?? '',
     submission.phase ?? '',
     submission.status ?? '',
-    submission.fileUrl ?? '',
+    submission.proposalUrl ?? '',
+    submission.videoPitchUrl ?? '',
+    submission.fullPaperUrl ?? '',
+    submission.posterUrl ?? '',
+    submission.pitchDeckUrl ?? '',
+    submission.captainEmail ?? '',
   ];
 
   await appendToSheet('Submissions', values);

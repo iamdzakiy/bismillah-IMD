@@ -5,6 +5,7 @@ import { MascotDecoration } from '@/components/ui/MascotDecoration';
 import { COMPETITIONS, GRAND_THEME, PAYMENT_INFO, SOCIAL_MEDIA } from '@/lib/competitions-data';
 import { Metadata } from 'next';
 import Link from 'next/link';
+import GuidebookPreview from './GuidebookPreview';
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -88,7 +89,10 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
   const isNEC = comp.id === 'nec';
 
   const guidebookUrl = comp.guidebookUrl || '#';
-  const guidebookDownloadUrl = guidebookUrl !== '#' ? guidebookUrl.replace('/preview', '/view') : '#';
+  // Convert Google Drive preview URL to view URL for download
+  const guidebookDownloadUrl = guidebookUrl !== '#'
+    ? guidebookUrl.replace('/preview', '/view')
+    : '#';
 
   return (
     <div className="min-h-screen bg-space-900 text-white pt-24 pb-12 px-4">
@@ -156,29 +160,12 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
               Open Full Guidebook PDF ↗
             </a>
           </div>
-          <div className="relative w-full rounded-xl overflow-hidden border border-white/10" style={{ height: '500px' }}>
-            <iframe
-              src={guidebookUrl}
-              className="absolute inset-0 w-full h-full"
-              style={{ border: 'none' }}
-              title={`${comp.shortName} Guidebook`}
-            />
-            {/* Fallback for when PDF can't load */}
-            <div className="absolute inset-0 flex items-center justify-center bg-space-900/80 backdrop-blur-sm">
-              <div className="text-center p-8">
-                <div className="text-6xl mb-4">📄</div>
-                <p className="text-white/70 mb-4">Guidebook preview not available</p>
-                <a
-                  href={guidebookDownloadUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all border ${getCompBadge(isOlympiad, isSPC, isNEC)}`}
-                >
-                  Download PDF Instead
-                </a>
-              </div>
-            </div>
-          </div>
+          <GuidebookPreview
+            guidebookUrl={guidebookUrl}
+            guidebookDownloadUrl={guidebookDownloadUrl}
+            shortName={comp.shortName}
+            badgeClass={getCompBadge(isOlympiad, isSPC, isNEC)}
+          />
         </GlassCard>
 
         {/* ===== GRAND THEME ===== */}

@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { sendVerificationEmail } from '@/lib/email';
 import { rateLimit } from '@/lib/rate-limit';
+import { syncUserToSheet } from '@/lib/google-sheets';
 import { z } from 'zod';
 
 const registerSchema = z.object({
@@ -70,11 +71,27 @@ export async function POST(req: Request) {
       },
     });
 
-      try {
-        await sendVerificationEmail(email, token);
-      } catch (e) {
-        console.error('Email sending failed, but continuing:', e);
-      }
+    // Sync user to Google Sheets (non-fatal)
+    try {
+      await syncUserToSheet({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        institution: user.institution,
+        educationLevel: user.educationLevel,
+        active: user.active,
+        role: user.role,
+      });
+    } catch (e) {
+      console.error('Google Sheets sync failed (non-fatal):', e);
+    }
+
+    try {
+      await sendVerificationEmail(email, token);
+    } catch (e) {
+      console.error('Email sending failed, but continuing:', e);
+    }
 
     return NextResponse.json({
       message: 'Registration successful. Please check your email to verify your account.',
