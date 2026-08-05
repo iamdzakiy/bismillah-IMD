@@ -111,10 +111,10 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
   const getUploadConfig = () => {
     if (phase === 'PRELIMINARY') {
       if (team.competitionType === 'SPC') {
-        return { label: 'Project Proposal (PDF) - Gunakan template resmi', accept: '.pdf' };
+        return { label: 'Abstract (PDF) - Gunakan template resmi', accept: '.pdf' };
       }
       if (team.competitionType === 'NEC') {
-        return { label: 'Full Paper Essay (PDF) - Gunakan template resmi', accept: '.pdf' };
+        return { label: 'Abstract (PDF) - Gunakan template resmi', accept: '.pdf' };
       }
       if (team.competitionType === 'OLYMPIAD') {
         return null; // Exam-based, no file upload
