@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import Link from 'next/link';
 
 function ResetPasswordContent() {
@@ -15,6 +15,13 @@ function ResetPasswordContent() {
   const [message, setMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  // Check if token is present
+  useEffect(() => {
+    if (!token) {
+      setError('Missing reset token. Please request a new password reset link.');
+    }
+  }, [token]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -22,7 +29,8 @@ function ResetPasswordContent() {
     setMessage('');
 
     try {
-      if (!token) throw new Error('Reset token missing');
+      if (!token) throw new Error('Reset token missing. Please request a new password reset link.');
+
       const res = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -78,6 +86,16 @@ function ResetPasswordContent() {
           {error && (
             <div className="mb-6 bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm text-center">
               {error}
+              {error.toLowerCase().includes('token') && (
+                <div className="mt-3">
+                  <Link
+                    href="/request-password-reset"
+                    className="inline-block text-emerald-400 hover:text-teal-400 font-medium hover:underline"
+                  >
+                    Request a new reset link →
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 
@@ -122,18 +140,25 @@ function ResetPasswordContent() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !token}
               className="w-full px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-full transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               {loading ? 'Updating...' : 'Update Password'}
             </button>
           </form>
 
-          <div className="text-center text-xs sm:text-sm text-white/50">
-            Remembered your password?{' '}
-            <Link href="/login" className="text-emerald-400 hover:text-teal-400 font-medium transition-colors">
-              Login
-            </Link>
+          <div className="text-center text-xs sm:text-sm text-white/50 space-y-1">
+            <div>
+              Remembered your password?{' '}
+              <Link href="/login" className="text-emerald-400 hover:text-teal-400 font-medium transition-colors">
+                Login
+              </Link>
+            </div>
+            <div>
+              <Link href="/request-password-reset" className="text-emerald-400/70 hover:text-teal-400 font-medium transition-colors">
+                Request new reset link
+              </Link>
+            </div>
           </div>
         </div>
       </div>

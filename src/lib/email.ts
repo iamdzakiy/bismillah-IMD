@@ -604,7 +604,7 @@ export async function sendRejectionEmail(
 // EMAIL 5: Password reset
 // ============================================================
 export async function sendPasswordResetEmail(email: string, token: string, name?: string) {
-  const url = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${encodeURIComponent(token)}`;
+  const url = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${encodeURIComponent(token)}&expires=1h`;
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a1a; padding: 40px 24px; border-radius: 16px;">
@@ -617,7 +617,7 @@ export async function sendPasswordResetEmail(email: string, token: string, name?
         <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin: 0 0 24px 0;">You requested a password reset for your IMD 2026 account. Click the button below to set a new password.</p>
         <a href="${url}" style="display: inline-block; padding: 14px 36px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; text-decoration: none; border-radius: 60px; font-weight: 700; font-size: 15px; box-shadow: 0 8px 32px rgba(99,102,241,0.3);">Reset Password →</a>
         <p style="color: rgba(255,255,255,0.35); font-size: 12px; margin: 16px 0 0 0; word-break: break-all;">${url}</p>
-        <p style="color: rgba(255,255,255,0.25); font-size: 11px; margin: 8px 0 0 0;">⏳ This link expires in 30 minutes. If you didn't request this, please ignore this email.</p>
+        <p style="color: rgba(255,255,255,0.25); font-size: 11px; margin: 8px 0 0 0;">⏳ This link expires in 1 hour. If you didn't request this, please ignore this email.</p>
       </div>
     </div>
   `;

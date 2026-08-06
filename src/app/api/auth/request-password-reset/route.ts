@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
 
 import { prisma } from '@/lib/db';
 import { sendPasswordResetEmail } from '@/lib/email';
@@ -33,12 +32,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'If the account exists, a reset link has been sent.' });
     }
 
+    // Delete any existing unused tokens for this user to avoid stale/invalid tokens
+    await prisma.passwordResetToken.deleteMany({
+      where: { userId: user.id },
+    });
+
     const token = crypto.randomUUID();
     await prisma.passwordResetToken.create({
       data: {
         token,
         userId: user.id,
-        expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
       },
     });
 
@@ -50,4 +54,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

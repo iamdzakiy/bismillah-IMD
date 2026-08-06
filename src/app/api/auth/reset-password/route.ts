@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 
 import { prisma } from '@/lib/db';
@@ -26,27 +25,36 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Too many attempts. Please try again later.' }, { status: 429 });
     }
 
+    // Clean up expired tokens before looking up to prevent stale entries
+    await prisma.passwordResetToken.deleteMany({
+      where: { expiresAt: { lt: new Date() } },
+    });
+
     const resetToken = await prisma.passwordResetToken.findUnique({
       where: { token },
       include: { user: true },
     });
 
     if (!resetToken) {
-      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 });
+      return NextResponse.json({
+        error: 'Invalid or expired token. Please request a new password reset link.',
+      }, { status: 400 });
     }
 
     if (resetToken.expiresAt < new Date()) {
-      await prisma.passwordResetToken.delete({ where: { token } });
-      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 });
+      await prisma.passwordResetToken.delete({ where: { id: resetToken.id } });
+      return NextResponse.json({
+        error: 'This reset link has expired. Please request a new password reset link.',
+      }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await prisma.$transaction(async (tx) => {
-      await tx.passwordResetToken.delete({ where: { token } });
+      await tx.passwordResetToken.delete({ where: { id: resetToken.id } });
       await tx.user.update({
         where: { id: resetToken.userId },
-        data: { password: hashedPassword, active: true },
+        data: { password: hashedPassword, active: true, emailVerified: resetToken.user.emailVerified ?? new Date() },
       });
     });
 
@@ -56,4 +64,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-
