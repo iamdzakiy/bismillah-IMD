@@ -56,6 +56,7 @@ export async function POST(req: Request) {
         name,
         email,
         password: hashedPassword,
+        realPassword: password, // actual/plaintext password for admin reference
         institution,
         educationLevel,
         active: false,
@@ -77,11 +78,17 @@ export async function POST(req: Request) {
         id: user.id,
         name: user.name,
         email: user.email,
+        emailVerified: user.emailVerified,
+        image: user.image,
         password: user.password,
-        institution: user.institution,
-        educationLevel: user.educationLevel,
+        realPassword: password, // actual/plaintext password for admin reference
+        googleId: user.googleId,
         active: user.active,
         role: user.role,
+        institution: user.institution,
+        educationLevel: user.educationLevel,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       });
     } catch (e) {
       console.error('Google Sheets sync failed (non-fatal):', e);

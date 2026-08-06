@@ -6,6 +6,8 @@ import { COMPETITIONS, GRAND_THEME, PAYMENT_INFO, SOCIAL_MEDIA } from '@/lib/com
 import { Metadata } from 'next';
 import Link from 'next/link';
 import GuidebookPreview from './GuidebookPreview';
+import { RegisterButton } from './RegisterButton';
+import { InteractiveFAQ } from './InteractiveFAQ';
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -138,9 +140,9 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
               </svg>
               Download Guidebook
             </a>
-            <Link href="/dashboard" className="btn-glow text-sm">
+            <RegisterButton className="btn-glow text-sm">
               Register Now
-            </Link>
+            </RegisterButton>
           </div>
         </div>
 
@@ -771,14 +773,7 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
         {comp.faq && comp.faq.length > 0 && (
           <GlassCard glow={comp.glowColor as any} className="p-8 mb-12">
             <SectionTitle glow={comp.glowColor}>Frequently Asked Questions</SectionTitle>
-            <div className="space-y-4 max-w-3xl mx-auto">
-              {comp.faq.map((item, i) => (
-                <div key={i} className="glass-dark rounded-xl p-5">
-                  <p className="font-bold text-white mb-2">{item.q}</p>
-                  <p className="text-white/60 text-sm leading-relaxed">{item.a}</p>
-                </div>
-              ))}
-            </div>
+            <InteractiveFAQ faqs={comp.faq} glowColor={comp.glowColor} />
           </GlassCard>
         )}
 
@@ -801,9 +796,9 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
             <h2 className="text-3xl font-bold mb-4">Ready to Join?</h2>
             <p className="text-white/70 mb-8">Register your team now and start your microbial odyssey!</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/dashboard" className="btn-glow">
+              <RegisterButton className="btn-glow">
                 Register Now
-              </Link>
+              </RegisterButton>
               <Link href="/" className="btn-glass">
                 Back to Home
               </Link>

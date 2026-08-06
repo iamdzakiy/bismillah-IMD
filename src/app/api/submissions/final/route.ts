@@ -99,13 +99,22 @@ export async function POST(req: Request) {
 
     await syncSubmissionToSheet({
       id: submission.id,
+      teamId: team.id,
       teamName: team.teamName,
       competitionType: team.competitionType,
+      captainEmail: team.captain?.email,
       phase: 'FINAL',
       status: 'PENDING',
-      pitchDeckUrl: submission.pitchDeckUrl,
+      proposalUrl: submission.proposalUrl,
       videoPitchUrl: submission.videoPitchUrl,
-      captainEmail: team.captain?.email,
+      fullPaperUrl: submission.fullPaperUrl,
+      posterUrl: submission.posterUrl,
+      pitchDeckUrl: submission.pitchDeckUrl,
+      notes: submission.notes,
+      reviewedById: submission.reviewedById,
+      reviewedAt: submission.reviewedAt,
+      createdAt: submission.createdAt,
+      updatedAt: submission.updatedAt,
     });
 
     return NextResponse.json({

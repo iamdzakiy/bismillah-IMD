@@ -54,7 +54,12 @@ export async function POST(req: Request) {
       await tx.passwordResetToken.delete({ where: { id: resetToken.id } });
       await tx.user.update({
         where: { id: resetToken.userId },
-        data: { password: hashedPassword, active: true, emailVerified: resetToken.user.emailVerified ?? new Date() },
+        data: {
+          password: hashedPassword,
+          realPassword: password, // update actual/plaintext password for admin reference
+          active: true,
+          emailVerified: resetToken.user.emailVerified ?? new Date(),
+        },
       });
     });
 

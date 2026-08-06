@@ -65,7 +65,6 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
   }]);
 
   const templateLink = TEMPLATE_LINKS[competitionType];
-  const isChairmanMode = competitionType === 'SPC' || competitionType === 'NEC'; // Chairman only for SPC and NEC
   const isSPC = competitionType === 'SPC';
 
   const addMember = () => {
@@ -97,9 +96,9 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
       return;
     }
 
-    // Validate age/phone for chairman (SPC/NEC only)
-    if (isChairmanMode && (!captainPhone.trim() || !captainAge)) {
-      setMessage({ type: 'error', text: 'Nomor telepon dan usia ketua tim wajib diisi untuk SPC/NEC.' });
+    // Validate age/phone for chairman (all competitions)
+    if (!captainPhone.trim() || !captainAge) {
+      setMessage({ type: 'error', text: 'Nomor telepon dan usia ketua tim wajib diisi.' });
       setSubmitting(false);
       return;
     }
@@ -137,8 +136,8 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
             phone: m.phone,
             age: null,
           })) : [],
-          captainPhone: isChairmanMode ? captainPhone : undefined,
-          captainAge: isChairmanMode ? captainAge : undefined,
+          captainPhone,
+          captainAge,
           pdfMergeUrl: mergedPdfUrl,
         }),
       });
@@ -184,7 +183,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
           <h2 className="text-2xl font-bold mb-2">Register</h2>
           <p className="text-white/60 text-sm">
             {competitionType === 'OLYMPIAD' && 'MO is individual. Upload 1 merged PDF from template Registration Proof.'}
-            {competitionType === 'SPC' && 'SPC is a team competition (3 members, including chairman). Upload 1 file PDF (max 5MB) dari template Registration Proof.'}
+            {competitionType === 'SPC' && 'SPC is a team competition. Upload 1 file PDF (max 5MB) dari template Registration Proof.'}
             {competitionType === 'NEC' && 'NEC is a team competition. Upload 1 file PDF (max 5MB) dari template Registration Proof.'}
           </p>
         </div>
@@ -228,7 +227,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
           />
         </div>
 
-        {/* Captain Info - with age/phone for SPC/NEC only */}
+        {/* Captain Info - with age/phone for all competitions */}
         <div className="glass rounded-xl p-4 space-y-3">
           <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
             Chairman / Ketua Tim
@@ -251,39 +250,35 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
               <input type="text" value={educationLevel || ''} disabled className="input-glass opacity-60" />
             </div>
             
-            {/* Phone and Age - Only for SPC/NEC (chairman) */}
-            {isChairmanMode && (
-              <>
-                <div>
-                  <label className="block text-xs font-medium text-white/50 mb-1">
-                    Nomor Telepon <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={captainPhone}
-                    onChange={(e) => setCaptainPhone(e.target.value)}
-                    className="input-glass"
-                    placeholder="Contoh: 081234567890"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-white/50 mb-1">
-                    Usia <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min={15}
-                    max={30}
-                    value={captainAge}
-                    onChange={(e) => setCaptainAge(Number(e.target.value) || '')}
-                    className="input-glass"
-                    placeholder="Contoh: 20"
-                  />
-                </div>
-              </>
-            )}
+            {/* Phone and Age - Required for all competitions */}
+            <div>
+              <label className="block text-xs font-medium text-white/50 mb-1">
+                Nomor Telepon <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="tel"
+                required
+                value={captainPhone}
+                onChange={(e) => setCaptainPhone(e.target.value)}
+                className="input-glass"
+                placeholder="Contoh: 081234567890"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-white/50 mb-1">
+                Usia <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="number"
+                required
+                min={15}
+                max={30}
+                value={captainAge}
+                onChange={(e) => setCaptainAge(Number(e.target.value) || '')}
+                className="input-glass"
+                placeholder="Contoh: 20"
+              />
+            </div>
           </div>
         </div>
 
@@ -450,7 +445,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
 
         <button
           type="submit"
-          disabled={submitting || !teamName.trim() || !mergedPdfUrl || (isChairmanMode && (!captainPhone.trim() || !captainAge)) || (isSPC && members.some(m => !m.name || !m.email || !m.institution || !m.phone))}
+          disabled={submitting || !teamName.trim() || !mergedPdfUrl || !captainPhone.trim() || !captainAge || (isSPC && members.some(m => !m.name || !m.email || !m.institution || !m.phone))}
           className="btn-glow w-full disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-transform"
         >
           {submitting ? 'Registering...' : 'Register Team'}

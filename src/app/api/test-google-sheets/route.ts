@@ -26,7 +26,7 @@ export async function GET() {
           role: 'MEMBER',
         },
       ],
-      paymentProof: 'https://example.com/payment.pdf',
+      paymentProofUrl: 'https://example.com/payment.pdf',
     });
 
     return NextResponse.json({

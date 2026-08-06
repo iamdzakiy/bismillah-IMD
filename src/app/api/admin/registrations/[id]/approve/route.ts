@@ -49,10 +49,11 @@ export async function POST(
     // Sync to Google Sheets - update the status row
     if (registration.googleSheetRow) {
       await updateSheetRow('Registrations', registration.googleSheetRow, [
-        registration.createdAt.toISOString(),
-        registration.id,
+        new Date().toISOString(), // sync timestamp
+        registration.team.id,
         registration.team.teamName,
         registration.team.competitionType,
+        registration.team.captainId,
         registration.team.captain.name || '',
         registration.team.captain.email,
         registration.team.captain.institution || '',
@@ -62,11 +63,22 @@ export async function POST(
         '', // member phones
         '', // member ages
         '', // member proofs
+        '', // member roles
+        registration.ktmUrl || '',
+        registration.pdfMergeUrl || '',
         registration.paymentProofUrl || '',
+        'DOCUMENT_APPROVED',
+        registration.adminNote || '',
+        registration.paymentStatus || 'FREE',
+        registration.currentPhase || 'PRELIMINARY',
+        registration.googleSheetRow?.toString() || '',
         '', // share proof
         '', // twibbon proof
         '', // groups proof
-        'DOCUMENT_APPROVED',
+        registration.team.createdAt.toISOString(),
+        registration.team.updatedAt.toISOString(),
+        registration.createdAt.toISOString(),
+        registration.updatedAt.toISOString(),
         'TRUE', // approved
       ]);
     }

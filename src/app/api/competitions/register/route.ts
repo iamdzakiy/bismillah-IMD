@@ -20,8 +20,8 @@ const registerSchema = z.object({
   teamName: z.string().trim().min(3).max(50),
   competitionType: z.enum(['OLYMPIAD', 'SPC', 'NEC']),
   members: z.array(memberDataSchema).min(0).max(2),
-  captainPhone: z.string().min(5).max(20).optional(),
-  captainAge: z.number().int().min(10).max(99).optional(),
+  captainPhone: z.string().min(5).max(20),
+  captainAge: z.number().int().min(10).max(99),
   ktmUrl: z.string().url().optional(),
   pdfMergeUrl: z.string().url().optional(),
   paymentProofUrl: z.string().url().optional(),
@@ -81,16 +81,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: message }, { status: 400 });
     }
 
-    // Chairman info - use provided phone/age for SPC/NEC, otherwise leave empty
-    const isChairmanMode = competitionType === 'SPC' || competitionType === 'NEC';
-    
+    // Chairman info - phone/age required for all competitions
     const memberData = [
       {
         name: captain.name || captain.email,
         email: captain.email,
         institution: captain.institution || '',
-        phone: isChairmanMode ? captainPhone || '' : '',
-        age: isChairmanMode ? captainAge || null : null,
+        phone: captainPhone || '',
+        age: captainAge || null,
         role: 'CHAIRMAN',
       },
       ...members.map((m) => ({
@@ -153,15 +151,29 @@ export async function POST(req: Request) {
         id: team.id,
         teamName: team.teamName,
         competitionType: team.competitionType,
+        captainId: team.captainId,
         captainEmail: team.captain.email,
         captainName: team.captain.name,
         institution: team.captain.institution,
         status: team.registration?.status,
         members: memberData,
-        paymentProof: paymentProofUrl,
+        // Registration model fields
+        ktmUrl,
+        pdfMergeUrl,
+        paymentProofUrl,
+        adminNote: team.registration?.adminNote,
+        paymentStatus: team.registration?.paymentStatus,
+        currentPhase: team.registration?.currentPhase,
+        googleSheetRow: team.registration?.googleSheetRow,
+        // Proof URLs
         shareProofUrl,
         twibbonProofUrl,
         groupsProofUrl,
+        // Timestamps
+        teamCreatedAt: team.createdAt,
+        teamUpdatedAt: team.updatedAt,
+        registrationCreatedAt: team.registration?.createdAt,
+        registrationUpdatedAt: team.registration?.updatedAt,
       });
       googleSheetRow = sheetRow ?? null;
     } catch (sheetError) {

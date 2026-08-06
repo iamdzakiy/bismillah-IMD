@@ -67,8 +67,10 @@ export async function POST(
 
     await syncSubmissionToSheet({
       id: submission.id,
+      teamId: submission.teamId,
       teamName: submission.team.teamName,
       competitionType: submission.team.competitionType,
+      captainEmail: submission.team.captain?.email,
       phase: submission.phase,
       status: 'APPROVED',
       proposalUrl: submission.proposalUrl,
@@ -76,7 +78,11 @@ export async function POST(
       fullPaperUrl: submission.fullPaperUrl,
       posterUrl: submission.posterUrl,
       pitchDeckUrl: submission.pitchDeckUrl,
-      captainEmail: submission.team.captain?.email,
+      notes: submission.notes,
+      reviewedById: submission.reviewedById,
+      reviewedAt: submission.reviewedAt,
+      createdAt: submission.createdAt,
+      updatedAt: submission.updatedAt,
     });
 
     await sendApprovalEmail(
