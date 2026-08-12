@@ -94,6 +94,11 @@ model Registration {
   currentPhase    Phase    @default(PRELIMINARY)
   googleSheetRow  Int?     // Row number in Google Sheets for status updates
 
+  // Denormalized fields from Team for quick lookup in Supabase
+  competitionType CompetitionType?
+  teamName        String?
+  name            String?   // Chairman/participant full name
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

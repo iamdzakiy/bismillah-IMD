@@ -135,6 +135,10 @@ export async function POST(req: Request) {
             status: 'PENDING_DOCS',
             currentPhase: 'PRELIMINARY',
             paymentStatus: paymentProofUrl ? 'PENDING' : 'FREE',
+            // Denormalized fields for Supabase quick lookup
+            competitionType,
+            teamName,
+            name: captain.name || captain.email,
           },
         },
       },

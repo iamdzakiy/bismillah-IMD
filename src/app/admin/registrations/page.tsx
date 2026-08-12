@@ -11,6 +11,9 @@ export default async function AdminRegistrationsPage() {
       pdfMergeUrl: true,
       paymentProofUrl: true,
       googleSheetRow: true,
+      competitionType: true,
+      teamName: true,
+      name: true,
       team: {
         select: {
           teamName: true,

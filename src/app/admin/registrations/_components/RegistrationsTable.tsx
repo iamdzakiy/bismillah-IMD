@@ -27,6 +27,10 @@ type RegistrationRow = {
   pdfMergeUrl?: string | null;
   paymentProofUrl?: string | null;
   googleSheetRow?: number | null;
+  // New denormalized fields on Registration
+  competitionType?: string | null;
+  teamName?: string | null;
+  name?: string | null;
   team: {
     teamName: string;
     competitionType: string;
@@ -110,8 +114,9 @@ export function RegistrationsTable({ registrations }: RegistrationsTableProps) {
         <table className="w-full min-w-[1100px]">
           <thead className="bg-white/5">
             <tr>
-              <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Team Name</th>
               <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Competition</th>
+              <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Team Name</th>
+              <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Name</th>
               <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Chairman</th>
               <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Members</th>
               <th className="text-left px-4 py-3 text-sm font-semibold text-white/70">Docs</th>
@@ -125,8 +130,9 @@ export function RegistrationsTable({ registrations }: RegistrationsTableProps) {
               const members = getMembers(reg.team?.memberData);
               return (
                 <tr key={reg.id} className="border-t border-white/5 hover:bg-white/5">
-                  <td className="px-4 py-3 text-white font-medium">{reg.team?.teamName || 'N/A'}</td>
-                  <td className="px-4 py-3 text-white/70">{reg.team?.competitionType || 'N/A'}</td>
+                  <td className="px-4 py-3 text-white/70">{reg.competitionType || reg.team?.competitionType || 'N/A'}</td>
+                  <td className="px-4 py-3 text-white font-medium">{reg.teamName || reg.team?.teamName || 'N/A'}</td>
+                  <td className="px-4 py-3 text-white/70">{reg.name || 'N/A'}</td>
                   <td className="px-4 py-3">
                     <div className="text-white/70 text-sm">{reg.team?.captain?.name || 'N/A'}</div>
                     <div className="text-white/40 text-xs">{reg.team?.captain?.email}</div>
