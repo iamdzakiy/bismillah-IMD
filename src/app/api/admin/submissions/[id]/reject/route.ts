@@ -97,7 +97,7 @@ export async function POST(
       updatedAt: submission.updatedAt,
     });
 
-    await sendRejectionEmail(
+    const emailSent = await sendRejectionEmail(
       submission.team.captain.email,
       submission.team.captain.name || 'Participant',
       submission.team.competitionType,
@@ -105,7 +105,7 @@ export async function POST(
       parsed.data.notes
     );
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, emailSent });
   } catch (error) {
     console.error('Reject submission error:', error);
     return NextResponse.json({ error: 'Rejection failed' }, { status: 500 });

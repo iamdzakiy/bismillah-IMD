@@ -94,13 +94,15 @@ function renderHeader() {
   `;
 }
 
-// Helper to safely send emails and log errors
-async function sendMailSafe(to: string, subject: string, html: string) {
+// Helper to safely send emails and log errors.
+// Returns true on success, false on failure so callers can react.
+async function sendMailSafe(to: string, subject: string, html: string): Promise<boolean> {
   try {
     await transporter.sendMail({ from: EMAIL_FROM, to, subject, html });
+    return true;
   } catch (error) {
     console.error(`Failed to send email to ${to}:`, error);
-    // Do not rethrow – the caller can decide to handle or ignore
+    return false;
   }
 }
 
@@ -533,7 +535,7 @@ export async function sendApprovalEmail(
   name: string,
   competition: string,
   phase: string
-) {
+): Promise<boolean> {
   // Always include the WhatsApp community section for all approval types
   // (registration/document approval and submission approval)
   const waSection = `
@@ -564,7 +566,7 @@ export async function sendApprovalEmail(
       </div>
     </div>
   `;
-  await sendMailSafe(email, `🎉 Your ${phase} has been approved!`, html);
+  return sendMailSafe(email, `🎉 Your ${phase} has been approved!`, html);
 }
 
 // ============================================================
@@ -576,7 +578,7 @@ export async function sendRejectionEmail(
   competition: string,
   phase: string,
   notes: string
-) {
+): Promise<boolean> {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a1a; padding: 40px 24px; border-radius: 16px;">
       <div style="background: linear-gradient(160deg, #2a1111, #1a0a0a); border-radius: 16px; padding: 36px 32px; border: 1px solid rgba(239,68,68,0.2);">
@@ -597,7 +599,7 @@ export async function sendRejectionEmail(
       </div>
     </div>
   `;
-  await sendMailSafe(email, `📝 Update on your ${phase}`, html);
+  return sendMailSafe(email, `📝 Update on your ${phase}`, html);
 }
 
 // ============================================================

@@ -85,14 +85,14 @@ export async function POST(
       updatedAt: submission.updatedAt,
     });
 
-    await sendApprovalEmail(
+    const emailSent = await sendApprovalEmail(
       submission.team.captain.email,
       submission.team.captain.name || 'Participant',
       submission.team.competitionType,
       submission.phase
     );
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, emailSent });
   } catch (error) {
     console.error('Approve submission error:', error);
     return NextResponse.json({ error: 'Approval failed' }, { status: 500 });

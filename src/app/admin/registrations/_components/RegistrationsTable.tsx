@@ -74,6 +74,12 @@ export function RegistrationsTable({ registrations }: RegistrationsTableProps) {
       const res = await fetch(`/api/admin/registrations/${id}/approve`, { method: 'POST' });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Failed to approve registration');
+      if (!data.emailSent) {
+        alert(
+          '⚠️ Registration approved, but the approval email failed to send.\n' +
+          'The status was updated successfully. Please check SMTP configuration and resend the email manually if needed.'
+        );
+      }
       window.location.reload();
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Failed to approve registration');
@@ -97,6 +103,13 @@ export function RegistrationsTable({ registrations }: RegistrationsTableProps) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Failed to reject registration');
+
+      if (!data.emailSent) {
+        alert(
+          '⚠️ Registration rejected, but the rejection email failed to send.\n' +
+          'The status was updated successfully. Please check SMTP configuration and resend the email manually if needed.'
+        );
+      }
 
       setRejectingId(null);
       setNotes('');

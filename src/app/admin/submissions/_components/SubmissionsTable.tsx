@@ -39,10 +39,16 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
   const handleApprove = async (id: string) => {
     if (!confirm('Approve this submission?')) return;
     const res = await fetch(`/api/admin/submissions/${id}/approve`, { method: 'POST' });
+    const data = await res.json().catch(() => ({}));
     if (res.ok) {
+      if (!data.emailSent) {
+        alert(
+          '⚠️ Submission approved, but the approval email failed to send.\n' +
+          'The status was updated successfully. Please check SMTP configuration and resend the email manually if needed.'
+        );
+      }
       window.location.reload();
     } else {
-      const data = await res.json().catch(() => ({}));
       alert(data.error || 'Failed to approve');
     }
   };
@@ -57,12 +63,18 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ notes: notes.trim() }),
     });
+    const data = await res.json().catch(() => ({}));
     if (res.ok) {
+      if (!data.emailSent) {
+        alert(
+          '⚠️ Submission rejected, but the rejection email failed to send.\n' +
+          'The status was updated successfully. Please check SMTP configuration and resend the email manually if needed.'
+        );
+      }
       setRejectingId(null);
       setNotes('');
       window.location.reload();
     } else {
-      const data = await res.json().catch(() => ({}));
       alert(data.error || 'Failed to reject');
     }
   };
@@ -174,7 +186,7 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
               </button>
               <button
                 onClick={() => handleReject(rejectingId)}
-                className="flex-1 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg"
+                className="flex-1 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white rounded-lg"
               >
                 Confirm Reject
               </button>
