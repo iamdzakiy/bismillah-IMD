@@ -95,7 +95,7 @@ export function Countdown({ targetDate, onComplete }: CountdownProps) {
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-bio-emerald/10 border border-bio-emerald/30 rounded-full text-bio-emerald font-semibold text-sm">
             <span>📅</span>
-            <span>Extended until <strong>31 July 2026</strong></span>
+            <span>Extended until <strong>31 August 2026</strong></span>
           </span>
         </motion.div>
       )}
