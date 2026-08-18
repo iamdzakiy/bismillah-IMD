@@ -24,8 +24,8 @@ const TIMELINE = [
   {
     id: '3',
     phase: 'SPC & NEC',
-    date: '19 July – 15 August 2026',
-    title: 'Preliminary Stage: Registration & Abstract Submission (Free)',
+    date: '19 July – 31 August 2026',
+    title: 'Preliminary Stage: Registration & Abstract Submission (Free) — Extended',
     description: 'Registration for Scientific Paper Competition (SPC) & National Essay Competition (NEC) via IMD Official Website',
   },
   {
@@ -38,103 +38,96 @@ const TIMELINE = [
   {
     id: '5',
     phase: 'SPC & NEC',
-    date: '1 September 2026',
+    date: '8 September 2026',
     title: 'Semifinalist Announcement',
     description: 'Announcement of semifinalists via IMD Official Website',
   },
   {
     id: '6',
-    phase: 'SPC & NEC',
-    date: '2 September – 7 Sept 2026',
-    title: 'Semifinalist Re-registration Stage (Fee: IDR 150k)',
-    description: 'Re-registration for semifinalists via IMD Official Website',
-  },
-  {
-    id: '7',
     phase: 'SPC',
-    date: '2 September – 30 Sept 2026',
+    date: '9 September – 30 Sept 2026',
     title: 'Stage 2 Work Period: Proposal Writing & Elevator Pitch Video',
     description: 'Asynchronous / Instagram',
   },
   {
-    id: '8',
+    id: '7',
     phase: 'NEC',
-    date: '2 September – 30 Sept 2026',
+    date: '9 September – 30 Sept 2026',
     title: 'Full Paper Submission Window',
     description: 'Submission via IMD Official Website',
   },
   {
-    id: '9',
+    id: '8',
     phase: 'NEC',
     date: 'September 2026 (TBA)',
     title: 'Full Paper Coaching Session',
     description: 'Zoom Meeting',
   },
   {
-    id: '10',
+    id: '9',
     phase: 'MO',
     date: '3 – 4 October 2026',
     title: 'Preliminary Round System Access Trial & Technical Meeting',
     description: 'Online / Zoom',
   },
   {
-    id: '11',
+    id: '10',
     phase: 'SPC & NEC',
     date: '11 October 2026',
     title: 'Finalist Announcement',
     description: 'Announcement of finalists via IMD Official Website',
   },
   {
-    id: '12',
+    id: '11',
     phase: 'SPC',
     date: '12 October – 31 Oct 2026',
     title: 'Prototype Development Period for Finalists',
     description: 'Asynchronous',
   },
   {
-    id: '13',
+    id: '12',
     phase: 'NEC',
     date: '12 October – 31 Oct 2026',
     title: 'Final Stage: Pitch Deck and Poster Digital Submission',
     description: 'Submission via IMD Official Website',
   },
   {
-    id: '14',
+    id: '13',
     phase: 'MO',
     date: '17 October 2026',
     title: 'Elimination / Preliminary Round Exam (35 T/F Questions)',
     description: 'Online Examination Platform',
   },
   {
-    id: '15',
+    id: '14',
     phase: 'MO',
     date: '25 October 2026',
     title: 'Announcement of Finalists',
     description: 'Online',
   },
   {
-    id: '16',
+    id: '15',
     phase: 'MO',
     date: '25 – 31 October 2026',
     title: 'Re-registration of Finalists',
     description: 'Online',
   },
   {
-    id: '17',
+    id: '16',
     phase: 'All Branches',
     date: '7 November 2026',
     title: 'Final Stage Technical Meeting',
     description: 'In-person at ITB Ganesha',
   },
   {
-    id: '18',
+    id: '17',
     phase: 'All Branches',
     date: '14 November 2026',
     title: 'Final Round / Pitching Day',
     description: 'In-person at ITB Ganesha',
   },
   {
-    id: '19',
+    id: '18',
     phase: 'All Branches',
     date: '15 November 2026',
     title: 'Exhibition & Grand Awarding Ceremony',
@@ -210,7 +203,6 @@ function SpaceBackground() {
         className="absolute inset-0 w-full h-full pointer-events-none"
         style={{ height: '800px' }}
       />
-      {/* Spaceship animation */}
       <div 
         ref={spaceshipRef}
         className="absolute pointer-events-none"
