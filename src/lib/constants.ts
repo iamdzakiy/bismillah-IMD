@@ -187,14 +187,7 @@ export const MEDIA_PARTNERS = [
 ];
 
 export const INDUSTRY_PARTNERS = [
-  { name: 'BioFarma', image: '/partners/biofarma.png' },
-  { name: 'Kalbe Farma', image: '/partners/kalbe.png' },
-  { name: 'Kimia Farma', image: '/partners/kimia-farma.png' },
-  { name: 'Nutrifood', image: '/partners/nutrifood.png' },
-  { name: 'Indofood', image: '/partners/indofood.png' },
-  { name: 'Unilever', image: '/partners/unilever.png' },
-  { name: 'Danone', image: '/partners/danone.png' },
-  { name: 'Nestle', image: '/partners/nestle.png' },
+  { name: 'x ', image: '/partners/biofarma.png' },
 ];
 
 // Powered by logos (placeholder)
