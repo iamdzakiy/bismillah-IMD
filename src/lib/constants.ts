@@ -179,14 +179,11 @@ export const MEMORIES_DATA = [
 ];
 
 export const MEDIA_PARTNERS = [
-  { name: 'infolomba_SMA', icon: 'fa-newspaper' },
-  { name: 'infoBandung', icon: 'fa-globe' },
-  { name: 'infoinfo', icon: 'fa-broadcast-tower' },
-  { name: 'GaneshaFest', icon: 'fa-tv' },
-  { name: 'Republika', icon: 'fa-rss' },
-  { name: 'Liputan6', icon: 'fa-newspaper' },
-  { name: 'Grid Network', icon: 'fa-th' },
-  { name: 'Herworld', icon: 'fa-magazine' },
+  { name: 'info_lomba', icon: 'fa-newspaper' },
+  { name: 'prfmnews', icon: 'fa-globe' },
+  { name: '8ehradioitb', icon: 'fa-broadcast-tower' },
+  { name: 'reporter8eh', icon: 'fa-tv' },
+  { name: 'youthizenprfm', icon: 'fa-rss' },
 ];
 
 export const INDUSTRY_PARTNERS = [
