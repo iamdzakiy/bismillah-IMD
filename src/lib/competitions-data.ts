@@ -146,7 +146,7 @@ export const COMPETITIONS: CompetitionData[] = [
     id: 'olympiad',
     shortName: 'MO',
     title: 'Microbiology Olympiad (MO)',
-    guidebookUrl: 'https://drive.google.com/file/d/1uZJqzA7bixVR7As8t2X6rrbgyvau5-cs/preview',
+    guidebookUrl: 'https://drive.google.com/file/d/1XQdURa56gx-El9M1j1pX6n_Tb15Km-Tu/preview',
     category: 'SMA/Sederajat',
     icon: '🏆',
     glowColor: 'blue',
