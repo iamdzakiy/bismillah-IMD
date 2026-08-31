@@ -45,6 +45,28 @@ function isEligible(user: Pick<User, 'educationLevel'>, competitionType: Competi
 }
 
 export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+  // ... ambil user
+
+  // 1. Tolak jika Kuliah
+  if (user.educationLevel === 'Kuliah') {
+    return NextResponse.json(
+      { error: 'Mahasiswa tidak diperbolehkan mendaftar.' },
+      { status: 403 }
+    );
+  }
+
+  // 2. Jika SMA, hanya boleh Olimpiade
+  if (user.educationLevel === 'SMA' && body.competitionType !== 'OLYMPIAD') {
+    return NextResponse.json(
+      { error: 'Siswa SMA hanya bisa mendaftar Olimpiade.' },
+      { status: 403 }
+    );
+  }
+  // ... lanjutkan proses
+}
+
+export async function POST(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -59,7 +81,10 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-export async function POST(req: Request) {
+  }
+
+  
+  export async function POST(req: Request) {
   const session = await getServerSession();
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -91,7 +116,7 @@ export async function POST(req: Request) {
       { status: 403 }
     );
   }
-  
+
     const { teamName, competitionType, members, captainPhone, captainAge, ktmUrl, pdfMergeUrl, paymentProofUrl, shareProofUrl, twibbonProofUrl, groupsProofUrl } = parsed.data;
 
     const captain = await prisma.user.findUnique({ where: { id: session.user.id } });
