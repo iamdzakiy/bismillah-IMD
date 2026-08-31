@@ -40,7 +40,7 @@ export const TIMELINE_DATA = [
   {
     id: '5',
     phase: 'Announcement',
-    date: '1 Sep 2026',
+    date: '8 Sep 2026',
     title: 'SPC & NEC Semifinalist Announcement',
     desc: 'Semifinalist Announcement • IMD Official Website',
     branch: 'SPC & NEC',
@@ -49,7 +49,7 @@ export const TIMELINE_DATA = [
   {
     id: '6',
     phase: 'Semifinal',
-    date: '2 Sep – 7 Sep 2026',
+    date: '9 Sep – 14 Sep 2026',
     title: 'SPC & NEC Semifinalist Re-registration',
     desc: 'Semifinalist Re-registration Stage – Fee: IDR 150k • IMD Official Website',
     branch: 'SPC & NEC',
@@ -58,7 +58,7 @@ export const TIMELINE_DATA = [
   {
     id: '7',
     phase: 'Semifinal',
-    date: '2 Sep – 30 Sep 2026',
+    date: '9 Sep – 30 Sep 2026',
     title: 'SPC Stage 2: Proposal & Elevator Pitch',
     desc: 'Stage 2 Work Period: Proposal Writing & Elevator Pitch Video • Asynchronous / Instagram',
     branch: 'SPC',
@@ -67,7 +67,7 @@ export const TIMELINE_DATA = [
   {
     id: '8',
     phase: 'Semifinal',
-    date: '2 Sep – 30 Sep 2026',
+    date: '9 Sep – 30 Sep 2026',
     title: 'NEC Full Paper Submission',
     desc: 'Full Paper Submission Window • IMD Official Website',
     branch: 'NEC',
