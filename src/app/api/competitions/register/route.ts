@@ -59,7 +59,39 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+export async function POST(req: Request) {
+  const session = await getServerSession();
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const body = await req.json();
+  const { competitionType, teamName, memberData } = body;
+
+  // 1. Jika user adalah 'Kuliah' → tolak semua pendaftaran
+  if (user.educationLevel === 'Kuliah') {
+    return NextResponse.json(
+      { error: "Mahasiswa tidak diperbolehkan mendaftar kompetisi ini." },
+      { status: 403 }
+    );
+  }
+
+  // 2. Jika user adalah 'SMA' → hanya boleh Olimpiade
+  if (user.educationLevel === 'SMA' && competitionType !== 'OLYMPIAD') {
+    return NextResponse.json(
+      { error: "Siswa SMA hanya bisa mendaftar Olimpiade." },
+      { status: 403 }
+    );
+  }
+  
     const { teamName, competitionType, members, captainPhone, captainAge, ktmUrl, pdfMergeUrl, paymentProofUrl, shareProofUrl, twibbonProofUrl, groupsProofUrl } = parsed.data;
 
     const captain = await prisma.user.findUnique({ where: { id: session.user.id } });
