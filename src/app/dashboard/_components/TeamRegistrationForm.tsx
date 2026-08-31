@@ -34,9 +34,9 @@ const TEMPLATE_LINKS: Record<CompetitionType, string> = {
 export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
   const educationLevel = session.user.educationLevel;
   
+  // Only OLYMPIAD (MO) is open for registration - SPC & NEC are hidden/blocked
   const availableCompetitions: CompetitionType[] = (() => {
-    if (educationLevel === 'SMA') return ['OLYMPIAD', 'SPC'];
-    if (educationLevel === 'S1 / Diploma' || educationLevel?.startsWith('S1')) return ['NEC'];
+    if (educationLevel === 'SMA') return ['OLYMPIAD'];
     return [];
   })();
 
@@ -164,7 +164,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
       <div className="glass-dark rounded-2xl p-8 text-center">
         <h2 className="text-2xl font-bold mb-2">No Eligible Competition</h2>
         <p className="text-white/60 text-sm">
-          Your account education level is not eligible for the currently configured competitions.
+          SPC and NEC registration are not open yet. Only SMA/sederajat students can register for Microbiology Olympiad (MO).
         </p>
       </div>
     );

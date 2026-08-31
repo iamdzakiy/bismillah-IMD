@@ -19,7 +19,7 @@ const memberDataSchema = z.object({
 const registerSchema = z.object({
   teamName: z.string().trim().min(3).max(50),
   competitionType: z.enum(['OLYMPIAD', 'SPC', 'NEC']),
-  members: z.array(memberDataSchema).min(0).max(2),
+  members: z.array(memberDataSchema).max(2),
   captainPhone: z.string().min(5).max(20),
   captainAge: z.number().int().min(10).max(99),
   ktmUrl: z.string().url().optional(),
@@ -45,28 +45,6 @@ function isEligible(user: Pick<User, 'educationLevel'>, competitionType: Competi
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  // ... ambil user
-
-  // 1. Tolak jika Kuliah
-  if (user.educationLevel === 'Kuliah') {
-    return NextResponse.json(
-      { error: 'Mahasiswa tidak diperbolehkan mendaftar.' },
-      { status: 403 }
-    );
-  }
-
-  // 2. Jika SMA, hanya boleh Olimpiade
-  if (user.educationLevel === 'SMA' && body.competitionType !== 'OLYMPIAD') {
-    return NextResponse.json(
-      { error: 'Siswa SMA hanya bisa mendaftar Olimpiade.' },
-      { status: 403 }
-    );
-  }
-  // ... lanjutkan proses
-}
-
-export async function POST(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -81,43 +59,24 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-  }
-
-  
-  export async function POST(req: Request) {
-  const session = await getServerSession();
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-  });
-
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
-
-  const body = await req.json();
-  const { competitionType, teamName, memberData } = body;
-
-  // 1. Jika user adalah 'Kuliah' → tolak semua pendaftaran
-  if (user.educationLevel === 'Kuliah') {
-    return NextResponse.json(
-      { error: "Mahasiswa tidak diperbolehkan mendaftar kompetisi ini." },
-      { status: 403 }
-    );
-  }
-
-  // 2. Jika user adalah 'SMA' → hanya boleh Olimpiade
-  if (user.educationLevel === 'SMA' && competitionType !== 'OLYMPIAD') {
-    return NextResponse.json(
-      { error: "Siswa SMA hanya bisa mendaftar Olimpiade." },
-      { status: 403 }
-    );
-  }
 
     const { teamName, competitionType, members, captainPhone, captainAge, ktmUrl, pdfMergeUrl, paymentProofUrl, shareProofUrl, twibbonProofUrl, groupsProofUrl } = parsed.data;
+
+    // BLOCK SPC & NEC - registration not open yet
+    if (competitionType !== 'OLYMPIAD') {
+      return NextResponse.json(
+        { error: `Registration for ${competitionType} is not open yet. Only Microbiology Olympiad (MO) is open.` },
+        { status: 403 }
+      );
+    }
+
+    // OLYMPIAD is individual - no additional members allowed
+    if (members.length > 0) {
+      return NextResponse.json(
+        { error: 'This competition is individual only. No additional members allowed.' },
+        { status: 400 }
+      );
+    }
 
     const captain = await prisma.user.findUnique({ where: { id: session.user.id } });
     if (!captain) {
@@ -132,10 +91,10 @@ export async function POST(req: Request) {
     }
 
     if (!isEligible(captain, competitionType)) {
-      const message = competitionType === 'NEC'
-        ? 'NEC is only for active S1/Diploma university students.'
-        : 'MO and SPC are only for SMA/sederajat students.';
-      return NextResponse.json({ error: message }, { status: 400 });
+      return NextResponse.json(
+        { error: 'MO is only for SMA/sederajat students.' },
+        { status: 400 }
+      );
     }
 
     // Chairman info - phone/age required for all competitions
@@ -157,20 +116,6 @@ export async function POST(req: Request) {
         role: 'MEMBER',
       })),
     ];
-
-    if ((competitionType === 'OLYMPIAD' || competitionType === 'NEC') && members.length > 0) {
-      return NextResponse.json(
-        { error: 'This competition is individual only. No additional members allowed.' },
-        { status: 400 }
-      );
-    }
-
-    if (competitionType === 'SPC' && (members.length < 1 || members.length > 2)) {
-      return NextResponse.json(
-        { error: 'SPC requires 3 members total (you + 1-2 team members).' },
-        { status: 400 }
-      );
-    }
 
     const existingTeamName = await prisma.team.findUnique({ where: { teamName } });
     if (existingTeamName) {
