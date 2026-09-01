@@ -58,12 +58,6 @@ export async function POST(req: Request) {
     }
 
     // Check phase
-    if (!isSubmissionOpen(team.competitionType, 'preliminary')) {
-      return NextResponse.json(
-        { error: 'Preliminary submission period is closed.' },
-        { status: 400 }
-      );
-    }
 
     const existing = await prisma.submission.findFirst({
       where: { teamId, phase: 'PRELIMINARY' },
