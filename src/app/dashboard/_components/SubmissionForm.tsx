@@ -40,12 +40,13 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
 
   const existingSubmission = team.submissions?.find((submission) => submission.phase === phase);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (urlOverride?: string) => {
     if (!team.id) {
       setMessage({ type: 'error', text: 'Team ID not found. Please try again.' });
       return;
     }
 
+    const submittedUrl = urlOverride ?? fileUrl;
     setSubmitting(true);
     setMessage(null);
 
@@ -54,7 +55,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teamId: team.id, fileUrl }),
+        body: JSON.stringify({ teamId: team.id, fileUrl: submittedUrl }),
       });
 
       const data = await res.json();
@@ -144,7 +145,10 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
 
   // MO - show Edmodo info after approval instead of file upload
   if (team.competitionType === 'OLYMPIAD') {
-    if (team.registration?.status !== 'DOCUMENT_APPROVED') {
+    if (
+      team.registration?.status !== 'DOCUMENT_APPROVED' &&
+      team.registration?.status !== 'REGISTERED'
+    ) {
       return (
         <div className="glass-dark rounded-2xl p-6">
           <h3 className="text-xl font-bold mb-2">🔬 Microbiology Olympiad (MO)</h3>
@@ -440,7 +444,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
                 accept=".pdf"
                 onUpload={(url) => {
                   setFileUrl(url);
-                  handleSubmit();
+                  handleSubmit(url);
                 }}
               />
             </div>
@@ -475,7 +479,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
           </div>
 
           <button
-            onClick={handleSubmit}
+            onClick={() => handleSubmit()}
             disabled={submitting || !fileUrl}
             className="btn-glow w-full disabled:opacity-50 transform hover:scale-105 transition-transform"
           >

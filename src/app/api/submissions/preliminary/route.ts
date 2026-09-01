@@ -48,8 +48,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check that documents are approved
-    if (team.registration?.status !== 'DOCUMENT_APPROVED') {
+    // Check that documents are approved (DOCUMENT_APPROVED or fully REGISTERED)
+    const registrationStatus = team.registration?.status;
+    if (registrationStatus !== 'DOCUMENT_APPROVED' && registrationStatus !== 'REGISTERED') {
       return NextResponse.json(
         { error: 'Your documents have not been approved yet.' },
         { status: 403 }
@@ -67,6 +68,49 @@ export async function POST(req: Request) {
     const existing = await prisma.submission.findFirst({
       where: { teamId, phase: 'PRELIMINARY' },
     });
+
+    // Allow re-upload if the previous preliminary submission was rejected
+    if (existing && existing.status === 'REJECTED' && fileUrl) {
+      const updated = await prisma.submission.update({
+        where: { id: existing.id },
+        data: {
+          proposalUrl: team.competitionType === 'SPC' ? fileUrl : existing.proposalUrl,
+          fullPaperUrl: team.competitionType === 'NEC' ? fileUrl : existing.fullPaperUrl,
+          status: 'PENDING',
+          notes: null,
+          reviewedById: null,
+          reviewedAt: null,
+        },
+        include: { team: true },
+      });
+
+      await syncSubmissionToSheet({
+        id: updated.id,
+        teamId: team.id,
+        teamName: team.teamName,
+        competitionType: team.competitionType,
+        captainEmail: team.captain?.email,
+        phase: 'PRELIMINARY',
+        status: 'PENDING',
+        proposalUrl: updated.proposalUrl,
+        videoPitchUrl: updated.videoPitchUrl,
+        fullPaperUrl: updated.fullPaperUrl,
+        posterUrl: updated.posterUrl,
+        pitchDeckUrl: updated.pitchDeckUrl,
+        notes: updated.notes,
+        reviewedById: updated.reviewedById,
+        reviewedAt: updated.reviewedAt,
+        createdAt: updated.createdAt,
+        updatedAt: updated.updatedAt,
+      });
+
+      return NextResponse.json({
+        success: true,
+        submissionId: updated.id,
+        message: 'Preliminary submission re-uploaded! Our team will review it soon.',
+      });
+    }
+
     if (existing) {
       return NextResponse.json(
         { error: 'You already submitted for preliminary phase.' },

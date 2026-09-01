@@ -65,7 +65,7 @@ export async function POST(req: Request) {
     // BLOCK SPC & NEC - registration not open yet
     if (competitionType !== 'OLYMPIAD') {
       return NextResponse.json(
-        { error: `Registration for ${competitionType} is not open yet. Only Microbiology Olympiad (MO) is open.` },
+        { error: `Registration for ${competitionType} is CLOSED. Only Microbiology Olympiad (MO) is open.` },
         { status: 403 }
       );
     }

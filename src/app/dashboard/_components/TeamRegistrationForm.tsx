@@ -164,7 +164,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
       <div className="glass-dark rounded-2xl p-8 text-center">
         <h2 className="text-2xl font-bold mb-2">No Eligible Competition</h2>
         <p className="text-white/60 text-sm">
-          SPC and NEC registration are not open yet. Only SMA/sederajat students can register for Microbiology Olympiad (MO).
+          SPC and NEC registration are CLOSED. Only SMA/sederajat students can register for Microbiology Olympiad (MO).
         </p>
       </div>
     );
