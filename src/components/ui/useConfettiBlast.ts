@@ -96,6 +96,34 @@ export function triggerSemifinalCelebration(): number[] {
 }
 
 /**
+ * Fire the full multi-stage sequence N times (`bursts`, default 2), spaced by
+ * `encoreDelayMs`. Burst #1 fires immediately (awal — hero congrats moment),
+ * bursts #2..N are encores (akhir — so the user sees a clear second volley).
+ * Returns all top-level timer ids so callers can cancel on unmount.
+ */
+export function triggerDoubleCelebration(
+  bursts: number = 2,
+  encoreDelayMs: number = 4500,
+): number[] {
+  const timers: number[] = [];
+  const safeBursts = Math.max(1, Math.floor(bursts));
+
+  // Burst #1 — immediate.
+  timers.push(...triggerSemifinalCelebration());
+
+  // Bursts #2..N — encores spaced evenly.
+  for (let i = 1; i < safeBursts; i++) {
+    timers.push(
+      window.setTimeout(() => {
+        triggerSemifinalCelebration();
+      }, encoreDelayMs * i),
+    );
+  }
+
+  return timers;
+}
+
+/**
  * A compact single-shot blast, handy for the "Replay" button so it feels
  * snappy without repeating the full multi-second sequence every time.
  */

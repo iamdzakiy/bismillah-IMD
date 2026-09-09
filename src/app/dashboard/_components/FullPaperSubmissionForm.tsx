@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { FileUpload } from '@/components/FileUpload';
 import { SuccessPopup } from '@/components/ui/SuccessPopup';
+import { triggerDoubleCelebration } from '@/components/ui/useConfettiBlast';
 import { useRouter } from 'next/navigation';
 import { SEMIFINAL_WHATSAPP_LINK, SEMIFINAL_WHATSAPP_LABEL, SEMIFINAL_TEMPLATE_LINK } from '@/lib/semifinal';
 import type { DashboardTeam } from './types';
@@ -38,6 +39,8 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Submission failed');
 
+      // 🎉🎉 2 confetti volleys on successful full-paper (akhir) submit.
+      triggerDoubleCelebration(2, 4500);
       setShowSuccess(true);
       setTimeout(() => {
         setShowSuccess(false);

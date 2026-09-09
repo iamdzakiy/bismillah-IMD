@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { playReplayBurst, triggerSemifinalCelebration } from './useConfettiBlast';
+import { playReplayBurst, triggerDoubleCelebration, triggerSemifinalCelebration } from './useConfettiBlast';
 
 interface ConfettiCelebrationProps {
   /**
@@ -14,6 +14,17 @@ interface ConfettiCelebrationProps {
    * floating "Replay" pill once the initial burst settles. Defaults to 4200.
    */
   duration?: number;
+  /**
+   * Fire the celebration sequence twice: burst #1 immediately (awal) + an
+   * encore burst at the end (akhir). Defaults to true so qualified teams see
+   * 2 clear volleys. Set to false for a single volley.
+   */
+  encore?: boolean;
+  /**
+   * Delay before the encore (2nd) burst, in ms. Defaults to 4500 — right as
+   * the first volley's side cannons finish.
+   */
+  encoreDelay?: number;
   /**
    * Legacy knob kept for call-site compatibility — the particle count is
    * governed inside the canvas-confetti engine, so this is intentionally unused.
@@ -33,10 +44,13 @@ interface ConfettiCelebrationProps {
  * Physics-driven celebration for qualified semifinalists. Delegates every
  * particle to the battle-tested `canvas-confetti` engine (a dedicated global
  * canvas, so there are no static DOM elements). On mount it runs the multi-stage
- * routine built in `useConfettiBlast`:
+ * routine built in `useConfettiBlast` **twice** by default:
  *
+ *   Burst #1 (awal) — immediate, as the congrats hero appears:
  *   1. Initial center explosion
  *   2. Oscillating left/right side cannons
+ *   Burst #2 (akhir) — encore volley ~4.5s later, so the celebration
+ *   clearly fires again at the end of the module view.
  *
  * A compact floating "Replay Celebration 🎉" pill is offered so the team can
  * re-trigger the burst on demand.
@@ -44,6 +58,8 @@ interface ConfettiCelebrationProps {
 export function ConfettiCelebration({
   active = true,
   duration = 4200,
+  encore = true,
+  encoreDelay = 4500,
   showReplay = true,
   onReplay,
 }: ConfettiCelebrationProps) {
@@ -57,21 +73,24 @@ export function ConfettiCelebration({
 
     // Cancel any previous run before starting a fresh one.
     timersRef.current.forEach((t) => window.clearTimeout(t));
-    timersRef.current = triggerSemifinalCelebration();
+    timersRef.current = encore
+      ? triggerDoubleCelebration(2, encoreDelay)
+      : triggerSemifinalCelebration();
 
-    // Auto-hide the replay pill once the initial burst has settled.
+    // Keep the pill visible until the LAST volley settles.
+    const pillLifetime = encore ? encoreDelay + duration : duration;
     setPillVisible(showReplay);
     if (hideTimer.current) window.clearTimeout(hideTimer.current);
     hideTimer.current = window.setTimeout(
       () => setPillVisible(false),
-      duration + 1200,
+      pillLifetime + 1200,
     );
 
     return () => {
       timersRef.current.forEach((t) => window.clearTimeout(t));
       if (hideTimer.current) window.clearTimeout(hideTimer.current);
     };
-  }, [active, duration, showReplay]);
+  }, [active, duration, encore, encoreDelay, showReplay]);
 
   const handleReplay = () => {
     if (onReplay) {

@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Check, FileText, LoaderCircle, Trash2, UploadCloud } from 'lucide-react';
 import { PaymentInstructionCard } from '@/components/ui/PaymentInstructionCard';
 import { MascotDecoration } from '@/components/ui/MascotDecoration';
+import { triggerDoubleCelebration } from '@/components/ui/useConfettiBlast';
 import { useRouter } from 'next/navigation';
 import {
   SEMIFINAL_PAYMENT,
@@ -174,6 +175,10 @@ export function SemifinalRegistrationForm({ team }: SemifinalRegistrationFormPro
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Re-registration failed');
+
+      // 🎉🎉 2 confetti volleys on successful akhir submit: immediate + encore.
+      setMessage({ type: 'success', text: 'Re-registration submitted! Verification in progress.' });
+      triggerDoubleCelebration(2, 4500);
 
       setTimeout(() => {
         router.refresh();

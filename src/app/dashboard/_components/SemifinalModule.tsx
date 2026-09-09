@@ -74,7 +74,9 @@ export function SemifinalModule({ team }: { team: DashboardTeam }) {
 
 return (
     <>
-      {celebrate && status !== 'LOADING' && <ConfettiCelebration active={celebrate} />}
+      {celebrate && status !== 'LOADING' && (
+        <ConfettiCelebration active={celebrate} encore encoreDelay={4500} />
+      )}
 
       <div
         id="semifinal-module"
