@@ -333,7 +333,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
             </div>
             
             <p className="text-xs text-white/40">
-  Silakan transfer Rp 150.001 (pastikan ada 1 di ujung) ke <span className="text-white/80 font-medium">Bank Jago (104614051845 a.n. Aditya Ramadhani)</span> dan unggah bukti bayar.
+  Silakan transfer <span className="text-white/80 font-medium">Rp 150.001</span> (pastikan ada 1 di ujung) ke <span className="text-white/80 font-medium">Bank Jago (104614051845 a.n. Aditya Ramadhani)</span> dan unggah bukti bayar.
 </p>
             
             <FileUpload
