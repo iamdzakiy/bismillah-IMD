@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db';
 
 export default async function AdminDashboardPage() {
-  const [totalUsers, totalTeams, pendingDocs, approvedDocs, pendingSubs, approvedSubs] =
+  const [totalUsers, totalTeams, pendingDocs, approvedDocs, pendingSubs, approvedSubs, pendingSemiRegs] =
     await Promise.all([
       prisma.user.count(),
       prisma.team.count(),
@@ -9,6 +9,7 @@ export default async function AdminDashboardPage() {
       prisma.registration.count({ where: { status: 'DOCUMENT_APPROVED' } }),
       prisma.submission.count({ where: { status: 'PENDING' } }),
       prisma.submission.count({ where: { status: 'APPROVED' } }),
+      prisma.semifinalRegistration.count({ where: { status: 'PENDING' } }),
     ]);
 
   const teamsByCompetition = await prisma.team.groupBy({
@@ -23,6 +24,7 @@ export default async function AdminDashboardPage() {
     { label: 'Approved Docs', value: approvedDocs, color: 'green' },
     { label: 'Pending Submissions', value: pendingSubs, color: 'orange' },
     { label: 'Approved Submissions', value: approvedSubs, color: 'emerald' },
+    { label: 'Pending Semi Re-registrations', value: pendingSemiRegs, color: 'yellow' },
   ];
 
   return (

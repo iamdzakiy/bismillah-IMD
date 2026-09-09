@@ -25,6 +25,9 @@ export default async function AdminLayout({
           <Link href="/admin/registrations" className="block px-4 py-2 rounded-lg hover:bg-white/5 text-white/70 text-sm">
             👥 Registrations
           </Link>
+          <Link href="/admin/semifinal" className="block px-4 py-2 rounded-lg hover:bg-white/5 text-white/70 text-sm">
+            🏆 Semifinal Re-registrations
+          </Link>
           <div className="pt-4 pb-2 px-4 text-xs text-white/30 uppercase tracking-wider">
             Submissions
           </div>

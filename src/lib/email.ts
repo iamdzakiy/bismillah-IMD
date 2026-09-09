@@ -761,3 +761,71 @@ export async function sendEventReminderEmail(email: string, name?: string) {
 
   await sendMailSafe(email, '🗓️ IMD 2026 is almost here — last call', html);
 }
+
+// ============================================================
+// EMAIL 6: Semifinal re-registration approval
+// (for the independent post-preliminary module)
+// ============================================================
+const SEMIFINAL_EMAIL_LINK = 'https://chat.whatsapp.com/ClwIbQfe86BILn7WBp9bEn';
+
+export async function sendSemifinalReregApprovalEmail(
+  email: string,
+  name: string,
+  competition: string,
+  teamName: string
+): Promise<boolean> {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a1a; padding: 40px 24px; border-radius: 16px;">
+      <div style="background: linear-gradient(160deg, #13133a, #0e0e2e); border-radius: 16px; padding: 36px 32px; border: 1px solid rgba(99,102,241,0.2);">
+        <table width="100%" cellpadding="0" cellspacing="0">${renderHeader()}</table>
+        <h1 style="background: linear-gradient(135deg, #10b981, #22c55e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 26px; margin: 0 0 14px 0;">✅ Re-registration Approved, ${name}!</h1>
+        <p style="color: rgba(255,255,255,0.75); font-size: 15px; line-height: 1.6; margin: 0 0 8px 0;">
+          Congratulations! Your <strong style="color:#fff;">semifinal re-registration</strong> for
+          <strong style="color:#fff;">${competition}</strong> — <strong style="color:#fff;">${teamName}</strong> has been
+          <strong style="color:#22c55e;">approved</strong> by the committee.
+        </p>
+        <p style="color: rgba(255,255,255,0.65); font-size: 15px; line-height: 1.6; margin: 0 0 18px 0;">
+          You can now submit your <strong style="color:#fff;">full paper</strong> for the semifinal phase through your dashboard.
+        </p>
+        <div style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25); border-radius: 14px; padding: 18px 20px; margin: 0 0 20px 0;">
+          <p style="color: #22c55e; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 0;">📱 Join the WA Group</p>
+          <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin: 0;">For participant queries and competition updates, join our official group:</p>
+          <a href="${SEMIFINAL_EMAIL_LINK}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; text-decoration: none; border-radius: 60px; font-weight: 700; font-size: 14px; margin-top: 8px;">Join WA Group →</a>
+        </div>
+        <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display: inline-block; padding: 14px 36px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; text-decoration: none; border-radius: 60px; font-weight: 700; font-size: 15px; box-shadow: 0 8px 32px rgba(99,102,241,0.3);">Open Dashboard →</a>
+      </div>
+    </div>
+  `;
+  return sendMailSafe(email, '✅ Your semifinal re-registration was approved!', html);
+}
+
+export async function sendSemifinalReregRejectionEmail(
+  email: string,
+  name: string,
+  competition: string,
+  teamName: string,
+  notes: string
+): Promise<boolean> {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a1a; padding: 40px 24px; border-radius: 16px;">
+      <div style="background: linear-gradient(160deg, #2a1111, #1a0a0a); border-radius: 16px; padding: 36px 32px; border: 1px solid rgba(239,68,68,0.2);">
+        <table width="100%" cellpadding="0" cellspacing="0">${renderHeader()}</table>
+        <h1 style="color: #ef4444; font-size: 26px; margin: 0 0 12px 0;">📝 Semifinal Re-registration Update</h1>
+        <p style="color: rgba(255,255,255,0.7); font-size: 15px; line-height: 1.6; margin: 0 0 8px 0;">Hi ${name},</p>
+        <p style="color: rgba(255,255,255,0.7); font-size: 15px; line-height: 1.6; margin: 0 0 16px 0;">
+          Unfortunately, your semifinal re-registration for <strong style="color:#fff;">${competition}</strong> —
+          <strong style="color:#fff;">${teamName}</strong> was not approved yet.
+        </p>
+        <div style="background: rgba(239,68,68,0.08); border-left: 3px solid #ef4444; padding: 16px 20px; margin: 0 0 20px 0; border-radius: 0 8px 8px 0;">
+          <strong style="color: #f87171; font-size: 13px;">Admin Notes:</strong>
+          <p style="color: rgba(255,255,255,0.5); font-size: 13px; margin: 6px 0 0 0;">${notes}</p>
+        </div>
+        <p style="color: rgba(255,255,255,0.6); font-size: 14px; line-height: 1.6; margin: 0 0 18px 0;">
+          Please review the notes, fix the issue, and resubmit your re-registration from your dashboard.
+        </p>
+        <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display: inline-block; padding: 14px 36px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; text-decoration: none; border-radius: 60px; font-weight: 700; font-size: 15px;">Re-register Again →</a>
+      </div>
+    </div>
+  `;
+  return sendMailSafe(email, '📝 Update on your semifinal re-registration', html);
+}

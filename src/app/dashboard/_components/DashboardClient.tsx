@@ -5,11 +5,21 @@ import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { TeamProfileCard } from './TeamProfileCard';
 import { SubmissionForm } from './SubmissionForm';
+import { SemifinalModule } from './SemifinalModule';
 import { StatusBanner } from './StatusBanner';
 import { TeamRegistrationForm } from './TeamRegistrationForm';
 import type { DashboardTeam } from './types';
 
 const WHATSAPP_COMMUNITY_LINK = 'https://chat.whatsapp.com/ClwIbQfe86BILn7WBp9bEn';
+
+// A team is routed into the independent post-preliminary (semifinal) module only
+// when it is an SPC or NEC team whose preliminary submission was approved AND
+// advanced to the semifinal phase. Olympiad (MO) teams are excluded.
+function passedPreliminary(team: DashboardTeam): boolean {
+  if (team.competitionType !== 'SPC' && team.competitionType !== 'NEC') return false;
+  const prelim = team.submissions?.find((s) => s.phase === 'PRELIMINARY');
+  return prelim?.status === 'APPROVED' && team.registration?.currentPhase === 'SEMIFINAL';
+}
 
 interface DashboardClientProps {
   session: Session;
@@ -59,13 +69,20 @@ export function DashboardClient({ session, teams }: DashboardClientProps) {
           </div>
         ) : (
           <div className="space-y-6 sm:space-y-8">
-            {teams.map((team) => (
-              <div key={team.id} className="space-y-4 sm:space-y-6">
-                <TeamProfileCard team={team} />
-                <SubmissionForm team={team} />
+            {teams.map((team) => {
+              const isSemifinalEligible = passedPreliminary(team);
+              return (
+                <div key={team.id} className="space-y-4 sm:space-y-6">
+                  <TeamProfileCard team={team} />
 
-                {/* WhatsApp Community Section — shown when documents are approved */}
-                {(team.registration?.status === 'DOCUMENT_APPROVED' || team.registration?.status === 'REGISTERED') && (
+                  {isSemifinalEligible ? (
+                    <SemifinalModule team={team} />
+                  ) : (
+                    <SubmissionForm team={team} />
+                  )}
+
+                  {/* WhatsApp Community Section — shown when documents are approved (non-semifinal teams) */}
+                  {!isSemifinalEligible && (team.registration?.status === 'DOCUMENT_APPROVED' || team.registration?.status === 'REGISTERED') && (
                   <div className="glass-dark rounded-2xl p-6 border border-green-500/20">
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
@@ -93,8 +110,9 @@ export function DashboardClient({ session, teams }: DashboardClientProps) {
                     </div>
                   </div>
                 )}
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         )}
       </main>

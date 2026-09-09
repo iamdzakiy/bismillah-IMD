@@ -32,6 +32,16 @@ enum SubmissionStatus {
   REJECTED
 }
 
+// Independent status for the post-preliminary (semifinal) re-registration module.
+// This is intentionally separate from RegistrationStatus and SubmissionStatus so
+// that semifinal re-registration does not interfere with account/registration or
+// preliminary submission logic.
+enum SemifinalRegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum RegistrationStatus {
   PENDING_DOCS
   DOCUMENT_SUBMITTED
@@ -76,6 +86,8 @@ model Team {
   memberData      Json?    // Array of { name, email, institution, phone, age, studentProofUrl }
   registration    Registration?
   submissions     Submission[]
+
+  semifinalRegistration SemifinalRegistration? @relation("TeamSemifinalRegistration")
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -129,6 +141,28 @@ model Submission {
 
   @@index([teamId])
   @@index([phase])
+  @@index([status])
+}
+
+// Dedicated, independent module for the post-preliminary phase.
+// A team that passes the preliminary round must complete a mandatory
+// re-registration here; admin approval unlocks the full paper submission form.
+// This model is fully decoupled from Registration / preliminary data.
+model SemifinalRegistration {
+  id              String                      @id @default(cuid())
+  teamId          String                      @unique
+  team            Team                        @relation("TeamSemifinalRegistration", fields: [teamId], references: [id], onDelete: Cascade)
+  status          SemifinalRegistrationStatus @default(PENDING)
+  paymentProofUrl String?                     // payment receipt upload for the re-registration fee
+  agreedToTerms   Boolean                     @default(false)
+  adminNote       String?
+  reviewedById    String?
+  reviewedAt      DateTime?
+  submittedAt     DateTime?
+
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+
   @@index([status])
 }
 
