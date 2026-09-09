@@ -333,12 +333,12 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
             </div>
             
             <p className="text-xs text-white/40">
-              Template: <a href="https://bit.ly/CompeIMD2026" target="_blank" rel="noopener noreferrer" className="text-bio-emerald hover:underline">bit.ly/CompeIMD2026</a>
-            </p>
+  Silakan transfer Rp 150.001 (pastikan ada 1 di ujung) ke <span className="text-white/80 font-medium">Bank Jago (104614051845 a.n. Aditya Ramadhani)</span> dan unggah bukti bayar.
+</p>
             
             <FileUpload
-              label="Upload Re-registration PDF (Max 5MB)"
-              accept=".pdf"
+              label="Upload Re-registration (Bukti Bayar) PDF, JPG, PNG, JPEG (Max 5MB)"
+              accept=".pdf;.jpg;.png;.jpeg"
               onUpload={(url) => setReregPdfUrl(url)}
             />
             
@@ -379,7 +379,6 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
           <ol className="text-white/70 text-sm space-y-2 list-decimal list-inside">
             <li>Lakukan re-registrasi untuk babak semifinal</li>
             <li>Siap untuk pengumpulan full paper/submission semifinal</li>
-            <li>Ikuti technical meeting babak semifinal</li>
           </ol>
         </div>
         
