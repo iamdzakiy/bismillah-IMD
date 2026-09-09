@@ -105,9 +105,17 @@ export function SemifinalRegistrationForm({ team }: SemifinalRegistrationFormPro
 
     try {
       const filename = encodeURIComponent(file.name);
+      // file.type can be '' for renamed/odd files — fall back to extension MIME
+      // so the server's allowlist check doesn't reject with "Only PDF..." .
+      const extMime =
+        /\.pdf$/i.test(file.name)
+          ? 'application/pdf'
+          : /\.png$/i.test(file.name)
+            ? 'image/png'
+            : 'image/jpeg';
       const res = await fetch(`/api/upload/presign?filename=${filename}`, {
         method: 'POST',
-        headers: { 'Content-Type': file.type },
+        headers: { 'Content-Type': file.type || extMime },
         body: await file.arrayBuffer(),
       });
       const data = await res.json();

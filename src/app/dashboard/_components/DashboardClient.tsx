@@ -12,13 +12,20 @@ import type { DashboardTeam } from './types';
 
 const WHATSAPP_COMMUNITY_LINK = 'https://chat.whatsapp.com/ClwIbQfe86BILn7WBp9bEn';
 
-// A team is routed into the independent post-preliminary (semifinal) module only
-// when it is an SPC or NEC team whose preliminary submission was approved AND
-// advanced to the semifinal phase. Olympiad (MO) teams are excluded.
+// A team is routed into the independent post-preliminary (semifinal) module when
+// it is an SPC or NEC team whose preliminary submission was APPROVED.
+// NOTE: we intentionally do NOT require registration.currentPhase === 'SEMIFINAL'
+// here — older rows approved before the phase-sync code (or rows where admin
+// forgot to flip the phase) would otherwise never see the re-registration form,
+// which looks like "can't upload re-regist / card has no effect".
 function passedPreliminary(team: DashboardTeam): boolean {
   if (team.competitionType !== 'SPC' && team.competitionType !== 'NEC') return false;
   const prelim = team.submissions?.find((s) => s.phase === 'PRELIMINARY');
-  return prelim?.status === 'APPROVED' && team.registration?.currentPhase === 'SEMIFINAL';
+  if (prelim?.status === 'APPROVED') return true;
+  // Fallback: phase already advanced (e.g. re-reg submitted) even if the
+  // submission row is missing from the payload.
+  if (team.registration?.currentPhase === 'SEMIFINAL') return true;
+  return false;
 }
 
 interface DashboardClientProps {

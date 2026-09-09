@@ -31,21 +31,39 @@ export function PaymentInstructionCard({
   const [showQr, setShowQr] = useState(false);
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(accountNumber);
-    } catch {
-      const el = document.createElement('textarea');
-      el.value = accountNumber;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-    }
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
+    // navigator.clipboard requires a secure context (https/localhost) and a
+    // user gesture; user asked "copy does nothing" — add silent fallback chain
+    // so it works over plain http / in-app webviews too.
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(accountNumber);
+        return;
+      }
+      throw new Error('no-clipboard-api');
+    } catch {
+      try {
+        const el = document.createElement('textarea');
+        el.value = accountNumber;
+        el.setAttribute('readonly', '');
+        el.style.position = 'fixed';
+        el.style.opacity = '0';
+        document.body.appendChild(el);
+        el.select();
+        el.setSelectionRange(0, el.value.length);
+        document.execCommand('copy');
+        document.body.removeChild(el);
+      } catch {
+        // Last resort: prompt so the user can copy manually.
+        window.prompt('Copy account number:', accountNumber);
+      }
+    }
   };
 
   const handleDownload = () => {
+    setDownloaded(true);
+    window.setTimeout(() => setDownloaded(false), 2000);
     const lines = [
       'PAYMENT INSTRUCTIONS — IMD 2026 SEMIFINAL RE-REGISTRATION',
       '------------------------------------------------------',
@@ -63,10 +81,12 @@ export function PaymentInstructionCard({
     const a = document.createElement('a');
     a.href = url;
     a.download = 'IMD-2026-payment-instructions.txt';
+    // The anchor must be in the DOM for the click to trigger a download in
+    // Safari/Firefox (previously it wasn't appended, so "no effect").
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
-    setDownloaded(true);
-    window.setTimeout(() => setDownloaded(false), 2000);
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   return (

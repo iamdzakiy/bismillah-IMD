@@ -27,7 +27,7 @@ export function fireCenterExplosion(
   const defaults: confetti.Options = {
     origin: { x: 0.5, y: 0.55 },
     colors: SEMIFINAL_CONFETTI_PALETTE,
-    disableForReducedMotion: true,
+    zIndex: 9999,
   };
   confetti({
     ...defaults,
@@ -52,7 +52,7 @@ export function fireSideCannon(fromLeft: boolean, opts: confetti.Options = {}) {
     scalar: 1.08,
     origin: { x: fromLeft ? 0 : 1, y: 0.85 },
     colors: SEMIFINAL_CONFETTI_PALETTE,
-    disableForReducedMotion: true,
+    zIndex: 9999,
     ...opts,
   });
 }

@@ -79,9 +79,13 @@ export async function uploadFile(
   const safePath = `${userId}/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${fileExt}`;
   const bucket = getSupabaseBucket();
 
-  const { data, error } = await supabase.storage
+  // supabase-js expects Blob/Buffer/Uint8Array — convert ArrayBuffer explicitly
+  // so Node fetch does not send it as JSON and RLS/service upload succeeds.
+  const body = Buffer.from(fileBuffer);
+
+  const { error } = await supabase.storage
     .from(bucket)
-    .upload(safePath, fileBuffer, {
+    .upload(safePath, body, {
       contentType: fileType,
       upsert: false,
     });
