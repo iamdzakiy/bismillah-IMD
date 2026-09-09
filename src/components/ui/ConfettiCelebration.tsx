@@ -1,137 +1,108 @@
 // src/components/ui/ConfettiCelebration.tsx
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { playReplayBurst, triggerSemifinalCelebration } from './useConfettiBlast';
 
 interface ConfettiCelebrationProps {
-  /** Whether to play the confetti burst. Defaults to true (starts on mount). */
+  /**
+   * Whether to auto-play the celebration sequence on mount. Defaults to true.
+   */
   active?: boolean;
-  /** How long the burst runs before fully clearing, in ms. */
+  /**
+   * How long the celebration sequence should run, in ms. Used to auto-hide the
+   * floating "Replay" pill once the initial burst settles. Defaults to 4200.
+   */
   duration?: number;
-  /** Number of confetti pieces. */
+  /**
+   * Legacy knob kept for call-site compatibility — the particle count is
+   * governed inside the canvas-confetti engine, so this is intentionally unused.
+   */
   count?: number;
-}
-
-type Particle = {
-  x: number;
-  y: number;
-  size: number;
-  speedY: number;
-  speedX: number;
-  rot: number;
-  rotSpeed: number;
-  color: string;
-  sway: number;
-  swaySpeed: number;
-  shape: 'rect' | 'circle';
-  delay: number;
-};
-
-const COLORS = ['#f43f5e', '#f97316', '#facc15', '#22c55e', '#06b6d4', '#3b82f6', '#a855f7', '#ec4899', '#ffffff'];
-
-function rand(min: number, max: number) {
-  return Math.random() * (max - min) + min;
+  /**
+   * Show the floating "Replay Celebration" pill. Defaults to true.
+   */
+  showReplay?: boolean;
+  /**
+   * Optional external handler fired instead of the default replay burst.
+   */
+  onReplay?: () => void;
 }
 
 /**
- * Lightweight, dependency-free canvas confetti used to celebrate a team
- * passing the preliminary phase. Spawns a celebratory burst that fades out
- * on its own (no React re-renders required).
+ * Physics-driven celebration for qualified semifinalists. Delegates every
+ * particle to the battle-tested `canvas-confetti` engine (a dedicated global
+ * canvas, so there are no static DOM elements). On mount it runs the multi-stage
+ * routine built in `useConfettiBlast`:
+ *
+ *   1. Initial center explosion
+ *   2. Oscillating left/right side cannons
+ *
+ * A compact floating "Replay Celebration 🎉" pill is offered so the team can
+ * re-trigger the burst on demand.
  */
 export function ConfettiCelebration({
   active = true,
   duration = 4200,
-  count = 140,
+  showReplay = true,
+  onReplay,
 }: ConfettiCelebrationProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [pillVisible, setPillVisible] = useState(showReplay);
+  const timersRef = useRef<number[]>([]);
+  const hideTimer = useRef<number | null>(null);
 
+  // Auto-play the celebration sequence on mount (or when `active` toggles).
   useEffect(() => {
     if (!active) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    canvas.width = Math.floor(w * dpr);
-    canvas.height = Math.floor(h * dpr);
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${h}px`;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    // Cancel any previous run before starting a fresh one.
+    timersRef.current.forEach((t) => window.clearTimeout(t));
+    timersRef.current = triggerSemifinalCelebration();
 
-    const particles: Particle[] = Array.from({ length: count }, () => ({
-      x: rand(-w * 0.1, w * 1.1),
-      y: rand(-h * 0.6, -20), // spawned above the top edge
-      size: rand(6, 13),
-      speedY: rand(2.5, 6),
-      speedX: rand(-1.5, 1.5),
-      rot: rand(0, Math.PI * 2),
-      rotSpeed: rand(-0.15, 0.15),
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      sway: rand(0.5, 1.5),
-      swaySpeed: rand(0.02, 0.06),
-      shape: Math.random() > 0.5 ? 'rect' : 'circle',
-      delay: rand(0, 700),
-    }));
+    // Auto-hide the replay pill once the initial burst has settled.
+    setPillVisible(showReplay);
+    if (hideTimer.current) window.clearTimeout(hideTimer.current);
+    hideTimer.current = window.setTimeout(
+      () => setPillVisible(false),
+      duration + 1200,
+    );
 
-    const start = performance.now();
-    let raf: number;
-
-    const frame = (now: number) => {
-      const elapsed = now - start;
-      const t = elapsed / duration;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.globalAlpha = 1;
-      ctx.clearRect(0, 0, w, h);
-
-      let anyAlive = false;
-      for (const p of particles) {
-        if (elapsed < p.delay) {
-          anyAlive = true;
-          continue;
-        }
-        const age = (elapsed - p.delay) / duration;
-        if (age > 1) continue;
-
-        p.x += p.speedX + Math.sin((elapsed / 1000) * p.sway) * p.swaySpeed * 40;
-        p.y += p.speedY;
-        p.rot += p.rotSpeed;
-        anyAlive = anyAlive || p.y < h + 60;
-
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, 1 - age * age);
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot);
-        ctx.fillStyle = p.color;
-        if (p.shape === 'rect') {
-          ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
-        } else {
-          ctx.beginPath();
-          ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.restore();
-      }
-
-      if (t < 1 && anyAlive) {
-        raf = requestAnimationFrame(frame);
-      } else {
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }
+    return () => {
+      timersRef.current.forEach((t) => window.clearTimeout(t));
+      if (hideTimer.current) window.clearTimeout(hideTimer.current);
     };
+  }, [active, duration, showReplay]);
 
-    raf = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, duration, count]);
-
-  if (!active) return null;
+  const handleReplay = () => {
+    if (onReplay) {
+      onReplay();
+    } else {
+      playReplayBurst();
+    }
+    // Nudge the pill one more time after a manual replay.
+    setPillVisible(true);
+    if (hideTimer.current) window.clearTimeout(hideTimer.current);
+    hideTimer.current = window.setTimeout(() => setPillVisible(false), 3000);
+  };
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[9999]" aria-hidden="true">
-      <canvas ref={canvasRef} className="block h-full w-full" />
-    </div>
+    <>
+      {/* canvas-confetti owns its own overlay canvas; a plain sentinel keeps the
+          node in the tree so replayKey can re-run the mount effect. */}
+      <div aria-hidden="true" className="hidden" data-confetti-celebration />
+
+      {pillVisible && (
+        <button
+          type="button"
+          onClick={handleReplay}
+          aria-label="Replay celebration confetti"
+          title="Replay Celebration"
+          className="pointer-events-auto fixed bottom-5 right-5 z-[9990] flex cursor-pointer items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_20px_50px_rgba(168,85,247,0.15)] backdrop-blur-2xl transition-all duration-300 hover:scale-105 hover:border-purple-400/50 hover:bg-purple-500/20 hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] active:scale-95"
+        >
+          <span className="animate-twinkle text-base">🎉</span>
+          <span>Replay Celebration</span>
+        </button>
+      )}
+    </>
   );
 }

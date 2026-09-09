@@ -1,9 +1,9 @@
 // src/app/dashboard/_components/SemifinalRegistrationForm.tsx
 'use client';
 
-import { useState } from 'react';
-import { FileUpload } from '@/components/FileUpload';
-import { SuccessPopup } from '@/components/ui/SuccessPopup';
+import { useEffect, useId, useRef, useState } from 'react';
+import { Check, FileText, LoaderCircle, Trash2, UploadCloud } from 'lucide-react';
+import { PaymentInstructionCard } from '@/components/ui/PaymentInstructionCard';
 import { MascotDecoration } from '@/components/ui/MascotDecoration';
 import { useRouter } from 'next/navigation';
 import {
@@ -18,163 +18,382 @@ interface SemifinalRegistrationFormProps {
   team: DashboardTeam;
 }
 
+/** Submission state machine per spec: IDLE → UPLOADING → SUBMITTED / PENDING_VERIFICATION. */
+type Stage = 'IDLE' | 'UPLOADING' | 'SUBMITTED';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const IS_IMAGE = (name: string) => /\.(png|jpe?g)$/i.test(name);
+const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.pdf'];
+
+function formatBytes(bytes = 0): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+interface ReceiptFile {
+  name: string;
+  size: number;
+  url: string;
+  previewUrl?: string;
+}
+
 export function SemifinalRegistrationForm({ team }: SemifinalRegistrationFormProps) {
   const router = useRouter();
-  const [paymentProofUrl, setPaymentProofUrl] = useState('');
+  const inputId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const [stage, setStage] = useState<Stage>('IDLE');
+  const [receipt, setReceipt] = useState<ReceiptFile | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [dragging, setDragging] = useState(false);
   const [agreed, setAgreed] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
+
+  const progressTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (progressTimer.current) window.clearInterval(progressTimer.current);
+    };
+  }, []);
+
+  const startProgress = () => {
+    setProgress(0);
+    if (progressTimer.current) window.clearInterval(progressTimer.current);
+    progressTimer.current = window.setInterval(() => {
+      setProgress((p) => {
+        const next = Math.min(p + 14, 90);
+        return next >= 90 ? 90 : next;
+      });
+    }, 90);
+  };
+
+  const stopProgress = () => {
+    if (progressTimer.current) {
+      window.clearInterval(progressTimer.current);
+      progressTimer.current = null;
+    }
+    setProgress(100);
+    window.setTimeout(() => setProgress(0), 400);
+  };
+
+  const validateAndSet = (file: File | undefined): boolean => {
+    if (!file) return false;
+    setMessage(null);
+    const ext = '.' + (file.name.split('.').pop() || '').toLowerCase();
+    if (!ALLOWED_EXT.includes(ext)) {
+      setMessage({ type: 'error', text: 'Only JPG, PNG or PDF receipts are allowed.' });
+      return false;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setMessage({ type: 'error', text: `"${file.name}" exceeds the 5MB limit.` });
+      return false;
+    }
+    return true;
+  };
+
+  const uploadFile = async (file: File) => {
+    if (!validateAndSet(file)) return;
+    setStage('UPLOADING');
+    startProgress();
+
+    let previewUrl: string | undefined;
+    if (IS_IMAGE(file.name)) {
+      previewUrl = URL.createObjectURL(file);
+    }
+
+    try {
+      const filename = encodeURIComponent(file.name);
+      const res = await fetch(`/api/upload/presign?filename=${filename}`, {
+        method: 'POST',
+        headers: { 'Content-Type': file.type },
+        body: await file.arrayBuffer(),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+
+      setReceipt({ name: file.name, size: file.size, url: data.publicUrl, previewUrl });
+    } catch (err) {
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Upload failed. Please retry.' });
+    } finally {
+      stopProgress();
+      setStage('IDLE');
+    }
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) void uploadFile(file);
+    e.target.value = '';
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) void uploadFile(file);
+  };
+
+  const removeReceipt = () => {
+    if (receipt?.previewUrl) URL.revokeObjectURL(receipt.previewUrl);
+    setReceipt(null);
+    setAgreed(false);
+    setMessage(null);
+  };
 
   const handleSubmit = async () => {
     setMessage(null);
-
-    if (!paymentProofUrl) {
+    if (!receipt || !receipt.url) {
       setMessage({ type: 'error', text: 'Please upload your payment receipt before submitting.' });
       return;
     }
     if (!agreed) {
-      setMessage({ type: 'error', text: 'You must confirm that the payment details are correct.' });
+      setMessage({ type: 'error', text: 'Please confirm the payment & integrity consent first.' });
       return;
     }
 
-    setSubmitting(true);
+    setStage('SUBMITTED');
     try {
       const res = await fetch('/api/semifinal/registration', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           teamId: team.id,
-          paymentProofUrl,
+          paymentProofUrl: receipt.url,
           agreedToTerms: agreed,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Re-registration failed');
 
-      setShowSuccess(true);
       setTimeout(() => {
-        setShowSuccess(false);
         router.refresh();
-      }, 1800);
+      }, 1600);
     } catch (err) {
+      setStage('IDLE');
       setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Re-registration failed' });
-    } finally {
-      setSubmitting(false);
     }
   };
 
-  return (
-    <div className="glass-dark rounded-2xl p-6 sm:p-8 space-y-6">
-      <SuccessPopup
-        isOpen={showSuccess}
-        onClose={() => setShowSuccess(false)}
-        message="Re-registration submitted! The committee will review it soon."
-      />
+return (
+    <div className="glass relative overflow-hidden rounded-3xl border border-white/12 border-t-white/20 bg-gradient-to-br from-white/8 via-white/4 to-purple-500/5 p-6 backdrop-blur-2xl shadow-[0_20px_50px_rgba(168,85,247,0.15)] sm:p-8 space-y-6">
+      <div className="pointer-events-none absolute -left-8 -top-8 h-44 w-44 rounded-full bg-purple-500/15 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-8 -right-8 h-44 w-44 rounded-full bg-fuchsia-500/15 blur-3xl" />
 
-      {/* Payment details — static info */}
-      <div className="rounded-2xl bg-gradient-to-br from-cyan-500/10 via-transparent to-emerald-500/10 border border-emerald-500/30 p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-full bg-emerald-500/15 flex items-center justify-center text-2xl">💳</div>
+      <div className="relative">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-purple-400/30 bg-purple-500/15 text-2xl shadow-[0_0_20px_rgba(168,85,247,0.3)] backdrop-blur-xl">
+            💳
+          </div>
           <div>
-            <h4 className="text-lg font-bold text-emerald-400">Semifinal Re-registration Fee</h4>
-            <p className="text-xs text-white/50">One-time payment to unlock the full paper submission form</p>
+            <h4 className="text-xl font-extrabold text-gradient-glow">Semifinal Re-Registration</h4>
+            <p className="text-xs text-white/55">
+              One-time verification to unlock your <strong className="text-white/80">full paper submission</strong>.
+            </p>
           </div>
         </div>
-
-        <div className="bg-black/30 rounded-xl p-5 space-y-3 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-white/60">Amount</span>
-            <span className="text-2xl font-bold text-bio-emerald font-mono">IDR {SEMIFINAL_PAYMENT.amount}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-white/60">Recipient / Bank</span>
-            <span className="text-white/90 font-semibold">{SEMIFINAL_PAYMENT.bank}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-white/60">Account Number</span>
-            <span className="text-white/90 font-mono">{SEMIFINAL_PAYMENT.accountNumber}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-white/60">Account Holder</span>
-            <span className="text-white/90 font-semibold">{SEMIFINAL_PAYMENT.accountHolder}</span>
-          </div>
-          <p className="text-xs text-white/40 leading-relaxed mt-2">{SEMIFINAL_PAYMENT.notes}</p>
-        </div>
-
-        <ol className="list-decimal list-inside text-xs text-white/50 space-y-1.5 mt-4">
-          {SEMIFINAL_PAYMENT.procedure.map((step) => <li key={step}>{step}</li>)}
-        </ol>
-      </div>
-{/* WA Group invitation */}
-      <a
-        href={SEMIFINAL_WHATSAPP_LINK}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-3 rounded-xl bg-green-500/10 border border-green-500/30 p-4 hover:bg-green-500/15 transition"
-      >
-        <span className="text-2xl">💬</span>
-        <span className="flex-1 min-w-0">
-          <span className="block text-green-400 font-semibold">Join {SEMIFINAL_WHATSAPP_LABEL}</span>
-          <span className="block text-xs text-white/60">
-            Official invitation link for participant queries & competition updates.
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+            <Check className="h-3.5 w-3.5" /> Fee: {SEMIFINAL_PAYMENT.amountLabel}
           </span>
-        </span>
-        <span className="text-green-400 text-lg">→</span>
-      </a>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-3 py-1 text-xs font-semibold text-white/70">
+            Receipt required
+          </span>
+        </div>
+      </div>
 
-      {/* Submission area */}
-      <div className="rounded-xl glass p-5 space-y-4">
-        <h4 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
-          Upload Payment Receipt (required)
-        </h4>
-        <p className="text-xs text-white/40">
-          Upload a clear screenshot / PDF of your transfer to <strong>{SEMIFINAL_PAYMENT.bank}</strong>
-          (IDR {SEMIFINAL_PAYMENT.amount}). It must show the payer&apos;s name, the exact amount and the date.
+      <PaymentInstructionCard />
+
+      <div className="relative">
+        <p className="text-[11px] uppercase tracking-wider text-white/40">Step 1 — Pay the exact fee</p>
+        <p className="mt-1 text-xs leading-relaxed text-white/60">
+          Transfer <strong className="text-emerald-300">{SEMIFINAL_PAYMENT.amountLabel}</strong> to{' '}
+          <strong className="text-white/90">{SEMIFINAL_PAYMENT.bank}</strong> ({SEMIFINAL_PAYMENT.accountHolder}).
+          Use your <strong>team name as the reference</strong> so we can match your payment.
         </p>
+      </div>
 
-        <FileUpload
-          label="Payment Receipt (PDF / image, max 5MB)"
-          accept=".pdf,.png,.jpg,.jpeg"
-          onUpload={(url) => setPaymentProofUrl(url)}
-        />
+<ol className="relative list-decimal list-inside space-y-1.5 border-l border-purple-400/20 pl-4 text-xs text-white/55">
+        {SEMIFINAL_PAYMENT.procedure.map((step) => (
+          <li key={step}>{step}</li>
+        ))}
+      </ol>
 
-        {SEMIFINAL_TEMPLATE_LINK && (
-          <p className="text-xs text-white/50">
-            Official template:{' '}
-            <a href={SEMIFINAL_TEMPLATE_LINK} target="_blank" rel="noopener noreferrer" className="text-bio-emerald hover:underline">
-              {SEMIFINAL_TEMPLATE_LINK}
-            </a>
-          </p>
+      {/* Upload dropzone */}
+      <div className="relative">
+        <p className="text-[11px] uppercase tracking-wider text-white/40">Step 2 — Upload payment receipt</p>
+        {receipt ? (
+          <div className="mt-2 overflow-hidden rounded-2xl border border-emerald-400/30 bg-black/25 p-4">
+            <div className="flex items-center gap-3">
+              {receipt.previewUrl ? (
+                <img
+                  src={receipt.previewUrl}
+                  alt="Receipt preview"
+                  className="h-16 w-16 shrink-0 rounded-xl border border-white/10 object-cover"
+                />
+              ) : (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-purple-500/15">
+                  <FileText className="h-7 w-7 text-purple-300" />
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-white/90">{receipt.name}</p>
+                <p className="text-xs text-white/50">{formatBytes(receipt.size)} · ready to submit</p>
+              </div>
+              <button
+                type="button"
+                onClick={removeReceipt}
+                aria-label="Remove receipt"
+                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-red-400/30 bg-red-500/10 text-red-400 transition-all duration-200 hover:bg-red-500/20 active:scale-95"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => inputRef.current?.click()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click();
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={handleDrop}
+            className={`mt-2 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-8 text-center transition-all duration-300 ${
+              dragging
+                ? 'border-purple-400/70 bg-purple-500/15 shadow-[0_0_25px_rgba(168,85,247,0.35)] scale-[1.02]'
+                : 'border-white/15 bg-white/5 hover:border-purple-400/40 hover:bg-purple-500/10'
+            }`}
+          >
+            <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-white/5 ${dragging ? 'animate-bounce text-purple-300' : 'text-purple-300'}`}>
+              {stage === 'UPLOADING' ? <LoaderCircle className="h-7 w-7 animate-spin" /> : <UploadCloud className="h-7 w-7" />}
+            </div>
+            {stage === 'UPLOADING' ? (
+              <p className="text-sm font-semibold text-purple-200">Uploading receipt…</p>
+            ) : (
+              <p className="text-sm font-semibold text-white/80">
+                <span className="text-purple-300">Drag &amp; drop</span> your receipt here, or{' '}
+                <span className="text-purple-300 underline">browse</span>
+              </p>
+            )}
+            <p className="text-xs text-white/45">JPG · PNG · PDF — max 5MB</p>
+            <input
+              ref={inputRef}
+              id={inputId}
+              type="file"
+              accept=".jpg,.jpeg,.png,.pdf"
+              onChange={handleFileInput}
+              disabled={stage === 'UPLOADING'}
+              className="hidden"
+            />
+          </div>
         )}
 
-        <label className="flex items-start gap-3 cursor-pointer select-none">
+        {stage === 'UPLOADING' && (
+          <div className="mt-2 flex items-center gap-2">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-400 transition-all duration-200"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <span className="w-10 text-right text-[11px] font-semibold text-purple-200">{progress}%</span>
+          </div>
+        )}
+      </div>
+
+{/* Integrity consent */}
+      <div className="relative">
+        <p className="text-[11px] uppercase tracking-wider text-white/40">Step 3 — Confirm &amp; submit</p>
+        <label className="mt-2 flex cursor-pointer select-none items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5 transition-colors hover:border-purple-400/30">
           <input
             type="checkbox"
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
-            className="w-5 h-5 accent-emerald-500"
+            className="peer sr-only"
           />
-          <span className="text-sm text-white/70">
-            I confirm I have transferred <strong className="text-bio-emerald">IDR {SEMIFINAL_PAYMENT.amount}</strong>{' '}
-            to <strong>{SEMIFINAL_PAYMENT.bank}</strong> ({SEMIFINAL_PAYMENT.accountHolder}) and the receipt above is accurate.
+          {/* Custom fluid checkbox */}
+          <span
+            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition-all duration-300 ${
+              agreed
+                ? 'border-emerald-400 bg-gradient-to-br from-emerald-400 to-teal-400 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
+                : 'border-white/30 bg-white/5'
+            }`}
+          >
+            {agreed && <Check className="h-4 w-4 text-black" strokeWidth={3} />}
+          </span>
+          <span className="text-[13px] leading-snug text-white/75">
+            I confirm I have transferred <strong className="text-emerald-300">{SEMIFINAL_PAYMENT.amountLabel}</strong> to{' '}
+            <strong className="text-white">{SEMIFINAL_PAYMENT.bank}</strong> ({SEMIFINAL_PAYMENT.accountHolder}), that the
+            receipt above is accurate, and I agree to abide by the <strong>competition rules &amp; timeline schedule</strong>.
           </span>
         </label>
-
-        {message && (
-          <div className={`px-4 py-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-bio-emerald/10 border border-bio-emerald/50 text-bio-emerald' : 'bg-red-500/10 border border-red-500/50 text-red-400'}`}>
-            {message.text}
-          </div>
-        )}
-
-        <button
-          onClick={handleSubmit}
-          disabled={submitting || !paymentProofUrl || !agreed}
-          className="btn-glow w-full disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-transform"
-        >
-          {submitting ? 'Submitting...' : 'Submit Re-registration'}
-        </button>
       </div>
+
+      {message && (
+        <div
+          className={`flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm ${
+            message.type === 'success'
+              ? 'border border-emerald-400/40 bg-emerald-500/10 text-emerald-300'
+              : 'border border-red-400/40 bg-red-500/10 text-red-300'
+          }`}
+        >
+          <span className="text-base">{message.type === 'success' ? '✅' : '⚠️'}</span>
+          <span className="flex-1">{message.text}</span>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={handleSubmit}
+        disabled={!receipt || !agreed || stage === 'SUBMITTED'}
+        className="btn-glow w-full disabled:cursor-not-allowed disabled:opacity-50 disabled:brightness-90"
+      >
+        {stage === 'SUBMITTED' ? 'Submitting…' : 'Submit Re-Registration'}
+      </button>
+
+      {/* PENDING_VERIFICATION state (shown after a successful POST, pre-refresh). */}
+      {stage === 'SUBMITTED' && (
+        <div className="relative flex items-center gap-3 rounded-2xl border border-amber-400/30 bg-amber-500/10 p-4">
+          <span className="relative flex h-3 w-3">
+            <span className="absolute h-full w-full animate-ping rounded-full bg-amber-400/70" />
+            <span className="relative h-3 w-3 rounded-full bg-amber-400" />
+          </span>
+          <p className="text-sm text-amber-200">
+            <span className="font-semibold">Verification in Progress by Admin</span>
+            <span className="mt-0.5 block text-xs text-amber-200/80">est. 1×24 hours — we&apos;ll notify you by email.</span>
+          </p>
+        </div>
+      )}
+
+      <a
+        href={SEMIFINAL_WHATSAPP_LINK}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-3 rounded-xl border border-emerald-400/25 bg-emerald-500/10 p-4 transition hover:bg-emerald-500/15"
+      >
+        <span className="text-2xl">💬</span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold text-emerald-300">Join {SEMIFINAL_WHATSAPP_LABEL}</span>
+          <span className="block text-xs text-white/60">Official invitation for participant queries &amp; updates.</span>
+        </span>
+        <span className="text-emerald-300">→</span>
+      </a>
+
+      {SEMIFINAL_TEMPLATE_LINK && (
+        <p className="text-xs text-white/50">
+          Official full-paper template:{' '}
+          <a href={SEMIFINAL_TEMPLATE_LINK} target="_blank" rel="noopener noreferrer" className="text-bio-emerald hover:underline">
+            {SEMIFINAL_TEMPLATE_LINK}
+          </a>
+        </p>
+      )}
     </div>
   );
 }
