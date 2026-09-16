@@ -49,7 +49,7 @@ export const TIMELINE_DATA = [
   {
     id: '6',
     phase: 'Semifinal',
-    date: '9 Sep – 14 Sep 2026',
+    date: '9 Sep – 16 Sep 2026',
     title: 'SPC & NEC Semifinalist Re-registration',
     desc: 'Semifinalist Re-registration Stage – Fee: IDR 150k • IMD Official Website',
     branch: 'SPC & NEC',
