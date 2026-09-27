@@ -24,8 +24,8 @@ interface Rereg {
 
 const TRACK_LABEL: Record<CompetitionType, { label: string; emoji: string }> = {
   OLYMPIAD: { label: 'Olympiad', emoji: '🏅' },
-  SPC: { label: 'Startup Pitch Competition', emoji: '🚀' },
-  NEC: { label: 'National Engineering Competition', emoji: '⚙️' },
+  SPC: { label: 'Science Project Competition', emoji: '🚀' },
+  NEC: { label: 'National Essay Competition', emoji: '⚙️' },
 };
 
 type StepState = 'done' | 'current' | 'upcoming';
@@ -74,9 +74,7 @@ export function SemifinalModule({ team }: { team: DashboardTeam }) {
 
 return (
     <>
-      {celebrate && status !== 'LOADING' && (
-        <ConfettiCelebration active={celebrate} encore encoreDelay={4500} />
-      )}
+      {celebrate && status !== 'LOADING' && <ConfettiCelebration active={celebrate} />}
 
       <div
         id="semifinal-module"
