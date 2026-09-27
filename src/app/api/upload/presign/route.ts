@@ -39,24 +39,51 @@ export async function POST(req: NextRequest) {
     const ext = '.' + (filename.split('.').pop() || '').toLowerCase();
     const EXT_TO_MIME: Record<string, string> = {
       '.pdf': 'application/pdf',
+      '.doc': 'application/msword',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       '.png': 'image/png',
       '.jpg': 'image/jpeg',
       '.jpeg': 'image/jpeg',
+      '.mp4': 'video/mp4',
+      '.mov': 'video/quicktime',
+      '.webm': 'video/webm',
     };
     if (!contentType && EXT_TO_MIME[ext]) {
       contentType = EXT_TO_MIME[ext];
     }
 
-    // Validate file type (allow image/jpg alias some browsers send)
-    const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
-    if (!allowedTypes.includes(contentType)) {
+    // Validate file type (allow image/jpg alias some browsers send).
+    // DOCX + video extensions added for SPC semifinal (full paper + elevator pitch).
+    // NOTE: video uploads via this endpoint are capped at 50MB; prefer a YouTube/Drive
+    // link for larger elevator-pitch videos (no code change needed — it's just a URL field).
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/octet-stream', // fallback when browser sends no mime (we trust extension below)
+      'image/png',
+      'image/jpeg',
+      'image/jpg',
+      'video/mp4',
+      'video/webm',
+      'video/quicktime',
+    ];
+    const looksLikeDocx =
+      ext === '.docx' &&
+      (contentType === 'application/zip' ||
+        contentType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    if (!allowedTypes.includes(contentType) && !looksLikeDocx) {
       return NextResponse.json(
-        { error: 'Only PDF, JPG, JPEG, and PNG files are allowed.' },
+        { error: 'Only PDF, DOC/DOCX, JPG, JPEG, PNG, MP4, MOV, and WEBM files are allowed.' },
         { status: 400 }
       );
     }
-    // Normalise alias for storage
+    // Normalise aliases for storage
     if (contentType === 'image/jpg') contentType = 'image/jpeg';
+    if (contentType === 'application/octet-stream' && EXT_TO_MIME[ext]) contentType = EXT_TO_MIME[ext];
+    if (contentType === 'application/zip' && ext === '.docx') {
+      contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    }
 
     // Read raw body as ArrayBuffer
     const fileBuffer = await req.arrayBuffer();
@@ -69,9 +96,15 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (fileBuffer.byteLength > 5 * 1024 * 1024) {
+    // Validate file size: 5MB default, 10MB for documents, 50MB for video.
+    // (Route-level; the FileUpload component enforces the same caps client-side.)
+    const isVideo = contentType.startsWith('video/') || ['.mp4', '.mov', '.webm'].includes(ext);
+    const isDoc = ['.pdf', '.doc', '.docx'].includes(ext);
+    const maxBytes = isVideo ? 50 * 1024 * 1024 : isDoc ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+    const maxLabel = isVideo ? '50MB' : isDoc ? '10MB' : '5MB';
+    if (fileBuffer.byteLength > maxBytes) {
       return NextResponse.json(
-        { error: 'Maximum file size is 5MB.' },
+        { error: `Maximum file size is ${maxLabel}.` },
         { status: 400 }
       );
     }

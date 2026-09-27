@@ -99,24 +99,33 @@ export async function POST(req: Request) {
       },
     });
 
-    await syncSubmissionToSheet({
-      id: submission.id,
-      teamId: team.id,
-      teamName: team.teamName,
-      competitionType: team.competitionType,
-      captainEmail: team.captain?.email,
-      phase: 'SEMIFINAL',
-      status: 'PENDING',
-      proposalUrl: submission.proposalUrl,
-      videoPitchUrl: submission.videoPitchUrl,
-      fullPaperUrl: submission.fullPaperUrl,
-      posterUrl: submission.posterUrl,
-      pitchDeckUrl: submission.pitchDeckUrl,
-      notes: submission.notes,
-      reviewedById: submission.reviewedById,
-      reviewedAt: submission.reviewedAt,
-      createdAt: submission.createdAt,
-      updatedAt: submission.updatedAt,
+    await Promise.race([
+      syncSubmissionToSheet({
+        id: submission.id,
+        teamId: team.id,
+        teamName: team.teamName,
+        competitionType: team.competitionType,
+        captainId: team.captainId,
+        captainName: team.captain?.name,
+        captainEmail: team.captain?.email,
+        institution: (team.captain as { institution?: string | null })?.institution,
+        phase: 'SEMIFINAL',
+        status: 'PENDING',
+        proposalUrl: submission.proposalUrl,
+        videoPitchUrl: submission.videoPitchUrl,
+        fullPaperUrl: submission.fullPaperUrl,
+        posterUrl: submission.posterUrl,
+        pitchDeckUrl: submission.pitchDeckUrl,
+        notes: submission.notes,
+        reviewedById: submission.reviewedById,
+        reviewedAt: submission.reviewedAt,
+        createdAt: submission.createdAt,
+        updatedAt: submission.updatedAt,
+      }),
+      // Non-blocking: timeout 8 dtk — Sheets gagal/timeout tidak boleh menggagalkan user.
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Sheets sync timeout')), 8000)),
+    ]).catch((sheetsError) => {
+      console.error('Sheets sync failed (non-blocking) for semifinal submission', submission.id, sheetsError);
     });
 
     return NextResponse.json({

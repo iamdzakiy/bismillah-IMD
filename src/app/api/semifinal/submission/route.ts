@@ -10,7 +10,9 @@ import { syncSubmissionToSheet } from '@/lib/google-sheets';
 
 const submissionSchema = z.object({
   teamId: z.string(),
+  // Full Paper: URL hasil upload Supabase (PDF/DOCX). Validasi ekstensi dilakukan di bawah.
   fullPaperUrl: z.string().url().optional(),
+  // Elevator Pitch (SPC only): URL video YouTube/Drive ATAU URL file hasil upload (mp4/mov/webm).
   videoPitchUrl: z.string().url().optional(),
 });
 
@@ -33,6 +35,7 @@ export async function POST(req: Request) {
       where: { id: teamId },
       include: { captain: true, semifinalRegistration: true },
     });
+    const isSPC = team?.competitionType === 'SPC';
 
     if (!team) return NextResponse.json({ error: 'Team not found' }, { status: 404 });
     if (team.captainId !== session.user.id) {
@@ -67,7 +70,47 @@ export async function POST(req: Request) {
     }
 
     if (!fullPaperUrl) {
-      return NextResponse.json({ error: 'The full paper (PDF) is required.' }, { status: 400 });
+      return NextResponse.json({ error: 'The full paper (PDF/DOCX) is required.' }, { status: 400 });
+    }
+
+    // Validasi ekstensi Full Paper: hanya PDF/DOCX (URL upload Supabase mengandung path file).
+    const paperPath = fullPaperUrl.split('?')[0].toLowerCase();
+    if (!paperPath.endsWith('.pdf') && !paperPath.endsWith('.docx') && !paperPath.endsWith('.doc')) {
+      return NextResponse.json(
+        { error: 'Full Paper must be a PDF or DOCX file (max 10MB).' },
+        { status: 400 }
+      );
+    }
+
+    // === SPC ONLY: Elevator Pitch wajib (video link YouTube/Drive atau file mp4/mov/webm) ===
+    let normalizedPitchUrl: string | undefined = videoPitchUrl?.trim() || undefined;
+    if (isSPC) {
+      if (!normalizedPitchUrl) {
+        return NextResponse.json(
+          { error: 'SPC semifinal requires both Full Paper and Elevator Pitch video.' },
+          { status: 400 }
+        );
+      }
+      try {
+        const u = new URL(normalizedPitchUrl);
+        if (u.protocol !== 'http:' && u.protocol !== 'https:') throw new Error('bad protocol');
+        const host = u.hostname.toLowerCase();
+        const videoHosts = ['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com', 'drive.google.com', 'docs.google.com'];
+        const isVideoHost = videoHosts.some((h) => host === h || host.endsWith('.' + h));
+        const isVideoFile = /\.(mp4|mov|webm)(\?|#|$)/i.test(u.pathname);
+        const isStorageUrl = host.includes('supabase');
+        if (!isVideoHost && !isVideoFile && !isStorageUrl) {
+          return NextResponse.json(
+            { error: 'Elevator Pitch must be a YouTube / Google Drive link or an uploaded MP4/MOV/WEBM video.' },
+            { status: 400 }
+          );
+        }
+      } catch {
+        return NextResponse.json({ error: 'Elevator Pitch URL is not valid.' }, { status: 400 });
+      }
+    } else {
+      // Non-SPC: abaikan videoPitchUrl jika dikirim (NEC semifinal = full paper saja).
+      normalizedPitchUrl = undefined;
     }
 
     const existing = await prisma.submission.findFirst({
@@ -86,30 +129,43 @@ export async function POST(req: Request) {
         teamId,
         phase: 'SEMIFINAL',
         fullPaperUrl,
-        videoPitchUrl,
+        videoPitchUrl: normalizedPitchUrl,
         status: 'PENDING',
       },
     });
 
-    await syncSubmissionToSheet({
-      id: submission.id,
-      teamId: team.id,
-      teamName: team.teamName,
-      competitionType: team.competitionType,
-      captainEmail: team.captain?.email,
-      phase: 'SEMIFINAL',
-      status: 'PENDING',
-      proposalUrl: submission.proposalUrl,
-      videoPitchUrl: submission.videoPitchUrl,
-      fullPaperUrl: submission.fullPaperUrl,
-      posterUrl: submission.posterUrl,
-      pitchDeckUrl: submission.pitchDeckUrl,
-      notes: submission.notes,
-      reviewedById: submission.reviewedById,
-      reviewedAt: submission.reviewedAt,
-      createdAt: submission.createdAt,
-      updatedAt: submission.updatedAt,
-    });
+    // Google Sheets sync: non-blocking — kegagalan/timeout Sheets TIDAK boleh
+    // menggagalkan submission user. Bungkus try-catch + timeout race.
+    try {
+      await Promise.race([
+        syncSubmissionToSheet({
+          id: submission.id,
+          teamId: team.id,
+          teamName: team.teamName,
+          competitionType: team.competitionType,
+          captainId: team.captainId,
+          captainName: team.captain?.name,
+          captainEmail: team.captain?.email,
+          institution: (team.captain as { institution?: string | null })?.institution,
+          phase: 'SEMIFINAL',
+          status: 'PENDING',
+          proposalUrl: submission.proposalUrl,
+          videoPitchUrl: submission.videoPitchUrl,
+          fullPaperUrl: submission.fullPaperUrl,
+          posterUrl: submission.posterUrl,
+          pitchDeckUrl: submission.pitchDeckUrl,
+          notes: submission.notes,
+          reviewedById: submission.reviewedById,
+          reviewedAt: submission.reviewedAt,
+          createdAt: submission.createdAt,
+          updatedAt: submission.updatedAt,
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Sheets sync timeout')), 8000)),
+      ]);
+    } catch (sheetsError) {
+      // Log saja — submission DB sudah tersimpan dan response tetap success.
+      console.error('Sheets sync failed (non-blocking) for semifinal submission', submission.id, sheetsError);
+    }
 
     return NextResponse.json({
       success: true,

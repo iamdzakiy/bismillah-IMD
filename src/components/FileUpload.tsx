@@ -7,13 +7,17 @@ interface FileUploadProps {
   accept?: string;
   onUpload: (url: string) => void;
   teamId?: string;
+  allowedExtensions?: string[];
+  allowedMimeTypes?: string[];
+  maxSizeMB?: number;
+  hint?: string;
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB max
-const ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
-const ALLOWED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg'];
+const DEFAULT_MAX_MB = 5;
+const DEFAULT_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg'];
+const DEFAULT_MIMES = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
 
-export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload, teamId }: FileUploadProps) {
+export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload, teamId, allowedExtensions = DEFAULT_EXTENSIONS, allowedMimeTypes = DEFAULT_MIMES, maxSizeMB = DEFAULT_MAX_MB, hint }: FileUploadProps) {
   const inputId = useId();
   const [uploading, setUploading] = useState(false);
   const [fileName, setFileName] = useState<string>('');
@@ -25,19 +29,34 @@ export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload, t
 
     setError('');
 
-    // Validate file type
+    // Validate file type by extension (reliable for docx/video renames)
     const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
-    if (!ALLOWED_EXTENSIONS.includes(fileExt)) {
+    const allowedLower = allowedExtensions.map((x) => x.toLowerCase());
+    if (!allowedLower.includes(fileExt)) {
       setFileName('');
-      setError('Only PDF, JPG, JPEG, and PNG files are allowed.');
+      setError(`Only ${allowedExtensions.join(', ').toUpperCase()} files are allowed.`);
       e.target.value = '';
       return;
     }
 
-    // Validate file size (5MB max)
-    if (file.size > MAX_FILE_SIZE) {
+    // Light mime check: only reject when browser reports a type AND it mismatches.
+    // Video family is accepted interchangeably (mp4/webm/quicktime).
+    if (file.type && allowedMimeTypes.length > 0 && !allowedMimeTypes.includes(file.type.toLowerCase())) {
+      const isVideoFamily =
+        file.type.toLowerCase().startsWith('video/') &&
+        allowedMimeTypes.some((m) => m.toLowerCase().startsWith('video/'));
+      if (!isVideoFamily) {
+        setFileName('');
+        setError(`File type "${file.type}" is not allowed. Allowed: ${allowedExtensions.join(', ')}`);
+        e.target.value = '';
+        return;
+      }
+    }
+
+    // Validate file size
+    if (file.size > maxSizeMB * 1024 * 1024) {
       setFileName('');
-      setError('Maximum file size is 5MB.');
+      setError(`Maximum file size is ${maxSizeMB}MB.`);
       e.target.value = '';
       return;
     }
@@ -52,7 +71,7 @@ export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload, t
       const res = await fetch(`/api/upload/presign?filename=${filename}`, {
         method: 'POST',
         headers: {
-          'Content-Type': file.type,
+          'Content-Type': file.type || 'application/octet-stream',
         },
         body: await file.arrayBuffer(),
       });
@@ -89,7 +108,7 @@ export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload, t
           <p className="text-white/70 text-sm font-medium">
             {uploading ? 'Uploading...' : fileName || 'Click to upload'}
           </p>
-          <p className="text-xs text-white/30 mt-1">PDF, JPG, JPEG, PNG (Max 5MB)</p>
+          <p className="text-xs text-white/30 mt-1">{hint ?? `${allowedExtensions.join(', ').toUpperCase()} (Max ${maxSizeMB}MB)`}</p>
         </label>
       </div>
       {error && <p className="text-red-400 text-xs mt-2">{error}</p>}

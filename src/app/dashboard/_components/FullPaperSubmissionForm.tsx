@@ -15,18 +15,57 @@ interface FullPaperSubmissionFormProps {
 
 export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) {
   const router = useRouter();
+  const isSPC = team.competitionType === 'SPC';
   const [fullPaperUrl, setFullPaperUrl] = useState('');
+  const [elevatorPitchUrl, setElevatorPitchUrl] = useState('');
+  const [pitchMode, setPitchMode] = useState<'link' | 'upload'>('link');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
   const existing = team.submissions?.find((s) => s.phase === 'SEMIFINAL');
 
+  // Elevator Pitch hanya untuk SPC: terima URL YouTube / Drive (unlisted ok) atau file video.
+  const isValidPitchUrl = (url: string) => {
+    try {
+      const u = new URL(url.trim());
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+      const host = u.hostname.toLowerCase();
+      const allowedHosts = [
+        'youtube.com',
+        'www.youtube.com',
+        'youtu.be',
+        'm.youtube.com',
+        'drive.google.com',
+        'docs.google.com',
+      ];
+      // Izinkan host video umum + link file storage (mis. supabase) hasil upload.
+      if (allowedHosts.some((h) => host === h || host.endsWith('.' + h))) return true;
+      // Fallback: izinkan URL https apapun yang tampak seperti file video / public link storage.
+      return /\.(mp4|mov|webm)(\?|#|$)/i.test(u.pathname) || host.includes('supabase');
+    } catch {
+      return false;
+    }
+  };
+
   const handleSubmit = async () => {
     setMessage(null);
     if (!fullPaperUrl) {
-      setMessage({ type: 'error', text: 'Please upload your full paper (PDF) before submitting.' });
+      setMessage({ type: 'error', text: 'Please upload your full paper (PDF/DOCX) before submitting.' });
       return;
+    }
+    if (isSPC) {
+      if (!elevatorPitchUrl) {
+        setMessage({ type: 'error', text: 'SPC teams must also provide an Elevator Pitch (video link or uploaded video).' });
+        return;
+      }
+      if (!isValidPitchUrl(elevatorPitchUrl)) {
+        setMessage({
+          type: 'error',
+          text: 'Elevator Pitch link is not valid. Use a YouTube / Google Drive (unlisted) link or upload an MP4/MOV/WEBM video (max 50MB).',
+        });
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -34,7 +73,12 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
       const res = await fetch('/api/semifinal/submission', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teamId: team.id, fullPaperUrl }),
+        body: JSON.stringify({
+          teamId: team.id,
+          fullPaperUrl,
+          // Elevator Pitch hanya dikirim untuk SPC; NEC/tim lain tidak mengirim field ini.
+          ...(isSPC ? { videoPitchUrl: elevatorPitchUrl.trim() } : {}),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Submission failed');
@@ -69,7 +113,9 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
 
       <div className="rounded-xl glass p-5 space-y-5">
         <p className="text-xs text-white/40">
-          Upload your complete full paper as a single PDF using the official template.
+          {isSPC
+            ? 'SPC Semifinal: upload your Full Paper (PDF/DOCX, max 10MB) + Elevator Pitch video (link or file upload).'
+            : 'Upload your complete full paper as a single PDF/DOCX (max 10MB) using the official template.'}
         </p>
         {SEMIFINAL_TEMPLATE_LINK && (
           <p className="text-xs text-white/50">
@@ -80,7 +126,83 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
           </p>
         )}
 
-        <FileUpload label="Full Paper (PDF, max 5MB)" accept=".pdf" onUpload={(url) => setFullPaperUrl(url)} />
+        <FileUpload
+          label="Full Paper (PDF/DOCX, max 10MB)"
+          accept=".pdf,.doc,.docx"
+          allowedExtensions={['.pdf', '.doc', '.docx']}
+          allowedMimeTypes={[
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/zip',
+            'application/octet-stream',
+          ]}
+          maxSizeMB={10}
+          onUpload={(url) => setFullPaperUrl(url)}
+        />
+        {fullPaperUrl && (
+          <p className="text-xs text-emerald-300 break-all">
+            ✅ Full Paper uploaded: <a href={fullPaperUrl} target="_blank" rel="noopener noreferrer" className="underline">{fullPaperUrl}</a>
+          </p>
+        )}
+
+        {/* === Elevator Pitch: HANYA untuk SPC (kondisional) === */}
+        {isSPC && (
+          <div className="rounded-xl border border-fuchsia-400/25 bg-fuchsia-500/5 p-4 space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🎤</span>
+              <h5 className="text-sm font-bold text-fuchsia-300">Elevator Pitch (SPC only — required)</h5>
+            </div>
+            <p className="text-xs text-white/50">
+              3–5 minute pitch. Choose one: paste an <strong>unlisted YouTube / Google Drive link</strong>, or upload{' '}
+              <strong>MP4 / MOV / WEBM (max 50MB)</strong>.
+            </p>
+            <div className="flex gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => setPitchMode('link')}
+                className={`flex-1 rounded-lg px-3 py-2 font-semibold transition ${pitchMode === 'link' ? 'bg-fuchsia-500/30 text-fuchsia-200 border border-fuchsia-400/40' : 'bg-white/5 text-white/50 border border-white/10 hover:bg-white/10'}`}
+              >
+                🔗 Video Link
+              </button>
+              <button
+                type="button"
+                onClick={() => setPitchMode('upload')}
+                className={`flex-1 rounded-lg px-3 py-2 font-semibold transition ${pitchMode === 'upload' ? 'bg-fuchsia-500/30 text-fuchsia-200 border border-fuchsia-400/40' : 'bg-white/5 text-white/50 border border-white/10 hover:bg-white/10'}`}
+              >
+                📤 Upload Video
+              </button>
+            </div>
+            {pitchMode === 'link' ? (
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-2">Elevator Pitch URL</label>
+                <input
+                  type="url"
+                  value={elevatorPitchUrl}
+                  onChange={(e) => setElevatorPitchUrl(e.target.value)}
+                  placeholder="https://youtu.be/... atau https://drive.google.com/..."
+                  className="w-full rounded-xl border border-white/15 bg-black/30 px-4 py-3 text-sm text-white placeholder:text-white/25 focus:border-fuchsia-400/60 focus:outline-none"
+                />
+                <p className="mt-1 text-[11px] text-white/35">Accepted: youtube.com / youtu.be / drive.google.com (unlisted OK).</p>
+              </div>
+            ) : (
+              <FileUpload
+                label="Elevator Pitch Video (MP4/MOV/WEBM, max 50MB)"
+                accept=".mp4,.mov,.webm,video/mp4,video/webm,video/quicktime"
+                allowedExtensions={['.mp4', '.mov', '.webm']}
+                allowedMimeTypes={['video/mp4', 'video/webm', 'video/quicktime', 'application/octet-stream']}
+                maxSizeMB={50}
+                hint="MP4, MOV, WEBM (Max 50MB) — larger? use YouTube/Drive link above"
+                onUpload={(url) => setElevatorPitchUrl(url)}
+              />
+            )}
+            {elevatorPitchUrl && (
+              <p className="text-xs text-emerald-300 break-all">
+                ✅ Elevator Pitch ready: <a href={elevatorPitchUrl} target="_blank" rel="noopener noreferrer" className="underline">{elevatorPitchUrl}</a>
+              </p>
+            )}
+          </div>
+        )}
 
         {message && (
           <div className={`px-4 py-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-bio-emerald/10 border border-bio-emerald/50 text-bio-emerald' : 'bg-red-500/10 border border-red-500/50 text-red-400'}`}>
@@ -90,10 +212,10 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
 
         <button
           onClick={handleSubmit}
-          disabled={submitting || !fullPaperUrl}
+          disabled={submitting || !fullPaperUrl || (isSPC && !elevatorPitchUrl)}
           className="btn-glow w-full disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-transform"
         >
-          {submitting ? 'Submitting...' : 'Submit Full Paper'}
+          {submitting ? 'Submitting...' : isSPC ? 'Submit Full Paper + Elevator Pitch' : 'Submit Full Paper'}
         </button>
       </div>
 

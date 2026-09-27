@@ -225,13 +225,25 @@ export async function syncRegistrationToSheet(registration: {
 
 // ============================================================
 // SUBMISSIONS SHEET — all columns from Submission model
+// Header tab "Submissions" (urutan kolom — JANGAN ubah urutan lama):
+// A SyncTimestamp | B SubmissionID | C TeamID | D TeamName | E CompetitionType(Kategori)
+// | F CaptainEmail | G Phase | H Status | I ProposalURL | J VideoPitchURL(ElevatorPitch)
+// | K FullPaperURL | L PosterURL | M PitchDeckURL | N Notes
+// | O ReviewedByID | P ReviewedAt | Q CreatedAt(Timestamp Submission) | R UpdatedAt
+// | S CaptainID(baru) | T CaptainName/Ketua(baru) | U Institution(baru)
+// Kolom S–U di-APPEND di akhir agar baris lama tetap sejajar (backward-compatible).
+// Untuk alur SPC Semifinal, kolom yang dipetakan: C TeamID, D Nama Tim, T Ketua,
+// F Email, E Kategori("SPC"), J Elevator Pitch, K Full Paper, Q Timestamp Submission.
 // ============================================================
 export async function syncSubmissionToSheet(submission: {
   id: string;
   teamId?: string | null;
   teamName?: string | null;
   competitionType?: string | null;
+  captainId?: string | null;
+  captainName?: string | null;
   captainEmail?: string | null;
+  institution?: string | null;
   phase?: string | null;
   status?: string | null;
   proposalUrl?: string | null;
@@ -246,25 +258,31 @@ export async function syncSubmissionToSheet(submission: {
   updatedAt?: Date | string;
 }) {
   const values = [
-    new Date().toISOString(), // sync timestamp
-    submission.id,
-    submission.teamId ?? '',
-    submission.teamName ?? '',
-    submission.competitionType ?? '',
-    submission.captainEmail ?? '',
-    submission.phase ?? '',
-    submission.status ?? '',
-    submission.proposalUrl ?? '',
-    submission.videoPitchUrl ?? '',
-    submission.fullPaperUrl ?? '',
-    submission.posterUrl ?? '',
-    submission.pitchDeckUrl ?? '',
-    submission.notes ?? '',
-    submission.reviewedById ?? '',
-    submission.reviewedAt ? new Date(submission.reviewedAt).toISOString() : '',
-    submission.createdAt ? new Date(submission.createdAt).toISOString() : '',
-    submission.updatedAt ? new Date(submission.updatedAt).toISOString() : '',
+    new Date().toISOString(), // A sync timestamp
+    submission.id, // B
+    submission.teamId ?? '', // C TeamID
+    submission.teamName ?? '', // D Nama Tim
+    submission.competitionType ?? '', // E Kategori
+    submission.captainEmail ?? '', // F Email
+    submission.phase ?? '', // G
+    submission.status ?? '', // H
+    submission.proposalUrl ?? '', // I
+    submission.videoPitchUrl ?? '', // J Elevator Pitch
+    submission.fullPaperUrl ?? '', // K Full Paper
+    submission.posterUrl ?? '', // L
+    submission.pitchDeckUrl ?? '', // M
+    submission.notes ?? '', // N
+    submission.reviewedById ?? '', // O
+    submission.reviewedAt ? new Date(submission.reviewedAt).toISOString() : '', // P
+    submission.createdAt ? new Date(submission.createdAt).toISOString() : '', // Q Timestamp Submission
+    submission.updatedAt ? new Date(submission.updatedAt).toISOString() : '', // R
+    // --- kolom baru (append di akhir, backward-compatible) ---
+    submission.captainId ?? '', // S CaptainID
+    submission.captainName ?? '', // T Ketua
+    submission.institution ?? '', // U Institution
   ];
 
+  // Non-blocking di sisi pemanggil: appendToSheet sudah try-catch internal
+  // (return undefined saat gagal) sehingga tidak melempar ke API route.
   await appendToSheet('Submissions', values);
 }
