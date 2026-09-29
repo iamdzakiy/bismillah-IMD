@@ -192,7 +192,7 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
                 allowedExtensions={['.mp4', '.mov', '.webm']}
                 allowedMimeTypes={['video/mp4', 'video/webm', 'video/quicktime', 'application/octet-stream']}
                 maxSizeMB={50}
-                hint="MP4, MOV, WEBM (Max 50MB) — larger? use YouTube/Drive link above"
+                hint="MUST use Instagram link above"
                 onUpload={(url) => setElevatorPitchUrl(url)}
               />
             )}
