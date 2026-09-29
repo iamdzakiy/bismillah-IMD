@@ -154,7 +154,7 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
               <h5 className="text-sm font-bold text-fuchsia-300">Elevator Pitch (SPC only — required)</h5>
             </div>
             <p className="text-xs text-white/50">
-              3–5 minute pitch. Choose one: paste an <strong>unlisted YouTube / Google Drive link</strong>, or upload{' '}
+              2.5 -- 3 minute pitch. Choose one: paste an <strong>post on instagram as public and tag @imd.itb</strong>, or upload{' '}
               <strong>MP4 / MOV / WEBM (max 50MB)</strong>.
             </p>
             <div className="flex gap-2 text-xs">
