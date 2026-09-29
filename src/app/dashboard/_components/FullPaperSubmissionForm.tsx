@@ -154,8 +154,8 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
               <h5 className="text-sm font-bold text-fuchsia-300">Elevator Pitch (SPC only — required)</h5>
             </div>
             <p className="text-xs text-white/50">
-              2.5 -- 3 minute pitch. Choose one: paste an <strong>post on instagram as public and tag @imd.itb</strong>, or upload{' '}
-              <strong>MP4 / MOV / WEBM (max 50MB)</strong>.
+              2.5 -- 3 minute pitch. Paste an <strong>post on instagram as public and tag @imd.itb</strong>, {' '}
+              <strong></strong>.
             </p>
             <div className="flex gap-2 text-xs">
               <button
@@ -180,10 +180,10 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
                   type="url"
                   value={elevatorPitchUrl}
                   onChange={(e) => setElevatorPitchUrl(e.target.value)}
-                  placeholder="https://youtu.be/... atau https://drive.google.com/..."
+                  placeholder="https://instagram.com/..."
                   className="w-full rounded-xl border border-white/15 bg-black/30 px-4 py-3 text-sm text-white placeholder:text-white/25 focus:border-fuchsia-400/60 focus:outline-none"
                 />
-                <p className="mt-1 text-[11px] text-white/35">Accepted: youtube.com / youtu.be / drive.google.com (unlisted OK).</p>
+                <p className="mt-1 text-[11px] text-white/35">Accepted: instagram.com (Public).</p>
               </div>
             ) : (
               <FileUpload
