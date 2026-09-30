@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
-import { isSubmissionOpen } from '@/lib/phase-utils';
 import { syncSubmissionToSheet } from '@/lib/google-sheets';
 
 const semifinalSchema = z.object({
@@ -64,12 +63,8 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!isSubmissionOpen(team.competitionType, 'semifinal')) {
-      return NextResponse.json(
-        { error: 'Semifinal submission period is closed.' },
-        { status: 400 }
-      );
-    }
+    // NOTE: semifinal submission window is intentionally NOT date-gated here —
+    // stays open with no deadline limit.
 
     const existing = await prisma.submission.findFirst({
       where: { teamId, phase: 'SEMIFINAL' },
