@@ -38,6 +38,7 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
         'm.youtube.com',
         'drive.google.com',
         'docs.google.com',
+        'instagram.com',
       ];
       // Izinkan host video umum + link file storage (mis. supabase) hasil upload.
       if (allowedHosts.some((h) => host === h || host.endsWith('.' + h))) return true;
