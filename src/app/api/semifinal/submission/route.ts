@@ -93,7 +93,7 @@ export async function POST(req: Request) {
         const u = new URL(normalizedPitchUrl);
         if (u.protocol !== 'http:' && u.protocol !== 'https:') throw new Error('bad protocol');
         const host = u.hostname.toLowerCase();
-        const videoHosts = ['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com', 'drive.google.com', 'docs.google.com'];
+        const videoHosts = ['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com', 'drive.google.com', 'docs.google.com', 'instagram.com'];
         const isVideoHost = videoHosts.some((h) => host === h || host.endsWith('.' + h));
         const isVideoFile = /\.(mp4|mov|webm)(\?|#|$)/i.test(u.pathname);
         const isStorageUrl = host.includes('supabase');
