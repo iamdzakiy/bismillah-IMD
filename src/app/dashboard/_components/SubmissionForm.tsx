@@ -1,5 +1,6 @@
 'use client';
 
+import { parseJsonSafe } from '@/lib/fetch-json';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileUpload } from '@/components/FileUpload';
@@ -58,7 +59,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
         body: JSON.stringify({ teamId: team.id, fileUrl: submittedUrl }),
       });
 
-      const data = await res.json();
+      const data: any = await parseJsonSafe(res);
       if (!res.ok) throw new Error(data.error || 'Submission failed');
 
       setSuccessMessage(data.message || 'Submission successful! 🎉');
@@ -92,7 +93,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
         }),
       });
 
-      const data = await res.json();
+      const data: any = await parseJsonSafe(res);
       if (!res.ok) throw new Error(data.error || 'Re-registration failed');
 
       setSuccessMessage('Re-registration successful! Please wait for approval. 🎉');
@@ -178,6 +179,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ pdfMergeUrl: fileUrl, status: 'DOCUMENT_SUBMITTED' }),
                       });
+                      const data: any = await parseJsonSafe(res);
                       if (res.ok) {
                         setSuccessMessage('Dokumen berhasil diupload ulang! Menunggu persetujuan admin.');
                         setShowSuccess(true);

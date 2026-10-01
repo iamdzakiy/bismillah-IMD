@@ -1,5 +1,6 @@
 'use client';
 
+import { parseJsonSafe } from '@/lib/fetch-json';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -63,7 +64,7 @@ export default function RegisterPage() {
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
+      const data: any = await parseJsonSafe(res);
       if (!res.ok) throw new Error(data.error || 'Registration failed');
 
       router.push('/verify-email?email=' + encodeURIComponent(formData.email));

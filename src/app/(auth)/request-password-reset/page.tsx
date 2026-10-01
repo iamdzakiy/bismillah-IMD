@@ -1,5 +1,6 @@
 'use client';
 
+import { parseJsonSafe } from '@/lib/fetch-json';
 import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -24,7 +25,7 @@ function RequestResetContent() {
         body: JSON.stringify({ email }),
       });
 
-      const data = await res.json();
+      const data: any = await parseJsonSafe(res);
       if (!res.ok) throw new Error(data.error || 'Request failed');
 
       setMessage('✅ If the account exists, a reset link has been sent to your email.');

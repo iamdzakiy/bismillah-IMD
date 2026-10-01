@@ -1,6 +1,7 @@
 'use client';
 
 import { useId, useState } from 'react';
+import { parseJsonSafe } from '@/lib/fetch-json';
 
 interface FileUploadProps {
   label: string;
@@ -65,18 +66,52 @@ export function FileUpload({ label, accept = '.pdf,.png,.jpg,.jpeg', onUpload, t
     setUploading(true);
 
     try {
+      // Strategy: direct-to-Supabase signed upload (no bytes through Vercel,
+      // so large files can't trigger "Request Entity Too Large" HTML that
+      // crashes res.json()). Fallback to legacy server upload for small files
+      // if signing fails on this deployment.
+      const filename = encodeURIComponent(file.name);
+      const mime = file.type || 'application/octet-stream';
+      const useDirect = file.size > 3.5 * 1024 * 1024;
+
+      if (useDirect) {
+        try {
+          const signRes = await fetch(`/api/upload/sign?filename=${filename}`, {
+            method: 'POST',
+          });
+          const signData = await parseJsonSafe<{ signedUrl: string; publicUrl: string; path: string }>(signRes);
+          if (!signRes.ok) throw new Error((signData as { error?: string }).error || 'Upload failed');
+
+          const putRes = await fetch(signData.signedUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': mime },
+            body: file,
+          });
+          if (!putRes.ok) {
+            const t = (await putRes.text().catch(() => '')).slice(0, 300);
+            throw new Error(t || `Direct upload failed (${putRes.status})`);
+          }
+          onUpload(signData.publicUrl);
+          return;
+        } catch (directErr) {
+          // Small-file fallback: legacy server upload below. Large files can't
+          // use it (Vercel body limit), so rethrow with a clear message.
+          if (file.size > 4 * 1024 * 1024) throw directErr;
+          console.warn('Direct upload failed, falling back to server upload:', directErr);
+        }
+      }
+
       // Upload file directly via raw binary body (server-side upload to Supabase)
       // Avoids Content-Type issues with FormData in middleware
-      const filename = encodeURIComponent(file.name);
       const res = await fetch(`/api/upload/presign?filename=${filename}`, {
         method: 'POST',
         headers: {
-          'Content-Type': file.type || 'application/octet-stream',
+          'Content-Type': mime,
         },
         body: await file.arrayBuffer(),
       });
 
-      const data = await res.json();
+      const data = await parseJsonSafe<{ publicUrl: string; error?: string }>(res);
       if (!res.ok) throw new Error(data.error || 'Upload failed');
 
       onUpload(data.publicUrl);

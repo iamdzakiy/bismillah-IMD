@@ -1,6 +1,7 @@
 // src/app/dashboard/_components/FullPaperSubmissionForm.tsx
 'use client';
 
+import { parseJsonSafe } from '@/lib/fetch-json';
 import { useState } from 'react';
 import { FileUpload } from '@/components/FileUpload';
 import { SuccessPopup } from '@/components/ui/SuccessPopup';
@@ -81,7 +82,7 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
           ...(isSPC ? { videoPitchUrl: elevatorPitchUrl.trim() } : {}),
         }),
       });
-      const data = await res.json();
+      const data: any = await parseJsonSafe(res);
       if (!res.ok) throw new Error(data.error || 'Submission failed');
 
       // 🎉🎉 2 confetti volleys on successful full-paper (akhir) submit.

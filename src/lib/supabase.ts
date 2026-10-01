@@ -101,3 +101,32 @@ export async function uploadFile(
     publicUrl,
   };
 }
+
+// Signed direct-upload: client PUTs bytes straight to Supabase Storage,
+// bypassing Vercel's ~4.5MB serverless body limit (the source of
+// "Request Entity Too Large" HTML that crashes res.json()).
+export async function createSignedUploadUrl(
+  fileName: string,
+  userId: string
+) {
+  const supabase = getSupabaseClient();
+  const fileExt = fileName.split('.').pop()?.toLowerCase()?.replace(/[^a-z0-9]/g, '') || 'bin';
+  const safePath = `${userId}/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${fileExt}`;
+  const bucket = getSupabaseBucket();
+
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .createSignedUploadUrl(safePath);
+
+  if (error) throw error;
+
+  const publicUrl = supabase.storage
+    .from(bucket)
+    .getPublicUrl(safePath).data.publicUrl;
+
+  return {
+    path: safePath,
+    signedUrl: data.signedUrl,
+    publicUrl,
+  };
+}

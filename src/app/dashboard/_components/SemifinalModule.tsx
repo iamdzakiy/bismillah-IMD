@@ -1,6 +1,7 @@
 // src/app/dashboard/_components/SemifinalModule.tsx
 'use client';
 
+import { parseJsonSafe } from '@/lib/fetch-json';
 import { useEffect, useState } from 'react';
 import { BadgeCheck, CheckCircle2, Clock3, Sparkles, Trophy } from 'lucide-react';
 import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
@@ -51,7 +52,7 @@ export function SemifinalModule({ team }: { team: DashboardTeam }) {
     (async () => {
       try {
         const res = await fetch(`/api/semifinal/registration?teamId=${team.id}`);
-        const data = await res.json();
+        const data: any = await parseJsonSafe(res);
         if (cancelled) return;
         if (res.ok && data.registration) {
           setRereg(data.registration);

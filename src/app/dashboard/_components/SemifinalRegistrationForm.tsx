@@ -1,6 +1,7 @@
 // src/app/dashboard/_components/SemifinalRegistrationForm.tsx
 'use client';
 
+import { parseJsonSafe } from '@/lib/fetch-json';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Check, FileText, LoaderCircle, Trash2, UploadCloud } from 'lucide-react';
 import { PaymentInstructionCard } from '@/components/ui/PaymentInstructionCard';
@@ -114,12 +115,35 @@ export function SemifinalRegistrationForm({ team }: SemifinalRegistrationFormPro
           : /\.png$/i.test(file.name)
             ? 'image/png'
             : 'image/jpeg';
+      const mime = file.type || extMime;
+      // Receipts are small, but route them through signed direct-upload too so
+      // a slow network / Vercel body rejection never surfaces as
+      // "Unexpected token 'R' ... is not valid JSON".
+      try {
+        const signRes = await fetch(`/api/upload/sign?filename=${filename}`, { method: 'POST' });
+        const signData: any = await parseJsonSafe(signRes);
+        if (!signRes.ok) throw new Error(signData.error || 'Upload failed');
+        const putRes = await fetch(signData.signedUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': mime },
+          body: file,
+        });
+        if (!putRes.ok) {
+          const t = (await putRes.text().catch(() => '')).slice(0, 300);
+          throw new Error(t || `Direct upload failed (${putRes.status})`);
+        }
+        setReceipt({ name: file.name, size: file.size, url: signData.publicUrl, previewUrl });
+        return;
+      } catch (directErr) {
+        if (file.size > 4 * 1024 * 1024) throw directErr;
+        console.warn('Direct upload failed, falling back to server upload:', directErr);
+      }
       const res = await fetch(`/api/upload/presign?filename=${filename}`, {
         method: 'POST',
-        headers: { 'Content-Type': file.type || extMime },
+        headers: { 'Content-Type': mime },
         body: await file.arrayBuffer(),
       });
-      const data = await res.json();
+      const data: any = await parseJsonSafe(res);
       if (!res.ok) throw new Error(data.error || 'Upload failed');
 
       setReceipt({ name: file.name, size: file.size, url: data.publicUrl, previewUrl });
@@ -173,7 +197,7 @@ export function SemifinalRegistrationForm({ team }: SemifinalRegistrationFormPro
           agreedToTerms: agreed,
         }),
       });
-      const data = await res.json();
+      const data: any = await parseJsonSafe(res);
       if (!res.ok) throw new Error(data.error || 'Re-registration failed');
 
       // 🎉🎉 2 confetti volleys on successful akhir submit: immediate + encore.

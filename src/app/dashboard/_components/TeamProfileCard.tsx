@@ -1,5 +1,6 @@
 'use client';
 
+import { parseJsonSafe } from '@/lib/fetch-json';
 import { useState } from 'react';
 import type { DashboardTeam } from './types';
 
@@ -37,7 +38,7 @@ export function TeamProfileCard({ team }: TeamProfileCardProps) {
     setDeleting(true);
     try {
       const res = await fetch(`/api/registrations/${team.registration.id}/delete`, { method: 'DELETE' });
-      const data = await res.json();
+      const data: any = await parseJsonSafe(res);
       if (!res.ok) throw new Error(data.error || 'Gagal menghapus registrasi');
       
       alert('Registrasi berhasil dihapus. Anda akan dialihkan ke halaman dashboard.');

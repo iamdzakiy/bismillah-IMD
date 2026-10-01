@@ -1,5 +1,6 @@
 'use client';
 
+import { parseJsonSafe } from '@/lib/fetch-json';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useState, Suspense } from 'react';
@@ -20,7 +21,7 @@ function VerifyEmailContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-      const data = await res.json();
+      const data: any = await parseJsonSafe(res);
       if (!res.ok) throw new Error(data.error);
       setMessage('✅ Verification email sent! Please check your inbox.');
     } catch (err) {

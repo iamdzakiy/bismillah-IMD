@@ -1,5 +1,6 @@
 'use client';
 
+import { parseJsonSafe } from '@/lib/fetch-json';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, Suspense, useEffect } from 'react';
 import Link from 'next/link';
@@ -37,7 +38,7 @@ function ResetPasswordContent() {
         body: JSON.stringify({ token, password }),
       });
 
-      const data = await res.json();
+      const data: any = await parseJsonSafe(res);
       if (!res.ok) throw new Error(data.error || 'Reset failed');
 
       setMessage('✅ Password reset successful. You can now login.');
