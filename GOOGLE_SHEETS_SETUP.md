@@ -101,10 +101,12 @@ When a team submits work:
 - Approved (FALSE = pending verification)
 
 ### Submissions Tab Columns:
-- Timestamp
+- Sync Timestamp
 - Submission ID
+- Team ID
 - Team Name
 - Competition Type
+- Captain Email
 - Phase (PRELIMINARY/SEMIFINAL/FINAL)
 - Status
 - Proposal URL
@@ -112,7 +114,22 @@ When a team submits work:
 - Full Paper URL
 - Poster URL
 - Pitch Deck URL
-- Captain Email
+- Notes
+- Reviewed By ID
+- Reviewed At
+- Created At
+- Updated At
+- Captain ID
+- Captain Name
+- Institution
+- Mockup URL (final SPC)
+- Statement URL / Surat Pernyataan (final SPC)
+- Infographic URL / Infografis (final SPC)
+- Logbook URL (final SPC)
+
+Columns A–U are the original layout — do not reorder. The final-SPC columns
+(Mockup/Statement/Infographic/Logbook) are appended after Institution so older
+rows stay aligned.
 
 ### Users Tab Columns:
 - Timestamp

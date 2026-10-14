@@ -130,6 +130,13 @@ model Submission {
   posterUrl       String?
   pitchDeckUrl    String?
 
+  // Final-phase extras (SPC only): mockup, statement letter, infographic, logbook.
+  // NEC finals reuse pitchDeckUrl + posterUrl.
+  mockupUrl       String?
+  statementUrl    String?
+  infographicUrl  String?
+  logbookUrl      String?
+
   status          SubmissionStatus @default(PENDING)
   notes           String?
   reviewedById    String?

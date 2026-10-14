@@ -1,7 +1,9 @@
 // src/app/dashboard/_components/FinalModule.tsx
 // Rendered when a team has reached the FINAL phase (registration.currentPhase
-// === 'FINAL', or its semifinal submission was already APPROVED). This is the
-// only module that talks to /api/submissions/final (pitch deck + video pitch).
+// === 'FINAL', or its semifinal submission was already APPROVED).
+// Final materials differ per track:
+// - NEC: pitch deck + digital poster.
+// - SPC: mockup, surat pernyataan, infografis, logbook, pitch deck.
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -13,14 +15,91 @@ import { FileUpload } from '@/components/FileUpload';
 import { parseJsonSafe } from '@/lib/fetch-json';
 import {
   COMPETITION_TIMELINE,
-  isSubmissionOpen,
+  FINAL_SUBMISSION_WINDOW,
+  isFinalSubmissionOpen,
   type CompetitionCode,
 } from '@/lib/phase-utils';
 import {
-  SEMIFINAL_WHATSAPP_LINK,
-  SEMIFINAL_WHATSAPP_LABEL,
-} from '@/lib/semifinal';
+  FINAL_WHATSAPP_LINKS,
+  FINAL_WHATSAPP_LABELS,
+  SPC_FINAL_GUIDEBOOK_EMBED_URL,
+  SPC_FINAL_GUIDEBOOK_VIEW_URL,
+} from '@/lib/final';
 import type { DashboardTeam, DashboardSubmission } from './types';
+
+type FieldKey =
+  | 'pitchDeckUrl'
+  | 'posterUrl'
+  | 'mockupUrl'
+  | 'statementUrl'
+  | 'infographicUrl'
+  | 'logbookUrl';
+
+interface FinalField {
+  key: FieldKey;
+  label: string;
+  hint: string;
+  accept: string;
+  extensions: string[];
+  mimes: string[];
+  maxSizeMB: number;
+}
+
+const PDF: Pick<FinalField, 'accept' | 'extensions' | 'mimes' | 'maxSizeMB'> = {
+  accept: '.pdf',
+  extensions: ['.pdf'],
+  mimes: ['application/pdf'],
+  maxSizeMB: 10,
+};
+
+const PDF_OR_IMAGE: Pick<FinalField, 'accept' | 'extensions' | 'mimes' | 'maxSizeMB'> = {
+  accept: '.pdf,.png,.jpg,.jpeg',
+  extensions: ['.pdf', '.png', '.jpg', '.jpeg'],
+  mimes: ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'],
+  maxSizeMB: 15,
+};
+
+const NEC_FINAL_FIELDS: FinalField[] = [
+  { key: 'pitchDeckUrl', label: 'Pitch Deck (PDF)', hint: 'PDF only (max 10MB)', ...PDF },
+  {
+    key: 'posterUrl',
+    label: 'Poster Digital (PDF/JPG/PNG)',
+    hint: 'PDF or image (max 15MB)',
+    ...PDF_OR_IMAGE,
+  },
+];
+
+const SPC_FINAL_FIELDS: FinalField[] = [
+  { key: 'pitchDeckUrl', label: 'Pitch Deck (PDF)', hint: 'PDF only (max 10MB)', ...PDF },
+  {
+    key: 'mockupUrl',
+    label: 'Mockup (PDF/JPG/PNG)',
+    hint: 'PDF or image (max 15MB)',
+    ...PDF_OR_IMAGE,
+  },
+  {
+    key: 'statementUrl',
+    label: 'Surat Pernyataan (PDF, sudah ditandatangani)',
+    hint: 'Scanned signed letter, PDF only (max 10MB)',
+    ...PDF,
+  },
+  {
+    key: 'infographicUrl',
+    label: 'Infografis (PDF/JPG/PNG)',
+    hint: 'PDF or image (max 15MB)',
+    ...PDF_OR_IMAGE,
+  },
+  { key: 'logbookUrl', label: 'Logbook (PDF)', hint: 'PDF only (max 10MB)', ...PDF },
+];
+
+const FIELD_TITLES: Record<FieldKey, string> = {
+  pitchDeckUrl: 'Pitch Deck',
+  posterUrl: 'Poster',
+  mockupUrl: 'Mockup',
+  statementUrl: 'Surat Pernyataan',
+  infographicUrl: 'Infografis',
+  logbookUrl: 'Logbook',
+};
 
 const TRACK_LABEL: Record<string, { label: string; emoji: string }> = {
   OLYMPIAD: { label: 'Microbiology Olympiad', emoji: '🏅' },
@@ -35,75 +114,69 @@ const DATE_FMT = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'Asia/Jakarta',
 });
 
-function isValidHttpUrl(url: string): boolean {
-  try {
-    const u = new URL(url.trim());
-    return u.protocol === 'http:' || u.protocol === 'https:';
-  } catch {
-    return false;
-  }
-}
-
 export function FinalModule({ team }: { team: DashboardTeam }) {
   const router = useRouter();
   const [celebrate, setCelebrate] = useState(false);
-  const [pitchDeckUrl, setPitchDeckUrl] = useState('');
-  const [videoPitchUrl, setVideoPitchUrl] = useState('');
-  const [videoMode, setVideoMode] = useState<'upload' | 'link'>('upload');
+  const [values, setValues] = useState<Record<FieldKey, string>>({
+    pitchDeckUrl: '',
+    posterUrl: '',
+    mockupUrl: '',
+    statementUrl: '',
+    infographicUrl: '',
+    logbookUrl: '',
+  });
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Final submission window comes from the shared timeline so the UI matches
-  // the server-side gate in /api/submissions/final.
   const code = team.competitionType as CompetitionCode;
   const timeline = COMPETITION_TIMELINE[code];
-  const submissionOpen = isSubmissionOpen(code, 'final');
+  const finalWindow = FINAL_SUBMISSION_WINDOW[code];
+  const submissionOpen = isFinalSubmissionOpen(code);
+  // Only SPC/NEC ever reach this module (see DashboardClient.reachedFinal).
+  const fields = team.competitionType === 'SPC' ? SPC_FINAL_FIELDS : NEC_FINAL_FIELDS;
 
   const existing: DashboardSubmission | undefined = team.submissions?.find(
     (s) => s.phase === 'FINAL'
   );
   const needsResubmission = existing?.status === 'REJECTED';
-
   const track = TRACK_LABEL[team.competitionType] || TRACK_LABEL.OLYMPIAD;
+  // Final WA group + guidebook are per-track (SPC/NEC only reach this module).
+  const waLink =
+    FINAL_WHATSAPP_LINKS[team.competitionType as 'SPC' | 'NEC'] ??
+    FINAL_WHATSAPP_LINKS.SPC;
+  const waLabel =
+    FINAL_WHATSAPP_LABELS[team.competitionType as 'SPC' | 'NEC'] ??
+    FINAL_WHATSAPP_LABELS.SPC;
+  const isSPC = team.competitionType === 'SPC';
 
   useEffect(() => {
     const t = setTimeout(() => setCelebrate(true), 350);
     return () => clearTimeout(t);
   }, []);
 
+  const setField = (key: FieldKey, url: string) => setValues((v) => ({ ...v, [key]: url }));
+
   const handleSubmit = async () => {
     setMessage(null);
 
-    if (!pitchDeckUrl) {
-      setMessage({ type: 'error', text: 'Please upload your pitch deck (PDF) before submitting.' });
-      return;
-    }
-    if (!videoPitchUrl) {
+    const missing = fields.filter((f) => !values[f.key]).map((f) => f.label);
+    if (missing.length > 0) {
       setMessage({
         type: 'error',
-        text: 'Please provide your final pitch video (upload or link) before submitting.',
-      });
-      return;
-    }
-    if (videoMode === 'link' && !isValidHttpUrl(videoPitchUrl)) {
-      setMessage({
-        type: 'error',
-        text: 'Video pitch link is not valid. Use a full https:// URL (YouTube / Google Drive unlisted recommended).',
+        text: `Please upload the following before submitting: ${missing.join(', ')}.`,
       });
       return;
     }
 
     setSubmitting(true);
     try {
+      const payload: Record<string, string> = { teamId: team.id };
+      for (const f of fields) payload[f.key] = values[f.key].trim();
       const res = await fetch('/api/submissions/final', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          teamId: team.id,
-          pitchDeckUrl,
-          videoPitchUrl: videoPitchUrl.trim(),
-        }),
+        body: JSON.stringify(payload),
       });
       const data: any = await parseJsonSafe(res);
       if (!res.ok) throw new Error(data.error || 'Submission failed');
@@ -123,24 +196,14 @@ export function FinalModule({ team }: { team: DashboardTeam }) {
     }
   };
 
-  const statusCard = existing && !needsResubmission && (
-    <div className="rounded-xl bg-white/5 border border-white/10 p-5">
-      <p className="text-white/70 text-sm">✅ You already submitted your final materials.</p>
-      <p className="text-xs text-white/40 mt-1">
-        Status:{' '}
-        <span
-          className={`font-semibold ${
-            existing.status === 'APPROVED' ? 'text-bio-emerald' : 'text-yellow-400'
-          }`}
-        >
-          {existing.status}
-        </span>
-      </p>
-      {existing.notes && (
-        <p className="text-xs text-white/50 mt-1">Admin notes: {existing.notes}</p>
-      )}
-    </div>
-  );
+  const allFilled = fields.every((f) => !!values[f.key]);
+
+  // Links of already-submitted final files (for the status card).
+  const submittedFiles = existing
+    ? fields
+        .map((f) => ({ title: FIELD_TITLES[f.key], url: (existing as any)[f.key] as string | null }))
+        .filter((x): x is { title: string; url: string } => !!x.url)
+    : [];
 
   return (
     <>
@@ -172,12 +235,12 @@ export function FinalModule({ team }: { team: DashboardTeam }) {
                 🏆 Congratulations, Finalist!
               </h2>
               <p className="mt-2 text-sm text-white/70 max-w-2xl">
-                Your semifinal submission has been approved. Submit your final materials below —
-                pitch deck and final pitch video — then get ready for the final round on{' '}
+                Your semifinal submission has been approved. Upload your final materials below,
+                then get ready for the final round on{' '}
                 {timeline
-                  ? `${DATE_FMT.format(timeline.finalStart)} – ${DATE_FMT.format(timeline.finalEnd)}`
+                  ? DATE_FMT.format(timeline.finalStart)
                   : 'the announced date'}
-                .
+                {' '}at ITB Ganesha.
               </p>
             </div>
           </div>
@@ -224,6 +287,7 @@ export function FinalModule({ team }: { team: DashboardTeam }) {
           </div>
         </div>
 
+
         {/* State content */}
         <div className="px-4 py-6 sm:px-6 space-y-4">
           {/* Submission window notice (mirrors the server-side gate) */}
@@ -232,11 +296,9 @@ export function FinalModule({ team }: { team: DashboardTeam }) {
               <p className="text-sm text-sky-200 flex items-start gap-2">
                 <Clock3 className="h-4 w-4 mt-0.5 shrink-0" />
                 <span>
-                  The final submission window opens{' '}
+                  The final submission window is{' '}
                   <strong>
-                    {timeline
-                      ? `${DATE_FMT.format(timeline.finalStart)} – ${DATE_FMT.format(timeline.finalEnd)}`
-                      : 'on the announced date'}
+                    {DATE_FMT.format(finalWindow.start)} – {DATE_FMT.format(finalWindow.end)}
                   </strong>
                   . You can prepare your files now — submitting is only possible during that
                   window.
@@ -245,7 +307,40 @@ export function FinalModule({ team }: { team: DashboardTeam }) {
             </div>
           )}
 
-          {existing && !needsResubmission && statusCard}
+          {/* Already-submitted state */}
+          {existing && !needsResubmission && (
+            <div className="rounded-xl bg-white/5 border border-white/10 p-5 space-y-3">
+              <p className="text-white/70 text-sm">✅ You already submitted your final materials.</p>
+              <p className="text-xs text-white/40">
+                Status:{' '}
+                <span
+                  className={`font-semibold ${
+                    existing.status === 'APPROVED' ? 'text-bio-emerald' : 'text-yellow-400'
+                  }`}
+                >
+                  {existing.status}
+                </span>
+              </p>
+              {submittedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {submittedFiles.map((f) => (
+                    <a
+                      key={f.title}
+                      href={f.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-bio-cyan hover:bg-white/10"
+                    >
+                      {f.title} ↗
+                    </a>
+                  ))}
+                </div>
+              )}
+              {existing.notes && (
+                <p className="text-xs text-white/50">Admin notes: {existing.notes}</p>
+              )}
+            </div>
+          )}
 
           {existing && needsResubmission && (
             <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-5">
@@ -265,97 +360,44 @@ export function FinalModule({ team }: { team: DashboardTeam }) {
           )}
 
 
-          {/* The actual final submission form */}
+          {/* The final submission form — fields depend on the track */}
           {(!existing || needsResubmission) && (
             <div className="space-y-5">
               <div>
                 <h3 className="text-xl font-bold text-white mb-1">📤 Submit Final Materials</h3>
                 <p className="text-sm text-white/60">
-                  Both the pitch deck (PDF) and the final pitch video are mandatory for all
-                  tracks.
+                  {team.competitionType === 'SPC'
+                    ? 'SPC final requires all five files: pitch deck, mockup, surat pernyataan, infografis, and logbook.'
+                    : 'NEC final requires both files: pitch deck and digital poster.'}
                 </p>
               </div>
 
-              <FileUpload
-                label="Pitch Deck (PDF)"
-                accept=".pdf"
-                allowedExtensions={['.pdf']}
-                allowedMimeTypes={['application/pdf']}
-                maxSizeMB={10}
-                hint="PDF only (max 10MB)"
-                onUpload={setPitchDeckUrl}
-              />
-              {pitchDeckUrl && (
-                <p className="text-xs text-emerald-300 break-all -mt-2">
-                  ✅ Pitch deck ready:{' '}
-                  <a href={pitchDeckUrl} target="_blank" rel="noreferrer" className="underline">
-                    {pitchDeckUrl}
-                  </a>
-                </p>
-              )}
-
-              <div>
-                <p className="text-sm font-medium text-white/70 mb-2">Final Pitch Video</p>
-                <div className="flex gap-2 mb-3">
-                  {(
-                    [
-                      ['upload', 'Upload video'],
-                      ['link', 'Paste link'],
-                    ] as const
-                  ).map(([mode, label]) => (
-                    <button
-                      key={mode}
-                      type="button"
-                      onClick={() => setVideoMode(mode)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-                        videoMode === mode
-                          ? 'bg-amber-500/20 border border-amber-400/50 text-amber-200'
-                          : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-
-                {videoMode === 'upload' ? (
+              {fields.map((f) => (
+                <div key={f.key}>
                   <FileUpload
-                    label="Pitch Video (MP4/MOV/WEBM, max 50MB)"
-                    accept=".mp4,.mov,.webm,video/mp4,video/webm,video/quicktime"
-                    allowedExtensions={['.mp4', '.mov', '.webm']}
-                    allowedMimeTypes={[
-                      'video/mp4',
-                      'video/webm',
-                      'video/quicktime',
-                      'application/octet-stream',
-                    ]}
-                    maxSizeMB={50}
-                    onUpload={setVideoPitchUrl}
+                    label={f.label}
+                    accept={f.accept}
+                    allowedExtensions={f.extensions}
+                    allowedMimeTypes={f.mimes}
+                    maxSizeMB={f.maxSizeMB}
+                    hint={f.hint}
+                    onUpload={(url) => setField(f.key, url)}
                   />
-                ) : (
-                  <>
-                    <input
-                      type="url"
-                      value={videoPitchUrl}
-                      onChange={(e) => setVideoPitchUrl(e.target.value)}
-                      placeholder="https://youtube.com/... or https://drive.google.com/..."
-                      className="w-full rounded-xl border border-white/15 bg-black/30 px-4 py-3 text-sm text-white placeholder:text-white/25 focus:border-amber-400/60 focus:outline-none"
-                    />
-                    <p className="mt-1 text-[11px] text-white/35">
-                      YouTube / Google Drive (unlisted) links recommended.
+                  {values[f.key] && (
+                    <p className="text-xs text-emerald-300 break-all mt-2">
+                      ✅ {FIELD_TITLES[f.key]} ready:{' '}
+                      <a
+                        href={values[f.key]}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline"
+                      >
+                        {values[f.key]}
+                      </a>
                     </p>
-                  </>
-                )}
-                {videoMode === 'upload' && videoPitchUrl && (
-                  <p className="text-xs text-emerald-300 break-all mt-2">
-                    ✅ Video ready:{' '}
-                    <a href={videoPitchUrl} target="_blank" rel="noreferrer" className="underline">
-                      {videoPitchUrl}
-                    </a>
-                  </p>
-                )}
-              </div>
-
+                  )}
+                </div>
+              ))}
 
               {message && (
                 <div
@@ -371,7 +413,7 @@ export function FinalModule({ team }: { team: DashboardTeam }) {
 
               <button
                 onClick={handleSubmit}
-                disabled={submitting || !pitchDeckUrl || !videoPitchUrl || !submissionOpen}
+                disabled={submitting || !allFilled || !submissionOpen}
                 className="btn-glow w-full disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-transform"
               >
                 {submitting
@@ -389,19 +431,49 @@ export function FinalModule({ team }: { team: DashboardTeam }) {
           )}
         </div>
 
-        {/* Always-visible WA Group link */}
+        {/* Always-visible per-track WA Group link */}
         <div className="px-4 py-3 text-xs text-white/50">
           Have questions or need updates? Join us in{' '}
           <a
-            href={SEMIFINAL_WHATSAPP_LINK}
+            href={waLink}
             target="_blank"
             rel="noreferrer"
             className="font-medium text-green-400 hover:underline"
           >
-            {SEMIFINAL_WHATSAPP_LABEL}
+            {waLabel}
           </a>
         </div>
       </div>
+
+      {/* Official guidebook (SPC only) */}
+      {isSPC && (
+        <div className="glass-dark rounded-2xl p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h3 className="text-lg font-bold">📘 SPC Final Guidebook</h3>
+            <a
+              href={SPC_FINAL_GUIDEBOOK_VIEW_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-bio-cyan hover:underline"
+            >
+              Open in Google Drive ↗
+            </a>
+          </div>
+          <p className="text-sm text-white/60 mb-4">
+            Read the official guidebook for the SPC final stage — deliverable specs, judging
+            criteria, exhibition rules, and schedule.
+          </p>
+          <div className="overflow-hidden rounded-xl border border-white/10 bg-black/40">
+            <iframe
+              src={SPC_FINAL_GUIDEBOOK_EMBED_URL}
+              title="SPC Final Guidebook"
+              className="w-full h-[600px]"
+              allow="autoplay"
+            />
+          </div>
+        </div>
+      )}
+
 
       {/* Finalist info card */}
       <div className="glass-dark rounded-2xl p-6">
@@ -409,7 +481,10 @@ export function FinalModule({ team }: { team: DashboardTeam }) {
           <Sparkles className="h-5 w-5 text-amber-300" /> What happens next?
         </h3>
         <ol className="space-y-2 text-sm text-white/70 list-decimal list-inside">
-          <li>Upload your pitch deck and final pitch video before the window closes.</li>
+          <li>
+            Upload {team.competitionType === 'SPC' ? 'all five required files' : 'the pitch deck and poster'}{' '}
+            before {DATE_FMT.format(finalWindow.end)}.
+          </li>
           <li>Wait for the committee to review your submission (usually within 1×24 hours).</li>
           <li>
             Attend the final technical meeting and the final pitching day{' '}

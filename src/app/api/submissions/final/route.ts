@@ -2,13 +2,23 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
-import { isSubmissionOpen } from '@/lib/phase-utils';
+import { isFinalSubmissionOpen } from '@/lib/phase-utils';
 import { syncSubmissionToSheet } from '@/lib/google-sheets';
 
+// Final materials differ per track (see constants.ts / competition pages):
+// - NEC: pitch deck + poster (digital poster).
+// - SPC: mockup, statement letter (surat pernyataan), infographic, logbook,
+//        and pitch deck.
+// All fields arrive as uploaded URLs; required-ness is enforced per
+// competitionType after the team is loaded.
 const finalSchema = z.object({
   teamId: z.string(),
   pitchDeckUrl: z.string().url().optional(),
-  videoPitchUrl: z.string().url().optional(),
+  posterUrl: z.string().url().optional(),
+  mockupUrl: z.string().url().optional(),
+  statementUrl: z.string().url().optional(),
+  infographicUrl: z.string().url().optional(),
+  logbookUrl: z.string().url().optional(),
 });
 
 export async function POST(req: Request) {
@@ -27,7 +37,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const { teamId, pitchDeckUrl, videoPitchUrl } = parsed.data;
+    const { teamId, pitchDeckUrl, posterUrl, mockupUrl, statementUrl, infographicUrl, logbookUrl } =
+      parsed.data;
 
     const team = await prisma.team.findUnique({
       where: { id: teamId },
@@ -63,7 +74,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!isSubmissionOpen(team.competitionType, 'final')) {
+    if (!isFinalSubmissionOpen(team.competitionType)) {
       return NextResponse.json(
         { error: 'Final submission period is closed.' },
         { status: 400 }
@@ -82,9 +93,40 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!pitchDeckUrl || !videoPitchUrl) {
+    // Per-track required fields. OLYMPIAD finals are onsite (no online upload),
+    // but if an OLYMPIAD team ever hits this route, require pitch deck only.
+    const isSPC = team.competitionType === 'SPC';
+    const isNEC = team.competitionType === 'NEC';
+
+    if (isSPC) {
+      const missing = [
+        !pitchDeckUrl && 'pitchDeckUrl',
+        !mockupUrl && 'mockupUrl',
+        !statementUrl && 'statementUrl',
+        !infographicUrl && 'infographicUrl',
+        !logbookUrl && 'logbookUrl',
+      ].filter(Boolean);
+      if (missing.length > 0) {
+        return NextResponse.json(
+          {
+            error:
+              'SPC final submission requires: pitch deck, mockup, statement letter (surat pernyataan), infographic, and logbook.',
+            missing,
+          },
+          { status: 400 }
+        );
+      }
+    } else if (isNEC) {
+      const missing = [!pitchDeckUrl && 'pitchDeckUrl', !posterUrl && 'posterUrl'].filter(Boolean);
+      if (missing.length > 0) {
+        return NextResponse.json(
+          { error: 'NEC final submission requires both pitch deck and poster.', missing },
+          { status: 400 }
+        );
+      }
+    } else if (!pitchDeckUrl) {
       return NextResponse.json(
-        { error: 'Final submission requires pitch deck and video.' },
+        { error: 'Final submission requires a pitch deck.' },
         { status: 400 }
       );
     }
@@ -94,7 +136,11 @@ export async function POST(req: Request) {
           where: { id: existing.id },
           data: {
             pitchDeckUrl,
-            videoPitchUrl,
+            posterUrl,
+            mockupUrl,
+            statementUrl,
+            infographicUrl,
+            logbookUrl,
             status: 'PENDING',
             notes: null,
             reviewedById: null,
@@ -106,7 +152,11 @@ export async function POST(req: Request) {
             teamId,
             phase: 'FINAL',
             pitchDeckUrl,
-            videoPitchUrl,
+            posterUrl,
+            mockupUrl,
+            statementUrl,
+            infographicUrl,
+            logbookUrl,
             status: 'PENDING',
           },
         });
@@ -124,6 +174,10 @@ export async function POST(req: Request) {
       fullPaperUrl: submission.fullPaperUrl,
       posterUrl: submission.posterUrl,
       pitchDeckUrl: submission.pitchDeckUrl,
+      mockupUrl: submission.mockupUrl,
+      statementUrl: submission.statementUrl,
+      infographicUrl: submission.infographicUrl,
+      logbookUrl: submission.logbookUrl,
       notes: submission.notes,
       reviewedById: submission.reviewedById,
       reviewedAt: submission.reviewedAt,

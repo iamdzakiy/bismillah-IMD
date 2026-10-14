@@ -39,6 +39,10 @@ export default async function DashboardPage() {
           fullPaperUrl: true,
           posterUrl: true,
           pitchDeckUrl: true,
+          mockupUrl: true,
+          statementUrl: true,
+          infographicUrl: true,
+          logbookUrl: true,
         },
       },
       captain: {

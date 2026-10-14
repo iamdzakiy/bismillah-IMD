@@ -13,6 +13,10 @@ export default async function FinalSubmissionsPage() {
       fullPaperUrl: true,
       posterUrl: true,
       pitchDeckUrl: true,
+      mockupUrl: true,
+      statementUrl: true,
+      infographicUrl: true,
+      logbookUrl: true,
       team: {
         select: {
           teamName: true,

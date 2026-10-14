@@ -231,7 +231,9 @@ export async function syncRegistrationToSheet(registration: {
 // | K FullPaperURL | L PosterURL | M PitchDeckURL | N Notes
 // | O ReviewedByID | P ReviewedAt | Q CreatedAt(Timestamp Submission) | R UpdatedAt
 // | S CaptainID(baru) | T CaptainName/Ketua(baru) | U Institution(baru)
-// Kolom S–U di-APPEND di akhir agar baris lama tetap sejajar (backward-compatible).
+// | V MockupURL(baru, final SPC) | W StatementURL/SuratPernyataan(baru, final SPC)
+// | X InfographicURL/Infografis(baru, final SPC) | Y LogbookURL(baru, final SPC)
+// Kolom S–Y di-APPEND di akhir agar baris lama tetap sejajar (backward-compatible).
 // Untuk alur SPC Semifinal, kolom yang dipetakan: C TeamID, D Nama Tim, T Ketua,
 // F Email, E Kategori("SPC"), J Elevator Pitch, K Full Paper, Q Timestamp Submission.
 // ============================================================
@@ -251,6 +253,11 @@ export async function syncSubmissionToSheet(submission: {
   fullPaperUrl?: string | null;
   posterUrl?: string | null;
   pitchDeckUrl?: string | null;
+  // Final-phase extras (SPC): mockup, surat pernyataan, infografis, logbook.
+  mockupUrl?: string | null;
+  statementUrl?: string | null;
+  infographicUrl?: string | null;
+  logbookUrl?: string | null;
   notes?: string | null;
   reviewedById?: string | null;
   reviewedAt?: Date | string | null;
@@ -280,6 +287,10 @@ export async function syncSubmissionToSheet(submission: {
     submission.captainId ?? '', // S CaptainID
     submission.captainName ?? '', // T Ketua
     submission.institution ?? '', // U Institution
+    submission.mockupUrl ?? '', // V Mockup (final SPC)
+    submission.statementUrl ?? '', // W Surat Pernyataan (final SPC)
+    submission.infographicUrl ?? '', // X Infografis (final SPC)
+    submission.logbookUrl ?? '', // Y Logbook (final SPC)
   ];
 
   // Non-blocking di sisi pemanggil: appendToSheet sudah try-catch internal

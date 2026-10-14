@@ -13,6 +13,11 @@ type SubmissionRow = {
   fullPaperUrl?: string | null;
   posterUrl?: string | null;
   pitchDeckUrl?: string | null;
+  // Final-phase extras (SPC finals).
+  mockupUrl?: string | null;
+  statementUrl?: string | null;
+  infographicUrl?: string | null;
+  logbookUrl?: string | null;
   team: {
     teamName: string;
     competitionType: string;
@@ -127,6 +132,26 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
                     {sub.pitchDeckUrl && (
                       <a href={sub.pitchDeckUrl} target="_blank" rel="noreferrer" className="text-xs text-bio-cyan hover:underline">
                         Deck
+                      </a>
+                    )}
+                    {sub.mockupUrl && (
+                      <a href={sub.mockupUrl} target="_blank" rel="noreferrer" className="text-xs text-bio-cyan hover:underline">
+                        Mockup
+                      </a>
+                    )}
+                    {sub.statementUrl && (
+                      <a href={sub.statementUrl} target="_blank" rel="noreferrer" className="text-xs text-bio-cyan hover:underline">
+                        Surat
+                      </a>
+                    )}
+                    {sub.infographicUrl && (
+                      <a href={sub.infographicUrl} target="_blank" rel="noreferrer" className="text-xs text-bio-cyan hover:underline">
+                        Infografis
+                      </a>
+                    )}
+                    {sub.logbookUrl && (
+                      <a href={sub.logbookUrl} target="_blank" rel="noreferrer" className="text-xs text-bio-cyan hover:underline">
+                        Logbook
                       </a>
                     )}
                   </div>

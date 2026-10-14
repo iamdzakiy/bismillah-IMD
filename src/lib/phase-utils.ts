@@ -34,6 +34,28 @@ export const COMPETITION_TIMELINE = {
 export type Phase = 'registration' | 'preliminary' | 'semifinal' | 'final';
 export type CompetitionCode = 'OLYMPIAD' | 'SPC' | 'NEC';
 
+// Online submission window for final materials (pitch deck, poster, etc.).
+// Deadline for ALL final uploads: 2 November 2026.
+// This is intentionally separate from COMPETITION_TIMELINE.finalStart/End,
+// which describe the ON-SITE final event days (14-15 Nov).
+export const FINAL_SUBMISSION_WINDOW: Record<
+  CompetitionCode,
+  { start: Date; end: Date }
+> = {
+  OLYMPIAD: {
+    start: new Date('2026-10-12T00:00:00+07:00'),
+    end: new Date('2026-11-02T23:59:59+07:00'),
+  },
+  SPC: {
+    start: new Date('2026-10-12T00:00:00+07:00'),
+    end: new Date('2026-11-02T23:59:59+07:00'),
+  },
+  NEC: {
+    start: new Date('2026-10-12T00:00:00+07:00'),
+    end: new Date('2026-11-02T23:59:59+07:00'),
+  },
+};
+
 export function getCurrentPhase(code: CompetitionCode, now: Date = new Date()): Phase | 'closed' {
   const timeline = COMPETITION_TIMELINE[code];
 
@@ -63,4 +85,14 @@ export function isSubmissionOpen(
 
   if (!start || !end) return false;
   return now >= start && now <= end;
+}
+
+// Whether the online final-materials submission form is open for a given
+// competition. Backed by FINAL_SUBMISSION_WINDOW (not the on-site event days).
+export function isFinalSubmissionOpen(
+  code: CompetitionCode,
+  now: Date = new Date()
+): boolean {
+  const window = FINAL_SUBMISSION_WINDOW[code];
+  return now >= window.start && now <= window.end;
 }

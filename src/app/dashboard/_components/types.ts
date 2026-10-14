@@ -33,6 +33,11 @@ export type DashboardSubmission = {
   fullPaperUrl?: string | null;
   posterUrl?: string | null;
   pitchDeckUrl?: string | null;
+  // Final-phase extras (SPC): mockup, statement letter, infographic, logbook.
+  mockupUrl?: string | null;
+  statementUrl?: string | null;
+  infographicUrl?: string | null;
+  logbookUrl?: string | null;
 };
 
 export type DashboardTeam = {
