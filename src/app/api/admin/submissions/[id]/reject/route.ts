@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { sendRejectionEmail } from '@/lib/email';
@@ -76,6 +77,12 @@ export async function POST(
         reviewedAt: new Date(),
       },
     });
+
+    // Keep participant/admin pages in sync with the new submission status.
+    revalidatePath('/dashboard');
+    revalidatePath('/admin/submissions/semifinal');
+    revalidatePath('/admin/submissions/preliminary');
+    revalidatePath('/admin/submissions/final');
 
     await syncSubmissionToSheet({
       id: submission.id,

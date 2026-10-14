@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { TeamProfileCard } from './TeamProfileCard';
 import { SubmissionForm } from './SubmissionForm';
 import { SemifinalModule } from './SemifinalModule';
+import { FinalModule } from './FinalModule';
 import { StatusBanner } from './StatusBanner';
 import { TeamRegistrationForm } from './TeamRegistrationForm';
 import type { DashboardTeam } from './types';
@@ -26,6 +27,21 @@ function passedPreliminary(team: DashboardTeam): boolean {
   // submission row is missing from the payload.
   if (team.registration?.currentPhase === 'SEMIFINAL') return true;
   return false;
+}
+
+// A team reaches the FINAL module once the admin approved its SEMIFINAL
+// submission — the approve endpoint promotes registration.currentPhase to
+// FINAL. We accept either signal so teams approved before the phase-sync code
+// (or where the phase flip was missed) still see the final page instead of
+// being stuck on the semifinal module forever.
+// NOTE: only SPC/NEC submit final materials online; OLYMPIAD finals are an
+// onsite exam, so it keeps the legacy SubmissionForm flow.
+function reachedFinal(team: DashboardTeam): boolean {
+  if (team.competitionType !== 'SPC' && team.competitionType !== 'NEC') return false;
+  if (team.registration?.currentPhase === 'FINAL') return true;
+  return (team.submissions ?? []).some(
+    (s) => s.phase === 'SEMIFINAL' && s.status === 'APPROVED'
+  );
 }
 
 interface DashboardClientProps {
@@ -77,19 +93,22 @@ export function DashboardClient({ session, teams }: DashboardClientProps) {
         ) : (
           <div className="space-y-6 sm:space-y-8">
             {teams.map((team) => {
-              const isSemifinalEligible = passedPreliminary(team);
+              const inFinal = reachedFinal(team);
+              const isSemifinalEligible = !inFinal && passedPreliminary(team);
               return (
                 <div key={team.id} className="space-y-4 sm:space-y-6">
                   <TeamProfileCard team={team} />
 
-                  {isSemifinalEligible ? (
+                  {inFinal ? (
+                    <FinalModule team={team} />
+                  ) : isSemifinalEligible ? (
                     <SemifinalModule team={team} />
                   ) : (
                     <SubmissionForm team={team} />
                   )}
 
                   {/* WhatsApp Community Section — shown when documents are approved (non-semifinal teams) */}
-                  {!isSemifinalEligible && (team.registration?.status === 'DOCUMENT_APPROVED' || team.registration?.status === 'REGISTERED') && (
+                  {!inFinal && !isSemifinalEligible && (team.registration?.status === 'DOCUMENT_APPROVED' || team.registration?.status === 'REGISTERED') && (
                   <div className="glass-dark rounded-2xl p-6 border border-green-500/20">
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">

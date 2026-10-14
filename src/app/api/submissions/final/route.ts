@@ -73,7 +73,9 @@ export async function POST(req: Request) {
     const existing = await prisma.submission.findFirst({
       where: { teamId, phase: 'FINAL' },
     });
-    if (existing) {
+    // Block only when there is nothing to fix: a PENDING/APPROVED final
+    // submission stands, but a REJECTED one must be resubmittable.
+    if (existing && existing.status !== 'REJECTED') {
       return NextResponse.json(
         { error: 'You already submitted for final phase.' },
         { status: 400 }
@@ -87,15 +89,27 @@ export async function POST(req: Request) {
       );
     }
 
-    const submission = await prisma.submission.create({
-      data: {
-        teamId,
-        phase: 'FINAL',
-        pitchDeckUrl,
-        videoPitchUrl,
-        status: 'PENDING',
-      },
-    });
+    const submission = existing
+      ? await prisma.submission.update({
+          where: { id: existing.id },
+          data: {
+            pitchDeckUrl,
+            videoPitchUrl,
+            status: 'PENDING',
+            notes: null,
+            reviewedById: null,
+            reviewedAt: null,
+          },
+        })
+      : await prisma.submission.create({
+          data: {
+            teamId,
+            phase: 'FINAL',
+            pitchDeckUrl,
+            videoPitchUrl,
+            status: 'PENDING',
+          },
+        });
 
     await syncSubmissionToSheet({
       id: submission.id,
