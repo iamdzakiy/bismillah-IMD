@@ -3,6 +3,10 @@
 import { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import Link from 'next/link';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
+import { fireCenterExplosion } from '@/components/ui/useConfettiBlast';
 import { TeamProfileCard } from './TeamProfileCard';
 import { SubmissionForm } from './SubmissionForm';
 import { SemifinalModule } from './SemifinalModule';
@@ -47,9 +51,59 @@ function reachedFinal(team: DashboardTeam): boolean {
 interface DashboardClientProps {
   session: Session;
   teams: DashboardTeam[];
+  user: {
+    email: string;
+    credential: {
+      password: string;
+      fileUrl: string | null;
+    } | null;
+  };
+  /** True only for participants whose team is OLYMPIAD (see dashboard/page.tsx). */
+  showCredential: boolean;
 }
 
-export function DashboardClient({ session, teams }: DashboardClientProps) {
+export function DashboardClient({ session, teams, user, showCredential }: DashboardClientProps) {
+  const [copied, setCopied] = useState(false);
+
+  // The card only ever renders for OLYMPIAD teams WITH a stored credential.
+  const canShow = showCredential && !!user.credential;
+
+  const text = canShow
+    ? `Halo,
+
+Berikut informasi akun kamu:
+
+Email    : ${user.email}
+Password : ${user.credential!.password}
+Link     : ${user.credential!.fileUrl ?? '-'}
+
+Jangan bagikan ke siapa pun.`
+    : '';
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Fallback for browsers/contexts without clipboard permissions.
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    // Little burst so the success feedback feels rewarding.
+    fireCenterExplosion(0.3, {
+      spread: 75,
+      startVelocity: 38,
+      origin: { x: 0.5, y: 0.65 },
+    });
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0514] text-white">
       <nav className="border-b border-purple-500/10 bg-[#130c24]/50 backdrop-blur-sm sticky top-0 z-50">
@@ -70,6 +124,71 @@ export function DashboardClient({ session, teams }: DashboardClientProps) {
       </nav>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        {canShow && (
+          <>
+            {/* Welcome celebration: fires once when the OLYMPIAD participant
+                opens the dashboard (single volley + floating replay pill). */}
+            <ConfettiCelebration active={canShow} encore={false} />
+
+            <motion.div
+              initial={{ opacity: 0, y: 24, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 120, damping: 16 }}
+              whileHover={{ y: -2 }}
+              className="glass p-6 rounded-2xl mb-6 sm:mb-8 relative overflow-hidden border-purple-500/20 glow-purple"
+            >
+              {/* Decorative accents */}
+              <div
+                aria-hidden
+                className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-purple-500/10 blur-3xl animate-pulse-glow"
+              />
+              <div
+                aria-hidden
+                className="absolute -bottom-20 -left-12 w-40 h-40 rounded-full bg-fuchsia-500/10 blur-3xl animate-float"
+              />
+
+              <div className="relative flex items-center gap-2 mb-1">
+                <span className="text-xl">🔐</span>
+                <h3 className="text-lg font-semibold">Informasi Akun Kamu</h3>
+              </div>
+              <p className="relative text-sm text-white/60 mb-4">
+                Berikut informasi akun kamu — rahasia, jangan dibagikan ke siapa pun.
+              </p>
+
+              <motion.pre
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.25, duration: 0.4 }}
+                className="relative text-sm font-mono whitespace-pre-wrap leading-relaxed rounded-xl border border-white/[0.08] bg-black/20 p-4 text-white/90"
+              >
+                {text}
+              </motion.pre>
+
+              <div className="relative flex flex-wrap gap-3 mt-4">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCopy}
+                  className="btn-glass !px-5 !py-2.5 text-sm rounded-xl"
+                >
+                  {copied ? 'Tersalin ✓' : 'Copy Info'}
+                </motion.button>
+
+                {user.credential!.fileUrl && (
+                  <motion.a
+                    whileTap={{ scale: 0.95 }}
+                    href={user.credential!.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-glow !px-5 !py-2.5 text-sm"
+                  >
+                    Buka Link
+                  </motion.a>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+
         <StatusBanner active={session.user.active} />
 
         <div className="mb-6 sm:mb-8">

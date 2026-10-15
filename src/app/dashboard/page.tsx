@@ -6,6 +6,39 @@ import { DashboardClient } from './_components/DashboardClient';
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/login');
+  if (!session?.user?.email) return null;
+
+  // Participant + shareable credential (only ever sent to the client when the
+  // card below is rendered; `select` avoids dragging password hashes /
+  // realPassword into the payload at all).
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: {
+      id: true,
+      email: true,
+      credential: {
+        select: { password: true, fileUrl: true },
+      },
+    },
+  });
+  if (!user) return null;
+
+  // Team used to gate the "Informasi Akun Peserta" card: the participant may be
+  // the captain OR any member listed in memberData (JSONB array of objects
+  // containing `email`), so both lookups are OR-ed. No Registration status check
+  // is required for this card.
+  const credentialTeam = await prisma.team.findFirst({
+    where: {
+      OR: [
+        { captainId: user.id },
+        { memberData: { array_contains: [{ email: user.email }] } },
+      ],
+    },
+    select: { id: true, competitionType: true },
+  });
+
+  const showCredential =
+    !!credentialTeam && credentialTeam.competitionType === 'OLYMPIAD';
 
   // Since TeamMember is removed, teams are found by captainId
   const teams = await prisma.team.findMany({
@@ -89,5 +122,12 @@ export default async function DashboardPage() {
     };
   });
 
-  return <DashboardClient session={session} teams={transformedTeams as any} />;
+  return (
+    <DashboardClient
+      session={session}
+      teams={transformedTeams as any}
+      user={{ email: user.email, credential: user.credential }}
+      showCredential={showCredential}
+    />
+  );
 }

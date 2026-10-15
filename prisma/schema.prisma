@@ -70,6 +70,7 @@ model User {
   reviews         Submission[] @relation("ReviewedBy")
   accounts        Account[]
   sessions        Session[]
+  credential      ParticipantCredential?
 
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -234,4 +235,17 @@ model PasswordResetToken {
 
   @@index([token])
   @@index([userId])
+}
+
+// Shareable account credential shown on the OLYMPIAD participant dashboard.
+// Kept separate from User.realPassword (admin reference) on purpose.
+model ParticipantCredential {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  password  String
+  fileUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
