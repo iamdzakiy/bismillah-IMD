@@ -11,6 +11,7 @@ import { FinalModule } from './FinalModule';
 import { StatusBanner } from './StatusBanner';
 import { TeamRegistrationForm } from './TeamRegistrationForm';
 import { SebTutorialCard } from './SebTutorialCard';
+import { TechnicalMeetingCard } from './TechnicalMeetingCard';
 import type { DashboardTeam } from './types';
 
 const WHATSAPP_COMMUNITY_LINK = 'https://chat.whatsapp.com/ClwIbQfe86BILn7WBp9bEn';
@@ -95,6 +96,11 @@ export function DashboardClient({ session, teams, user, showCredential }: Dashbo
             <SebTutorialCard email={user.email} credential={user.credential!} />
           </>
         )}
+
+        {/* Technical Meeting recording + slide deck — OLYMPIAD-only (the
+            preliminary technical meeting was held 3–4 Oct 2026; both links
+            open Google Drive in a new tab). */}
+        {showCredential && <TechnicalMeetingCard />}
 
         <StatusBanner active={session.user.active} />
 

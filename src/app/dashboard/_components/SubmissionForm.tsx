@@ -249,7 +249,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4">
           <h4 className="text-yellow-400 font-semibold mb-2">⚠️ Catatan Penting</h4>
           <ul className="text-white/70 text-sm space-y-1 list-disc list-inside">
-            <li>Ikuti Technical Meeting pada 3-4 Oktober 2026</li>
+            <li>Rekaman &amp; PPT Technical Meeting (3-4 Oktober 2026) tersedia di kartu &quot;Rekaman &amp; Materi Technical Meeting&quot; pada dashboard</li>
             <li>Uji akses Edmodo sebelum hari exam</li>
             <li>Gunakan koneksi internet yang stabil saat exam</li>
             <li>Untuk masalah teknis, hubungi grup WhatsApp panitia</li>
