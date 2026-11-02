@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server';
 import { syncRegistrationToSheet, appendToSheet } from '@/lib/google-sheets';
+import { auth } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
+// Admin-only diagnostics (previously public).
 export async function GET() {
   try {
+    const session = await auth();
+    if (!session?.user?.id || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     // Test 1: Simple append test
     await appendToSheet('Test', ['Test timestamp', 'Test data', new Date().toISOString()]);
     

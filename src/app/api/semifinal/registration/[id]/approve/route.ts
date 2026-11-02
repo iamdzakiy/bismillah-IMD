@@ -42,7 +42,11 @@ export async function POST(
     });
 
     // Ensure the team's phase reflects that they may now submit the full paper.
-    if (registration.team.registration) {
+    // (Never downgrade a team that is already in FINAL.)
+    if (
+      registration.team.registration &&
+      registration.team.registration.currentPhase === 'PRELIMINARY'
+    ) {
       await prisma.registration.update({
         where: { id: registration.team.registration.id },
         data: { currentPhase: 'SEMIFINAL' },

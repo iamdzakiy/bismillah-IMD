@@ -37,3 +37,6 @@ Thumbs.db
 *.tsbuildinfo
 next-env.d.ts
 .env*
+
+# Participant credentials (plaintext passwords) — never commit
+peserta.csv

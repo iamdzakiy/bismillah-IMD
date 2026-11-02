@@ -133,7 +133,8 @@ export async function POST(req: NextRequest) {
 
     // Keep the team's registration.currentPhase in sync WITHOUT touching any
     // preliminary submission data except reflecting that they advanced.
-    if (team.registration && team.registration.currentPhase !== 'SEMIFINAL') {
+    // Never downgrade a team that is already in FINAL.
+    if (team.registration && team.registration.currentPhase === 'PRELIMINARY') {
       await prisma.registration.update({
         where: { id: team.registration.id },
         data: { currentPhase: 'SEMIFINAL' },
