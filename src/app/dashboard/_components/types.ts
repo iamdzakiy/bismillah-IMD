@@ -51,6 +51,8 @@ export type DashboardTeam = {
     email: string;
   };
   members: DashboardMember[];
+  /** Server-computed from the finalist allowlist (src/lib/final.ts). */
+  isFinalist?: boolean;
   registration?: {
     id: string;
     status: RegistrationStatus;

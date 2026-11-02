@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { DashboardClient } from './_components/DashboardClient';
+import { isFinalistTeam } from '@/lib/final';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -119,6 +120,9 @@ export default async function DashboardPage() {
       ...team,
       members,
       memberData: undefined, // Remove raw JSON
+      // Computed server-side from the finalist allowlist (src/lib/final.ts);
+      // the API enforces the same rule, so the client can't fake access.
+      isFinalist: isFinalistTeam(team.teamName, team.competitionType),
     };
   });
 

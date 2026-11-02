@@ -10,7 +10,9 @@ export async function POST(req: Request) {
     // Verify webhook secret
     const authHeader = req.headers.get('authorization');
     const webhookSecret = process.env.WEBHOOK_SECRET;
-    if (webhookSecret && authHeader !== `Bearer ${webhookSecret}`) {
+    // Fail closed: without a configured secret this endpoint is disabled,
+    // otherwise anyone could trigger sheet writes.
+    if (!webhookSecret || authHeader !== `Bearer ${webhookSecret}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

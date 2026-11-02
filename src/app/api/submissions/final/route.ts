@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { z } from 'zod';
 import { isFinalSubmissionOpen } from '@/lib/phase-utils';
 import { syncSubmissionToSheet } from '@/lib/google-sheets';
+import { isFinalistTeam } from '@/lib/final';
 
 // Final materials differ per track (see constants.ts / competition pages):
 // - NEC: pitch deck + poster (digital poster).
@@ -11,14 +12,23 @@ import { syncSubmissionToSheet } from '@/lib/google-sheets';
 //        and pitch deck.
 // All fields arrive as uploaded URLs; required-ness is enforced per
 // competitionType after the team is loaded.
+// Only http(s) links (blocks javascript:/data: URLs that would later be
+// rendered as clickable links in the admin panel).
+const httpsUrl = z
+  .string()
+  .trim()
+  .max(2048)
+  .url()
+  .refine((u) => /^https?:\/\//i.test(u), 'URL must start with http(s)://');
+
 const finalSchema = z.object({
-  teamId: z.string(),
-  pitchDeckUrl: z.string().url().optional(),
-  posterUrl: z.string().url().optional(),
-  mockupUrl: z.string().url().optional(),
-  statementUrl: z.string().url().optional(),
-  infographicUrl: z.string().url().optional(),
-  logbookUrl: z.string().url().optional(),
+  teamId: z.string().min(1).max(64),
+  pitchDeckUrl: httpsUrl.optional(),
+  posterUrl: httpsUrl.optional(),
+  mockupUrl: httpsUrl.optional(),
+  statementUrl: httpsUrl.optional(),
+  infographicUrl: httpsUrl.optional(),
+  logbookUrl: httpsUrl.optional(),
 });
 
 export async function POST(req: Request) {
@@ -45,33 +55,36 @@ export async function POST(req: Request) {
       include: {
         registration: true,
         captain: true,
-        submissions: { where: { phase: 'SEMIFINAL', status: 'APPROVED' } },
       },
     });
 
-    if (!team) {
-      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
-    }
-
-    if (team.captainId !== session.user.id) {
+    // Same response for "no such team" and "not your team" so team ids can't
+    // be probed.
+    if (!team || team.captainId !== session.user.id) {
       return NextResponse.json(
-        { error: 'Only team captain can submit' },
+        { error: 'Only the team captain can submit final materials.' },
         { status: 403 }
       );
     }
 
-    if (team.registration?.currentPhase !== 'FINAL') {
+    // Single source of truth: the finalist allowlist in src/lib/final.ts.
+    // (Previously this required registration.currentPhase === 'FINAL', which
+    // was never set for finalists promoted outside the approve button, while
+    // the dashboard used a different rule — hence the false
+    // "Your team is not in the final phase." error.)
+    if (!isFinalistTeam(team.teamName, team.competitionType)) {
       return NextResponse.json(
         { error: 'Your team is not in the final phase.' },
         { status: 403 }
       );
     }
 
-    if (team.submissions.length === 0) {
-      return NextResponse.json(
-        { error: 'Your team has not passed the semifinal phase.' },
-        { status: 403 }
-      );
+    // Keep the DB phase consistent for admin views / sheets.
+    if (team.registration && team.registration.currentPhase !== 'FINAL') {
+      await prisma.registration.update({
+        where: { id: team.registration.id },
+        data: { currentPhase: 'FINAL' },
+      });
     }
 
     if (!isFinalSubmissionOpen(team.competitionType)) {

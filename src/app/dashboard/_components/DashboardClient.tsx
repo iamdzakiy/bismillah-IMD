@@ -32,19 +32,14 @@ function passedPreliminary(team: DashboardTeam): boolean {
   return false;
 }
 
-// A team reaches the FINAL module once the admin approved its SEMIFINAL
-// submission — the approve endpoint promotes registration.currentPhase to
-// FINAL. We accept either signal so teams approved before the phase-sync code
-// (or where the phase flip was missed) still see the final page instead of
-// being stuck on the semifinal module forever.
+// A team reaches the FINAL module only if it is on the official finalist list
+// (src/lib/final.ts). `isFinalist` is computed on the server in
+// dashboard/page.tsx and the final submission API checks the same list, so the
+// page and the API always agree.
 // NOTE: only SPC/NEC submit final materials online; OLYMPIAD finals are an
 // onsite exam, so it keeps the legacy SubmissionForm flow.
 function reachedFinal(team: DashboardTeam): boolean {
-  if (team.competitionType !== 'SPC' && team.competitionType !== 'NEC') return false;
-  if (team.registration?.currentPhase === 'FINAL') return true;
-  return (team.submissions ?? []).some(
-    (s) => s.phase === 'SEMIFINAL' && s.status === 'APPROVED'
-  );
+  return team.isFinalist === true;
 }
 
 interface DashboardClientProps {
