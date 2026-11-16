@@ -8,13 +8,13 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-ink-900 text-paper antialiased overflow-x-hidden selection:bg-agar/30 selection:text-paper;
+    @apply bg-ink-900 text-paper antialiased overflow-x-hidden selection:bg-mint selection:text-ink-950;
   }
   h1, h2, h3 {
     @apply font-display;
   }
   :focus-visible {
-    @apply outline-none ring-2 ring-agar/70 ring-offset-2 ring-offset-ink-900;
+    @apply outline-none ring-2 ring-mint/80 ring-offset-2 ring-offset-ink-900;
   }
 }
 
@@ -43,15 +43,15 @@
 
   /* Buttons */
   .btn-glass {
-    @apply relative inline-flex items-center justify-center px-6 py-3 border border-white/15 rounded-full font-medium text-paper/90 transition-colors duration-200 hover:border-paper/40 hover:bg-white/[0.04];
+    @apply relative inline-flex items-center justify-center px-6 py-3 border border-paper/25 rounded-full font-display font-medium text-paper/90 transition-colors duration-200 hover:border-paper/40 hover:bg-white/[0.04];
   }
 
   .btn-glow {
-    @apply relative inline-flex items-center justify-center px-7 py-3 bg-agar text-ink-950 font-semibold rounded-full transition-[transform,background-color] duration-200 hover:bg-agar-soft active:scale-[0.98];
+    @apply relative inline-flex items-center justify-center px-7 py-3 bg-mint font-display text-ink-950 font-semibold rounded-full transition-[transform,background-color,box-shadow] duration-200 hover:bg-mint-soft hover:-translate-y-0.5 hover:shadow-[0_10px_30px_-10px_rgba(98,242,189,0.7)] active:translate-y-0 active:scale-[0.98];
   }
 
   .input-glass {
-    @apply w-full px-4 py-3 bg-white/[0.03] border border-white/10 rounded-xl text-paper placeholder:text-white/30 outline-none transition-colors duration-200 focus:border-agar/60 focus:bg-white/[0.05];
+    @apply w-full px-4 py-3 bg-white/[0.03] border border-white/10 rounded-xl text-paper placeholder:text-white/30 outline-none transition-colors duration-200 focus:border-mint/60 focus:bg-white/[0.05];
   }
 
   /* Section Title */
@@ -75,7 +75,7 @@
 
   /* Small monospace label, used like a lab sample tag */
   .tag-mono {
-    @apply font-mono text-[11px] uppercase tracking-[0.18em] text-white/50;
+    @apply font-display text-[11px] font-semibold uppercase tracking-[0.18em] text-paper/55;
   }
 }
 

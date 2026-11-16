@@ -293,7 +293,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
                 type="button"
                 onClick={addMember}
                 disabled={members.length >= 2}
-                className="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs rounded-lg transition disabled:opacity-50"
+                className="px-3 py-1 bg-royal-500/20 hover:bg-royal-500/30 text-royal-300 text-xs rounded-lg transition disabled:opacity-50"
               >
                 + Tambah Anggota
               </button>
@@ -432,7 +432,7 @@ export function TeamRegistrationForm({ session }: TeamRegistrationFormProps) {
           </p>
           {templateLink && (
             <a href={templateLink} target="_blank" rel="noopener noreferrer" 
-               className="text-xs text-bio-emerald hover:text-emerald-300 underline mb-3 inline-block">
+               className="text-xs text-bio-emerald hover:textmint underline mb-3 inline-block">
               📋 Buat salinan dari template: {templateLink}
             </a>
           )}
