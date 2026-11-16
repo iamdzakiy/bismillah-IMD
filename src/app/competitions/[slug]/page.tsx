@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientText } from '@/components/ui/GradientText';
-import { MascotDecoration } from '@/components/ui/MascotDecoration';
 import { COMPETITIONS, GRAND_THEME, PAYMENT_INFO, SOCIAL_MEDIA } from '@/lib/competitions-data';
 import { Metadata } from 'next';
 import Link from 'next/link';
@@ -74,13 +73,6 @@ function getCompBadge(isOlympiad: boolean, isSPC: boolean, isNEC: boolean) {
   return 'bg-white/10 text-white';
 }
 
-function getCompHex(isOlympiad: boolean, isSPC: boolean, isNEC: boolean) {
-  if (isOlympiad) return '#3b82f6';
-  if (isSPC) return '#ec4899';
-  if (isNEC) return '#10b981';
-  return '#a78bfa';
-}
-
 export default async function CompetitionPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const comp = COMPETITIONS.find(c => c.id === slug);
@@ -97,12 +89,8 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
     : '#';
 
   return (
-    <div className="min-h-screen bg-space-900 text-white pt-24 pb-12 px-4">
+    <div className="min-h-screen bg-ink-900 text-paper pt-28 pb-12 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* ===== MASCOTS ===== */}
-        <div className="mb-8">
-          <MascotDecoration count={4} size="sm" className="justify-center" />
-        </div>
 
         {/* ===== HERO ===== */}
         <div className="text-center mb-16">
@@ -125,6 +113,9 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
           </p>
           <p className="text-sm text-white/50 max-w-2xl mx-auto">
             Organizer: {comp.organizer}
+          </p>
+          <p className="text-xs text-white/40 max-w-2xl mx-auto mt-2">
+            All details on this page follow the official IMD 2026 competition guidebook.
           </p>
           
           {/* Guidebook Download - simple link without onClick/download attribute */}
@@ -183,7 +174,7 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
           <GlassCard glow={comp.glowColor as any} className="p-8 mb-12">
             <SectionTitle glow={comp.glowColor}>Vision & Mission</SectionTitle>
             <div className="max-w-3xl mx-auto">
-              <p className="text-lg text-white/80 italic mb-6 text-center leading-relaxed">"{comp.vision}"</p>
+              <p className="text-lg text-white/80 italic mb-6 text-center leading-relaxed">&ldquo;{comp.vision}&rdquo;</p>
               {comp.mission && comp.mission.length > 0 && (
                 <div>
                   <h4 className="font-bold text-white mb-4 text-center">Mission</h4>
@@ -730,18 +721,18 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
             <div>
               <h4 className="font-bold text-white mb-4 text-lg">Instagram Accounts</h4>
               <div className="space-y-4">
-                <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl">
-                    📸
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
+                  <div className="w-12 h-12 rounded-xl bg-agar/15 text-agar flex items-center justify-center font-mono text-xs">
+                    IG
                   </div>
                   <div>
                     <p className="text-xs text-white/50 uppercase tracking-wider">Main Account</p>
                     <p className="text-lg font-bold text-white">{SOCIAL_MEDIA.instagram.main}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-bio-blue/10 to-emerald-500/10 border border-bio-blue/30">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-bio-blue to-emerald-500 flex items-center justify-center text-2xl">
-                    🦠
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
+                  <div className="w-12 h-12 rounded-xl bg-agar/15 text-agar flex items-center justify-center font-mono text-xs">
+                    IG
                   </div>
                   <div>
                     <p className="text-xs text-white/50 uppercase tracking-wider">Archaea Account</p>
@@ -755,8 +746,8 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
               <div className="space-y-4">
                 {SOCIAL_MEDIA.contactPersons.map((cp, i) => (
                   <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
-                    <div className="w-10 h-10 rounded-full bg-bio-blue/20 flex items-center justify-center text-lg">
-                      👤
+                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-display font-bold text-paper">
+                      {cp.contact.charAt(0)}
                     </div>
                     <div>
                       <p className="text-xs text-white/50 uppercase tracking-wider">{cp.name}</p>
@@ -781,11 +772,9 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           {comp.benefits.map((benefit, i) => (
             <GlassCard key={i} className="p-6 text-center" glow={comp.glowColor as any}>
-              <div className="text-4xl mb-2">{benefit.icon}</div>
+              <div className={`font-mono text-2xl mb-2 ${getCompColor(isOlympiad, isSPC, isNEC)}`}>{benefit.icon}</div>
               <p className="text-sm text-white/60 mb-1">{benefit.title}</p>
-              <p className="text-lg font-bold" style={{
-                color: getCompHex(isOlympiad, isSPC, isNEC)
-              }}>{benefit.value}</p>
+              <p className="text-sm font-medium text-paper">{benefit.value}</p>
             </GlassCard>
           ))}
         </div>
@@ -793,8 +782,8 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
         {/* ===== CTA ===== */}
         <div className="max-w-4xl mx-auto text-center">
           <GlassCard glow={comp.glowColor as any} className="p-12">
-            <h2 className="text-3xl font-bold mb-4">Ready to Join?</h2>
-            <p className="text-white/70 mb-8">Register your team now and start your microbial odyssey!</p>
+            <h2 className="text-3xl font-bold mb-4">Questions about {comp.shortName}?</h2>
+            <p className="text-white/70 mb-8">Check the guidebook first, then message the contact persons above.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <RegisterButton className="btn-glow">
                 Register Now

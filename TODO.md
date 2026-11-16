@@ -48,15 +48,13 @@
 - [x] Changed select from white background to dark purple with proper text contrast
 - [x] Used bg-purple-900/40 with dark background options
 
-## 12. Differentiate Prize Amounts ✅
-- [x] MO: Rp 15.000.000+
-- [x] SPC: Rp 20.000.000+
-- [x] NEC: Rp 18.000.000+
+## 12. Prize Amounts (synced with guidebook, Nov 2026) ✅
+- [x] Removed the Rp 15/20/18 juta totals: the official guidebook does not publish cash amounts
 
-## 13. Fix Prize Reward Format ✅
-- [x] MO: Cash Prize + Certificate + Medal (unchanged)
-- [x] SPC: Cash Prize + Certificate + Plakat (changed from Medal)
-- [x] NEC: Cash Prize + Certificate + Plakat (changed from Award Plaque)
+## 13. Prize Reward Format (synced with guidebook, Nov 2026) ✅
+- [x] MO: Winners 1-3 + Best Practical, Cash Prize + Certificate + Medal
+- [x] SPC: Winners 1-3, Cash Prize + Certificate + Medal
+- [x] NEC: Winners 1-3 + Best Poster, Cash Prize + Certificate + Award Plaque
 
 ## 14. Download Guidebook + Embedded PDF ✅
 - [x] Added guidebook download buttons on competition pages

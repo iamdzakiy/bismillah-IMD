@@ -87,13 +87,13 @@ function VerifyEmailContent() {
           </div>
 
           <p className="text-white/60 mb-6 text-center">
-            We've sent a verification link to{' '}
+            We&rsquo;ve sent a verification link to{' '}
             <span className="text-emerald-400 font-semibold break-all">{displayEmail}</span>.
             Please check your inbox and click the link to activate your account.
           </p>
 
           <div className="glass-dark rounded-lg p-4 mb-6 text-left">
-            <p className="text-xs text-white/40 uppercase tracking-wider mb-2">What's next?</p>
+            <p className="text-xs text-white/40 uppercase tracking-wider mb-2">What&rsquo;s next?</p>
             <ul className="text-sm text-white/70 space-y-2">
               <li className="flex items-start gap-2">
                 <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-1.5 flex-shrink-0"></span>

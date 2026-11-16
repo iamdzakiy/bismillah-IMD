@@ -13,17 +13,17 @@ export function GradientText({
   className,
   as: Component = 'span',
 }: GradientTextProps) {
+  // Solid accent colours. The animated multi-stop gradients were dropped.
   const variants = {
-    cyan: 'from-bio-cyan via-bio-emerald to-bio-teal',
-    purple: 'from-bio-purple via-bio-pink to-bio-cyan',
-    gold: 'from-yellow-300 via-orange-400 to-pink-500',
-    rainbow: 'from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500',
+    cyan: 'text-agar',
+    purple: 'text-agar',
+    gold: 'text-agar',
+    rainbow: 'text-agar',
   };
 
   return (
     <Component
       className={cn(
-        'bg-gradient-to-r bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient',
         variants[variant],
         className
       )}

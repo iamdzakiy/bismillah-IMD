@@ -8,74 +8,74 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-[#0a0514] text-white antialiased overflow-x-hidden selection:bg-purple-500/30 selection:text-white;
-    /* Deep Purple Background - Microbial Dark Matter Theme */
-    background-image:
-      radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.08) 0px, transparent 50%),
-      radial-gradient(at 50% 50%, rgba(192, 132, 252, 0.04) 0px, transparent 60%);
-    background-attachment: fixed;
+    @apply bg-ink-900 text-paper antialiased overflow-x-hidden selection:bg-agar/30 selection:text-paper;
+  }
+  h1, h2, h3 {
+    @apply font-display;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-agar/70 ring-offset-2 ring-offset-ink-900;
   }
 }
 
 @layer components {
-  /* Refined Glass Effect - Purple Tint */
+  /* Surfaces: flat, low-contrast panels instead of glowing glass */
   .glass {
-    @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-lg;
+    @apply bg-white/[0.03] backdrop-blur-md border border-white/[0.08];
   }
-  
+
   .glass-strong {
-    @apply bg-[#130c24]/80 backdrop-blur-2xl border border-purple-500/20 shadow-2xl;
+    @apply bg-ink-800/90 backdrop-blur-xl border border-white/10 shadow-xl;
   }
 
   .glass-dark {
-    @apply bg-[#0f0720]/60 backdrop-blur-xl border border-white/[0.05] shadow-lg;
+    @apply bg-ink-950/70 backdrop-blur-md border border-white/[0.06];
   }
 
-  /* Purple Gradient Text */
+  /* Accent text. Kept under the old class names so existing pages pick it up. */
   .text-gradient {
-    @apply bg-gradient-to-r from-purple-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent;
+    @apply text-agar;
   }
 
   .text-gradient-glow {
-    @apply bg-gradient-to-r from-purple-300 via-fuchsia-300 to-indigo-300 bg-clip-text text-transparent;
-    filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.3));
+    @apply text-paper;
   }
 
   /* Buttons */
   .btn-glass {
-    @apply relative px-6 py-3 bg-white/[0.05] backdrop-blur-md border border-white/[0.1] rounded-full font-medium transition-all duration-500 hover:bg-purple-500/20 hover:border-purple-500/50 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(168,85,247,0.3)];
+    @apply relative inline-flex items-center justify-center px-6 py-3 border border-white/15 rounded-full font-medium text-paper/90 transition-colors duration-200 hover:border-paper/40 hover:bg-white/[0.04];
   }
 
   .btn-glow {
-    @apply relative px-8 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-bold rounded-full transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] hover:brightness-110;
+    @apply relative inline-flex items-center justify-center px-7 py-3 bg-agar text-ink-950 font-semibold rounded-full transition-[transform,background-color] duration-200 hover:bg-agar-soft active:scale-[0.98];
   }
 
   .input-glass {
-    @apply w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-purple-500/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(168,85,247,0.2)];
+    @apply w-full px-4 py-3 bg-white/[0.03] border border-white/10 rounded-xl text-paper placeholder:text-white/30 outline-none transition-colors duration-200 focus:border-agar/60 focus:bg-white/[0.05];
   }
 
   /* Section Title */
   .section-title {
-    @apply text-4xl md:text-5xl font-bold text-gradient-glow text-center mb-4;
+    @apply text-4xl md:text-5xl font-bold text-paper text-center mb-4 tracking-tight;
   }
 
   .section-subtitle {
-    @apply text-white/50 text-center max-w-2xl mx-auto mb-12;
+    @apply text-white/55 text-center max-w-2xl mx-auto mb-12;
   }
 
-  /* Glow Effects */
-  .glow-purple {
-    box-shadow: 0 0 30px rgba(168, 85, 247, 0.15), 0 0 60px rgba(168, 85, 247, 0.05);
-  }
-
+  /* Former glow helpers, now neutral so old markup stays quiet */
+  .glow-purple,
   .glow-fuchsia {
-    box-shadow: 0 0 30px rgba(217, 70, 239, 0.15), 0 0 60px rgba(217, 70, 239, 0.05);
+    box-shadow: none;
   }
 
-  /* Particle Dot */
   .particle-dot {
-    @apply absolute w-1 h-1 bg-purple-400/30 rounded-full;
+    @apply absolute w-1 h-1 bg-white/20 rounded-full;
+  }
+
+  /* Small monospace label, used like a lab sample tag */
+  .tag-mono {
+    @apply font-mono text-[11px] uppercase tracking-[0.18em] text-white/50;
   }
 }
 
@@ -86,10 +86,10 @@
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    @apply bg-[#0a0514];
+    @apply bg-ink-950;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-purple-900/50 rounded-full hover:bg-purple-500/50;
+    @apply bg-white/15 rounded-full hover:bg-white/30;
   }
 
   /* Smooth Animations */
@@ -161,5 +161,34 @@
   @keyframes scaleIn {
     from { opacity: 0; transform: scale(0.9); }
     to { opacity: 1; transform: scale(1); }
+  }
+}
+
+/* Continuous marquee, driven by CSS so React does not re-render every frame */
+@keyframes marquee-x {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+.marquee-track {
+  animation: marquee-x var(--marquee-duration, 60s) linear infinite;
+}
+.marquee-track[data-direction='right'] {
+  animation-direction: reverse;
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
