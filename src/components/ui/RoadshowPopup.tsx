@@ -2,19 +2,34 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getEventPhase } from '@/lib/hooks/useToday';
 
 const TUTORIAL_LINK = 'https://www.instagram.com/p/DbnpFRaGppZ/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==';
+
+const SEEN_KEY = 'imd2026-roadshow-seen';
 
 export function RoadshowPopup() {
   const [isOpen, setIsOpen] = useState(false);
 
+  // Only useful while registration is open, and only once per browser session.
   useEffect(() => {
-    const timer = setTimeout(() => setIsOpen(true), 2000);
+    if (getEventPhase(new Date().toISOString().slice(0, 10)) !== 'registration') return;
+    try {
+      if (sessionStorage.getItem(SEEN_KEY)) return;
+    } catch {
+      // Storage blocked: fall through and show it once for this page view.
+    }
+    const timer = setTimeout(() => setIsOpen(true), 2500);
     return () => clearTimeout(timer);
   }, []);
 
   const closePopup = () => {
     setIsOpen(false);
+    try {
+      sessionStorage.setItem(SEEN_KEY, '1');
+    } catch {
+      // ignore
+    }
   };
 
   return (
@@ -42,7 +57,7 @@ export function RoadshowPopup() {
 
             <div className="text-center">
               <div className="inline-block px-4 py-1.5 glass rounded-full text-purple-400 text-xs font-bold uppercase tracking-wider mb-4">
-                🎥 ROADSHOW 2026
+                Roadshow 2026
               </div>
 
               <h3 className="text-3xl md:text-4xl font-black mb-3">
@@ -50,12 +65,12 @@ export function RoadshowPopup() {
               </h3>
 
               <p className="text-white/60 text-sm mb-6">
-                Watch our official roadshow teaser and get ready for the biggest microbiology event in Indonesia!
+                The official roadshow teaser for IMD 2026.
               </p>
 
               <div className="aspect-video rounded-2xl overflow-hidden mb-6 bg-black">
                 <iframe
-                  src="https://www.youtube.com/embed/8SwEbbClu9o?autoplay=1&rel=0"
+                  src="https://www.youtube.com/embed/8SwEbbClu9o?rel=0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                   className="w-full h-full"
@@ -65,8 +80,7 @@ export function RoadshowPopup() {
               {/* Tutorial Link */}
               <div className="mb-6 p-5 rounded-2xl bg-gradient-to-r from-bio-blue/10 via-bio-purple/10 to-bio-pink/10 border border-bio-purple/30">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="text-2xl">📖</span>
-                  <h4 className="text-lg font-bold text-white">New to IMD 2026? Watch Our Tutorial!</h4>
+                  <h4 className="text-lg font-bold text-white">How to use this website</h4>
                 </div>
                 <p className="text-white/60 text-sm mb-4">
                   Learn how to use our website — from registration to submission. Follow our step-by-step tutorial on Instagram!
@@ -86,10 +100,10 @@ export function RoadshowPopup() {
 
               <div className="flex flex-wrap justify-center gap-6 text-sm text-white/60 mb-6">
                 <div className="flex items-center gap-2">
-                  <span>📍 ITB Ganesha, Bandung</span>
+                  <span>ITB Ganesha, Bandung</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>📅 Coming Soon 2026</span>
+                  <span>Finals 14–15 November 2026</span>
                 </div>
               </div>
 

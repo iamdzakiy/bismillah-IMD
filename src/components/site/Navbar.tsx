@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
@@ -13,9 +14,9 @@ const competitions = [
 ];
 
 const events = [
-  { name: 'Grand Opening', date: 'July 2026' },
-  { name: 'Workshops', date: 'TBA' },
-  { name: 'Awarding Night', date: 'TBA' },
+  { name: 'Petri Dish Art workshop', date: '7 Nov 2026' },
+  { name: 'Opening ceremony & finals', date: '14 Nov 2026' },
+  { name: 'Exhibition, symposium & awarding', date: '15 Nov 2026' },
 ];
 
 const authPaths = ['/login', '/register', '/verify-email', '/reset-password', '/request-password-reset'];
@@ -23,9 +24,6 @@ const authPaths = ['/login', '/register', '/verify-email', '/reset-password', '/
 export function Navbar() {
   const pathname = usePathname();
   const isAuthPage = authPaths.some(path => pathname.startsWith(path));
-  
-  if (isAuthPage) return null;
-  
   const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -49,6 +47,9 @@ export function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Hooks above must run on every render; bail out only after them.
+  if (isAuthPage) return null;
+
   return (
     <motion.nav
       initial={{ y: -100 }}
@@ -56,21 +57,13 @@ export function Navbar() {
       transition={{ duration: 0.5 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled 
-          ? 'bg-[#0a0514]/80 backdrop-blur-2xl border-b border-white/10 shadow-2xl' 
+          ? 'bg-ink-900/85 backdrop-blur-xl border-b border-white/10' 
           : 'bg-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="relative">
-            <div className="absolute inset-0 bg-purple-500/30 rounded-full blur-lg group-hover:bg-purple-500/50 transition-all" />
-            <div className="relative w-10 h-10 glass-strong rounded-full flex items-center justify-center">
-              <img src="/favicon.svg" alt="IMD 2026" className="w-5 h-5 md:w-6 md:h-6" />
-            </div>
-          </div>
-          <span className="text-xl font-black text-gradient hidden sm:block">
-            IMD 2026
-          </span>
+        <Link href="/" className="flex items-center" aria-label="IMD 2026 home">
+          <Image src="/imd-logo-light.svg" alt="IMD 2026" width={96} height={50} priority className="h-8 w-auto md:h-9" />
         </Link>
 
         <div className="hidden md:flex items-center gap-1">
@@ -91,7 +84,7 @@ export function Navbar() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full mt-2 left-0 w-72 glass-strong rounded-2xl p-2 shadow-2xl border border-purple-500/20"
+                  className="absolute top-full mt-2 left-0 w-72 glass-strong rounded-2xl p-2 shadow-2xl border border-white/10"
                 >
                   {competitions.map((comp) => (
                     <Link
@@ -126,7 +119,7 @@ export function Navbar() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full mt-2 left-0 w-64 glass-strong rounded-2xl p-2 shadow-2xl border border-purple-500/20"
+                  className="absolute top-full mt-2 left-0 w-64 glass-strong rounded-2xl p-2 shadow-2xl border border-white/10"
                 >
                   <Link
                     href="/events"
@@ -183,6 +176,8 @@ export function Navbar() {
 
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={mobileOpen}
           className="md:hidden w-10 h-10 glass rounded-full flex items-center justify-center"
         >
           <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -201,7 +196,7 @@ export function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-[#0a0514]/95 backdrop-blur-2xl border-t border-white/10"
+            className="md:hidden bg-ink-900/95 backdrop-blur-xl border-t border-white/10"
           >
             <div className="px-4 py-4 space-y-2">
               <div className="px-4 py-2 text-xs text-white/30 uppercase tracking-wider">Competitions</div>
@@ -228,7 +223,7 @@ export function Navbar() {
               </Link>
               {session ? (
                 <div className="space-y-1">
-                  <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="block px-4 py-3 text-purple-400 hover:bg-white/5 rounded-xl">
+                  <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="block px-4 py-3 text-agar hover:bg-white/5 rounded-xl">
                     Dashboard
                   </Link>
                   <button onClick={() => signOut({ callbackUrl: '/' })} className="block w-full text-left px-4 py-2 text-xs text-white/40 hover:text-red-400 hover:bg-white/5 rounded-xl">

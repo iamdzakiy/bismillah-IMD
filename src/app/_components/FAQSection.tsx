@@ -3,168 +3,121 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Answers follow the official IMD 2026 competition guidebook and handbook.
 const faqs = [
   {
-    q: "What is IMD 2026?",
-    a: "International Microorganism Day (IMD) 2026 is a prestigious microbiology event organized by Archaea ITB at Institut Teknologi Bandung. It features competitions, workshops, and networking opportunities for students across Indonesia."
+    q: 'What is IMD?',
+    a: 'International Microorganism Day is marked every 17 September, the date in 1683 when Antonie van Leeuwenhoek wrote to the Royal Society describing single-celled organisms. IMD 2026 at ITB is run by HIMAMIKRO "Archaea" ITB with SITH ITB: three national competitions, a petri dish art workshop, an exhibition, a symposium and an awarding night.',
   },
   {
-    q: "Who can participate?",
-    a: "SMA/sederajat students can join the Microbiology Olympiad (individual) and Science Project Competition (SPC, teams of 2-4). S1/D3/D4 university students can join the National Essay Competition (NEC, 1-2 authors)."
+    q: 'Who can enter which competition?',
+    a: 'Microbiology Olympiad: active SMA/MA students, individually (current or former OSN Biology gold medalists and IBO Pelatnas Stage III participants are not eligible). Science Project Competition: teams of 3 SMA/SMK/MA students plus 1 supervising teacher from the same school. National Essay Competition: teams of 2–3 S1/D4 students from the same university, any major.',
   },
   {
-    q: "Is there a registration fee?",
-    a: "Olympiad participants need to pay a registration fee (proof required). SPC and NEC are free to register. All competition types are free for document verification."
+    q: 'How much does it cost?',
+    a: 'MO: IDR 75,000 early bird (19 July – 8 August 2026) or IDR 85,000 normal (9 – 31 August 2026). SPC and NEC: the abstract round is free; teams that reach the semifinal pay IDR 150,000. Fees are non-refundable.',
   },
   {
-    q: "What documents are required?",
-    a: "Each team member needs to upload their Student Card/KTM as proof. The chairman also uploads their personal KTM and a merged PDF of all registration documents."
+    q: 'What are the prizes?',
+    a: 'MO: Winners 1–3 and Best Practical, each with a cash prize, certificate and medal. SPC: Winners 1–3, each with a cash prize, certificate and medal. NEC: Winners 1–3 and Best Poster, each with a cash prize, certificate and award plaque. The guidebook does not publish the cash amounts.',
   },
   {
-    q: "How are competitions judged?",
-    a: "Each competition has preliminary, semifinal, and final rounds. Submissions are reviewed by expert judges from ITB and partner institutions. Detailed rubrics are provided for each phase."
+    q: 'How do I pay and how long is verification?',
+    a: 'Transfer to Bank Jago 104614051845 (Aditya Ramadhani) and upload the receipt on this website. The receipt must show the payer name, exact amount and date. Checking usually takes 1–3 business days, and you get an email once you are approved.',
   },
   {
-    q: "Can I change my team members after registration?",
-    a: "Team changes must be requested via email to archaea_itb@km.itb.ac.id. Changes are subject to approval and may not be allowed after the semifinal phase."
+    q: 'Can I withdraw or hand my place to someone else?',
+    a: 'For the Olympiad, no: once a registration is verified it cannot be withdrawn or transferred to another person. For SPC and NEC team questions, contact the committee using the numbers below.',
   },
   {
-    q: "When and where will IMD 2026 be held?",
-    a: "The main event will be held at Institut Teknologi Bandung in November 2026. Preliminary rounds are conducted online. Specific dates will be announced on our timeline."
+    q: 'When and where are the finals?',
+    a: 'All finals are at ITB Ganesha, Bandung. MO final, SPC final pitching and NEC pitching day are on 14 November 2026; the exhibition and awarding are on 15 November 2026. Lodging and transport are not covered by the committee.',
   },
 ];
 
+const CONTACTS = [
+  { name: 'Sitha', role: 'Internal Affairs Manager', wa: '628135837623' },
+  { name: 'Cahya', role: 'Internal Affairs Staff', wa: '62881080713104' },
+];
+
+const FAQ_SHEET =
+  'https://docs.google.com/spreadsheets/d/1WRGHkBPQw12YpXxbFsX_AxPuOVwgFgTiBUP7eImx3XQ/edit?usp=sharing';
+
 export function FAQSection() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="relative py-24 px-4">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/3 w-96 h-96 bg-purple-600/5 rounded-full blur-[100px]" />
-      </div>
-
-      <div className="relative max-w-3xl mx-auto">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="section-title"
-        >
-          Frequently Asked Questions
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="section-subtitle"
-        >
-          Everything you need to know about IMD 2026
-        </motion.p>
-
-        {/* Check Interactive Sheets First Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-bio-blue/10 via-bio-purple/10 to-bio-pink/10 border border-bio-purple/30 text-center"
-        >
-          <div className="text-3xl mb-3">📋</div>
-          <h3 className="text-lg font-bold text-white mb-2">Before Asking, Check Our Interactive FAQ Sheet!</h3>
-          <p className="text-white/60 text-sm mb-4">
-            We have an interactive Google Sheets FAQ with detailed answers. Check it first to find instant answers!
+    <section id="faq" className="relative scroll-mt-20 px-4 py-24 sm:px-6 md:py-32" aria-labelledby="faq-title">
+      <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+        <div>
+          <p className="tag-mono mb-4">FAQ</p>
+          <h2 id="faq-title" className="text-[clamp(2.4rem,6vw,4.75rem)] font-bold leading-[0.95] tracking-[-0.03em]">
+            Questions we get a lot.
+          </h2>
+          <p className="mt-6 max-w-sm text-white/60">
+            More answers, per competition, are in the{' '}
+            <a href={FAQ_SHEET} target="_blank" rel="noopener noreferrer" className="text-paper underline decoration-agar underline-offset-4">
+              FAQ sheet
+            </a>
+            . If it is not there, message us on WhatsApp.
           </p>
-          <a
-            href="https://docs.google.com/spreadsheets/d/1WRGHkBPQw12YpXxbFsX_AxPuOVwgFgTiBUP7eImx3XQ/edit?"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-bio-purple/20 text-bio-purple border border-bio-purple/30 rounded-full text-sm font-bold hover:bg-bio-purple/30 transition-all"
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
-            Open Interactive FAQ Sheet
-          </a>
-        </motion.div>
-
-        <div className="space-y-3">
-          {faqs.map((faq, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
-              className="glass rounded-2xl overflow-hidden transition-all duration-300 hover:border-purple-500/20"
-            >
-              <button
-                onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full px-6 py-4 flex items-center justify-between text-left"
-              >
-                <span className="text-white/80 font-medium pr-4">{faq.q}</span>
-                <svg
-                  className={`w-5 h-5 text-purple-400 flex-shrink-0 transition-transform duration-300 ${
-                    openIndex === index ? 'rotate-180' : ''
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+          <ul className="mt-8 space-y-3">
+            {CONTACTS.map((c) => (
+              <li key={c.wa}>
+                <a
+                  href={`https://wa.me/${c.wa}?text=${encodeURIComponent('Halo IMD 2026, saya ingin bertanya...')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-baseline gap-3"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              <AnimatePresence>
-                {openIndex === index && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-6 pb-4 text-white/50 text-sm leading-relaxed">
-                      {faq.a}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
+                  <span className="font-medium text-paper group-hover:text-agar">{c.name}</span>
+                  <span className="tag-mono">{c.role}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {/* Still have questions? */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-10 text-center"
-        >
-          <p className="text-white/50 text-sm mb-4">Still have questions after checking the FAQ sheet? Contact our admins:</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-            <a
-              href="https://wa.me/62881080713104?text=Halo%20IMD%202026%2C%20saya%20ingin%20bertanya..."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-glass inline-flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-              Admin 1
-            </a>
-            <a
-              href="https://wa.me/628135837623?text=Halo%20IMD%202026%2C%20saya%20ingin%20bertanya..."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-glass inline-flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-              Admin 2
-            </a>
-          </div>
-          <p className="text-white/40 text-xs mt-4">
-            📋 First check our{' '}
-            <a href="https://docs.google.com/spreadsheets/d/1WRGHkBPQw12YpXxbFsX_AxPuOVwgFgTiBUP7eImx3XQ/edit?usp=sharing" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 underline">
-              interactive FAQ sheet
-            </a>
-            {' '}— your question may already be answered!
-          </p>
-        </motion.div>
+        <div className="divide-y divide-white/10 border-y border-white/10">
+          {faqs.map((faq, index) => {
+            const open = openIndex === index;
+            return (
+              <div key={faq.q}>
+                <h3>
+                  <button
+                    onClick={() => setOpenIndex(open ? null : index)}
+                    aria-expanded={open}
+                    aria-controls={`faq-panel-${index}`}
+                    className="flex w-full items-center justify-between gap-6 py-6 text-left"
+                  >
+                    <span className="text-lg font-medium text-paper sm:text-xl">{faq.q}</span>
+                    <span
+                      aria-hidden="true"
+                      className={`relative h-4 w-4 flex-shrink-0 transition-transform duration-300 ${open ? 'rotate-45' : ''}`}
+                    >
+                      <span className="absolute left-0 top-1/2 h-px w-4 bg-agar" />
+                      <span className="absolute left-1/2 top-0 h-4 w-px bg-agar" />
+                    </span>
+                  </button>
+                </h3>
+                <AnimatePresence initial={false}>
+                  {open && (
+                    <motion.div
+                      id={`faq-panel-${index}`}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <p className="max-w-2xl pb-6 leading-relaxed text-white/65">{faq.a}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

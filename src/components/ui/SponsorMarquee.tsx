@@ -1,86 +1,39 @@
-'use client';
-
-import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 
 interface SponsorItem {
   name: string;
   image?: string;
-  icon?: string;
 }
 
 interface SponsorMarqueeProps {
   items: SponsorItem[];
   direction?: 'left' | 'right';
-  speed?: number;
+  /** Seconds for one full loop. */
+  duration?: number;
 }
 
-export function SponsorMarquee({ items, direction = 'left', speed = 0.5 }: SponsorMarqueeProps) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [scrollPos, setScrollPos] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-
-    const totalWidth = track.scrollWidth / 2;
-
-    const animate = () => {
-      if (!isPaused) {
-        setScrollPos((prev) => {
-          let newPos = direction === 'left' ? prev + speed : prev - speed;
-          if (newPos >= totalWidth) newPos = 0;
-          if (newPos <= -totalWidth) newPos = 0;
-          return newPos;
-        });
-      }
-      requestAnimationFrame(animate);
-    };
-
-    const animId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animId);
-  }, [direction, speed, isPaused]);
-
-  useEffect(() => {
-    if (trackRef.current) {
-      trackRef.current.style.transform = `translateX(${-scrollPos}px)`;
-    }
-  }, [scrollPos]);
-
-  const duplicated = [...items, ...items];
+/** Partner names/logos on a CSS-driven loop. Pauses on hover and focus. */
+export function SponsorMarquee({ items, direction = 'left', duration = 40 }: SponsorMarqueeProps) {
+  // Repeat short lists so the strip is always wider than the viewport.
+  const base = items.length < 8 ? [...items, ...items, ...items] : items;
+  const loop = [...base, ...base];
 
   return (
-    <div
-      className="overflow-hidden"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-    >
+    <div className="marquee relative overflow-hidden" tabIndex={0}>
       <div
-        ref={trackRef}
-        className="flex gap-8 items-center transition-none will-change-transform"
-        style={{ width: 'max-content' }}
+        className="marquee-track flex w-max items-center gap-10"
+        data-direction={direction}
+        style={{ ['--marquee-duration' as string]: `${duration}s` }}
       >
-        {duplicated.map((item, i) => (
-          <div
-            key={i}
-            className="flex-shrink-0 flex items-center gap-3 px-6 py-3 glass rounded-xl hover:bg-white/5 transition-all"
-          >
-            {item.image ? (
-              <img
-                src={item.image}
-                alt={item.name}
-                className="w-10 h-10 object-contain rounded-lg"
-                loading="lazy"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
-            ) : (
-              <div className="w-10 h-10 flex items-center justify-center text-2xl text-white/30">
-                <i className={`fas ${item.icon || 'fa-building'}`}></i>
-              </div>
+        {loop.map((item, i) => (
+          <div key={i} aria-hidden={i >= base.length} className="flex flex-shrink-0 items-center gap-3">
+            {item.image && (
+              <Image src={item.image} alt="" width={40} height={40} className="h-10 w-10 object-contain" />
             )}
-            <span className="text-sm font-medium text-white/70 whitespace-nowrap">{item.name}</span>
+            <span className="font-display text-xl font-medium text-white/50 sm:text-2xl">@{item.name}</span>
+            <span aria-hidden="true" className="text-agar/60">
+              ✳
+            </span>
           </div>
         ))}
       </div>

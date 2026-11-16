@@ -68,7 +68,7 @@ function RequestResetContent() {
         <div className="w-full max-w-md space-y-6">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-white mb-2">Reset Password</h2>
-            <p className="text-white/40 text-sm">We'll send you a link to reset your password</p>
+            <p className="text-white/40 text-sm">We&rsquo;ll send you a link to reset your password</p>
           </div>
 
           {error && (

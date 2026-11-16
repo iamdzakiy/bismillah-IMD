@@ -83,7 +83,7 @@ export function Countdown({ targetDate, onComplete }: CountdownProps) {
           className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-bio-cyan to-bio-emerald text-white font-semibold rounded-full hover:shadow-lg hover:shadow-bio-cyan/30 transition-all text-sm"
         >
           <span>🚀</span>
-          <span>Register Now - Don't Miss Out!</span>
+          <span>Register Now - Don&rsquo;t Miss Out!</span>
         </Link>
       </motion.div>
 

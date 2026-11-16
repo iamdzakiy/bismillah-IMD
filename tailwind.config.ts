@@ -15,6 +15,20 @@ const config: Config = {
           700: '#1a1040',
           600: '#2d1b69',
         },
+        // IMD 2026 palette: ink background, paper text, agar orange from the IMD logo.
+        ink: {
+          950: '#07060b',
+          900: '#0b0a10',
+          800: '#131119',
+          700: '#1c1924',
+          600: '#2a2633',
+        },
+        paper: '#f3efe6',
+        agar: {
+          DEFAULT: '#ff9327',
+          soft: '#ffb066',
+          deep: '#d9701a',
+        },
         bio: {
           cyan: '#22d3ee',
           emerald: '#34d399',
@@ -26,8 +40,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Space Grotesk', 'sans-serif'],
+        sans: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Space Grotesk', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       animation: {
         float: 'float 6s ease-in-out infinite',

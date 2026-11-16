@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientText } from '@/components/ui/GradientText';
@@ -170,17 +171,17 @@ export default function EventsPage() {
           className="mt-12 text-center"
         >
           <GlassCard glow="purple" className="p-10">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4">Don't Miss Out!</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4">Don&rsquo;t Miss Out!</h2>
             <p className="text-white/60 mb-6">
               Register now to secure your spot in IMD 2026 competitions
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="/register" className="btn-glow">
+              <Link href="/register" className="btn-glow">
                 Register Now
-              </a>
-              <a href="/" className="btn-glass">
+              </Link>
+              <Link href="/" className="btn-glass">
                 Back to Home
-              </a>
+              </Link>
             </div>
           </GlassCard>
         </motion.div>

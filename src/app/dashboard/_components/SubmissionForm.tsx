@@ -240,7 +240,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
             <li>Periksa email untuk kredensial login Edmodo (username & password)</li>
             <li>Kunjungi <a href="https://edmodo.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">edmodo.com</a> dan masuk</li>
             <li>Gabungkan grup MO 2026 menggunakan kode yang diberikan di email</li>
-            <li>Ujian akan tersedia di bagian "Assignments"</li>
+            <li>Ujian akan tersedia di bagian &ldquo;Assignments&rdquo;</li>
             <li>Kirim jawaban sebelum waktu habis</li>
             <li>Hubungi panitia jika belum menerima email dalam 24 jam</li>
           </ol>

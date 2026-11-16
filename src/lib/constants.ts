@@ -1,167 +1,110 @@
 // Data statis untuk timeline, memories, sponsors, dll.
 
-export const TIMELINE_DATA = [
+export type TimelineBranch = 'MO' | 'SPC' | 'NEC' | 'SPC & NEC' | 'All';
+
+export interface TimelineEntry {
+  id: string;
+  /** First day of the milestone, ISO yyyy-mm-dd (used to mark past / upcoming). */
+  start: string;
+  /** Last day of the milestone, ISO yyyy-mm-dd. Same as start for one-day events. */
+  end: string;
+  date: string;
+  title: string;
+  desc: string;
+  branch: TimelineBranch;
+}
+
+// Source: Guidebook Compe IMD 2026 (ENG), timeline and fee pages.
+export const TIMELINE_DATA: TimelineEntry[] = [
   {
-    id: '1',
-    phase: 'Registration',
-    date: '13 Jul – 8 Aug 2026',
-    title: 'MO Registration Batch 1 (Early Bird)',
-    desc: 'Open Registration Batch 1 – Early Bird: IDR 75k • IMD Official Website',
-    branch: 'MO',
-    icon: '🚀',
+    id: 'reg-open',
+    start: '2026-07-19',
+    end: '2026-08-31',
+    date: '19 Jul – 31 Aug 2026',
+    title: 'Registration and abstracts',
+    desc: 'MO early bird IDR 75k until 8 Aug, then IDR 85k. SPC and NEC abstracts are free to submit.',
+    branch: 'All',
   },
   {
-    id: '2',
-    phase: 'Registration',
-    date: '19 Jul – 8 Aug 2026',
-    title: 'MO Registration Batch 1 (Timeline Page)',
-    desc: 'Open Registration Batch 1 (Per Timeline Page) • IMD Official Website',
-    branch: 'MO',
-    icon: '📋',
-  },
-  {
-    id: '3',
-    phase: 'Preliminary',
-    date: '19 Jul – 15 Aug 2026',
-    title: 'SPC & NEC Preliminary: Registration & Abstract',
-    desc: 'Preliminary Stage: Registration & Abstract Submission (Free) • IMD Official Website',
+    id: 'semi-announce',
+    start: '2026-09-08',
+    end: '2026-09-09',
+    date: '8 – 9 Sep 2026',
+    title: 'Semifinalists announced',
+    desc: 'SPC on 8 September, NEC on 9 September.',
     branch: 'SPC & NEC',
-    icon: '📝',
   },
   {
-    id: '4',
-    phase: 'Registration',
-    date: '9 Aug – 31 Aug 2026',
-    title: 'MO Registration Batch 2 (Normal)',
-    desc: 'Open Registration Batch 2 – Normal: IDR 85k • IMD Official Website',
-    branch: 'MO',
-    icon: '📋',
-  },
-  {
-    id: '5',
-    phase: 'Announcement',
-    date: '8 Sep 2026',
-    title: 'SPC & NEC Semifinalist Announcement',
-    desc: 'Semifinalist Announcement • IMD Official Website',
+    id: 'semi-work',
+    start: '2026-09-09',
+    end: '2026-09-30',
+    date: '9 – 30 Sep 2026',
+    title: 'Semifinal work period',
+    desc: 'Re-registration (IDR 150k). SPC writes the proposal and elevator pitch video; NEC gets paper coaching and submits the full paper.',
     branch: 'SPC & NEC',
-    icon: '📢',
   },
   {
-    id: '6',
-    phase: 'Semifinal',
-    date: '9 Sep – 16 Sep 2026',
-    title: 'SPC & NEC Semifinalist Re-registration',
-    desc: 'Semifinalist Re-registration Stage – Fee: IDR 150k • IMD Official Website',
-    branch: 'SPC & NEC',
-    icon: '✅',
-  },
-  {
-    id: '7',
-    phase: 'Semifinal',
-    date: '9 Sep – 30 Sep 2026',
-    title: 'SPC Stage 2: Proposal & Elevator Pitch',
-    desc: 'Stage 2 Work Period: Proposal Writing & Elevator Pitch Video • Asynchronous / Instagram',
-    branch: 'SPC',
-    icon: '🎬',
-  },
-  {
-    id: '8',
-    phase: 'Semifinal',
-    date: '9 Sep – 30 Sep 2026',
-    title: 'NEC Full Paper Submission',
-    desc: 'Full Paper Submission Window • IMD Official Website',
-    branch: 'NEC',
-    icon: '📄',
-  },
-  {
-    id: '9',
-    phase: 'Workshop',
-    date: 'Sep 2026 (TBA)',
-    title: 'NEC Full Paper Coaching Session',
-    desc: 'Full Paper Coaching Session • Zoom Meeting',
-    branch: 'NEC',
-    icon: '🎓',
-  },
-  {
-    id: '10',
-    phase: 'Preliminary',
+    id: 'mo-trial',
+    start: '2026-10-03',
+    end: '2026-10-04',
     date: '3 – 4 Oct 2026',
-    title: 'MO Preliminary: System Trial & Technical Meeting',
-    desc: 'Preliminary Round System Access Trial & Technical Meeting • Online / Zoom',
+    title: 'MO platform trial',
+    desc: 'Technical meeting and exam platform check.',
     branch: 'MO',
-    icon: '💻',
   },
   {
-    id: '11',
-    phase: 'Announcement',
+    id: 'finalists',
+    start: '2026-10-11',
+    end: '2026-10-11',
     date: '11 Oct 2026',
-    title: 'SPC & NEC Finalist Announcement',
-    desc: 'Finalist Announcement • IMD Official Website',
+    title: 'SPC and NEC finalists announced',
+    desc: 'Top 10 NEC teams advance. SPC finalists start building prototypes.',
     branch: 'SPC & NEC',
-    icon: '🏅',
   },
   {
-    id: '12',
-    phase: 'Final',
-    date: '12 Oct – 31 Oct 2026',
-    title: 'SPC Prototype Development',
-    desc: 'Prototype Development Period for Finalists • Asynchronous',
-    branch: 'SPC',
-    icon: '🔧',
-  },
-  {
-    id: '13',
-    phase: 'Final',
-    date: '12 Oct – 31 Oct 2026',
-    title: 'NEC Final: Pitch Deck & Poster',
-    desc: 'Final Stage: Pitch Deck and Poster Digital Submission • IMD Official Website',
-    branch: 'NEC',
-    icon: '🖼️',
-  },
-  {
-    id: '14',
-    phase: 'Preliminary',
+    id: 'mo-prelim',
+    start: '2026-10-17',
+    end: '2026-10-17',
     date: '17 Oct 2026',
-    title: 'MO Preliminary Round Exam',
-    desc: 'Elimination / Preliminary Round Exam (35 T/F Questions) • Online Examination Platform',
+    title: 'MO elimination round',
+    desc: '35 true/false questions, four statements each, 120 minutes online.',
     branch: 'MO',
-    icon: '✍️',
   },
   {
-    id: '15',
-    phase: 'Announcement',
-    date: '25 Oct 2026',
-    title: 'MO Finalist Announcement',
-    desc: 'Announcement of Finalists • Online',
-    branch: 'MO',
-    icon: '🏅',
-  },
-  {
-    id: '16',
-    phase: 'Technical Meeting',
-    date: '7 Nov 2026',
-    title: 'All Branches Final Technical Meeting',
-    desc: 'Final Stage Technical Meeting • Online / Zoom Meeting',
+    id: 'mo-finalists',
+    start: '2026-10-25',
+    end: '2026-10-31',
+    date: '25 – 31 Oct 2026',
+    title: 'MO finalists and re-registration',
+    desc: 'SPC prototypes and NEC pitch decks and posters are due by 31 October.',
     branch: 'All',
-    icon: '🎯',
   },
   {
-    id: '17',
-    phase: 'Final',
+    id: 'tm',
+    start: '2026-11-07',
+    end: '2026-11-08',
+    date: '7 – 8 Nov 2026',
+    title: 'Final technical meetings',
+    desc: 'Online briefings for every finalist.',
+    branch: 'All',
+  },
+  {
+    id: 'finals',
+    start: '2026-11-14',
+    end: '2026-11-14',
     date: '14 Nov 2026',
-    title: 'Final Round / Pitching Day',
-    desc: 'Final Round / Pitching Day • In-person at ITB Ganesha',
+    title: 'Finals at ITB Ganesha',
+    desc: 'MO theory and lab practical, SPC final pitching, NEC pitching day.',
     branch: 'All',
-    icon: '🏆',
   },
   {
-    id: '18',
-    phase: 'Finale',
+    id: 'awarding',
+    start: '2026-11-15',
+    end: '2026-11-15',
     date: '15 Nov 2026',
-    title: 'Exhibition & Grand Awarding Ceremony',
-    desc: 'Exhibition & Grand Awarding Ceremony • In-person at ITB Ganesha',
+    title: 'Exhibition and awarding',
+    desc: 'SPC prototypes and NEC posters on display, then the awarding night.',
     branch: 'All',
-    icon: '🎉',
   },
 ];
 
@@ -170,35 +113,31 @@ export const MEMORIES_DATA = [
   { title: 'Awarding Night 2025', date: 'September 2025', year: '2025', image: '/32.png', color: '#a777e3' },
   { title: 'Petri Dish Art 2025', date: 'September 2025', year: '2025', image: '/28.jpg', color: '#f093fb' },
   { title: 'Exhibition Microverse', date: 'September 2025', year: '2025', image: '/27.jpg', color: '#4facfe' },
-  { title: 'Art Collaborator', date: 'September 2025', year: '2025', image: '/22.png', color: '#6e8efb' },
+  { title: 'Art Collaborator', date: 'September 2025', year: '2025', image: '/33.png', color: '#6e8efb' },
   { title: 'Exhibition Microverse', date: 'September 2025', year: '2025', image: '/25.jpg', color: '#a777e3' },
-  { title: 'Exhibition Microverse', date: 'September 2025', image: '/24.jpg', color: '#f093fb' },
-  { title: 'Exhibition Microverse', date: 'September 2025', image: '/22.jpg', color: '#4facfe' },
-  { title: 'Exhibition Microverse', date: 'September 2025', image: '/23.jpg', color: '#6e8efb' },
+  { title: 'Exhibition Microverse', date: 'September 2025', year: '2025', image: '/24.jpg', color: '#f093fb' },
+  { title: 'Exhibition Microverse', date: 'September 2025', year: '2025', image: '/22.jpg', color: '#4facfe' },
+  { title: 'Exhibition Microverse', date: 'September 2025', year: '2025', image: '/23.jpg', color: '#6e8efb' },
   { title: 'Petri Dish Art 2025', date: 'September 2025', year: '2025', image: '/30.jpg', color: '#a777e3' },
 ];
 
 export const MEDIA_PARTNERS = [
-  { name: 'info_lomba', icon: 'fa-newspaper' },
-  { name: 'prfmnews', icon: 'fa-globe' },
-  { name: '8ehradioitb', icon: 'fa-broadcast-tower' },
-  { name: 'reporter8eh', icon: 'fa-tv' },
-  { name: 'youthizenprfm', icon: 'fa-rss' },
+  { name: 'info_lomba' },
+  { name: 'prfmnews' },
+  { name: '8ehradioitb' },
+  { name: 'reporter8eh' },
+  { name: 'youthizenprfm' },
 ];
 
-export const INDUSTRY_PARTNERS = [
-  { name: 'x ', image: '/partners/biofarma.png' },
-];
-
-// Powered by logos (placeholder)
+// Organisers shown in the "Organised by" strip
 export const POWERED_BY = [
   { name: 'Archaea #Eksis', image: '/logo_archaea.svg' },
-  { name: 'SITH', image: '/logo-SITH.png' },
+  { name: 'SITH', image: '/logo-SITH.png', dark: true },
   { name: 'ITB', image: '/logo-itb.png' },
   { name: 'IMD', image: '/favicon.svg' },
 ];
 
-// Mascot placeholders
+// Mascot artwork used across the site
 export const MASCOTS = [
   { id: 'mascot-1', name: 'Microbe Alpha', image: '/5.svg', color: '#6e8efb' },
   { id: 'mascot-2', name: 'Microbe Beta', image: '/2.svg', color: '#a777e3' },
