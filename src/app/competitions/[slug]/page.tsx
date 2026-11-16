@@ -198,13 +198,13 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
             <SectionTitle glow={comp.glowColor}>Eligibility Requirements</SectionTitle>
             <div className="grid md:grid-cols-2 gap-8">
               <div>
-                <h4 className="font-bold text-emerald-400 mb-3 flex items-center gap-2">
+                <h4 className="font-bold textmint mb-3 flex items-center gap-2">
                   <span>✅</span> Who Can Participate
                 </h4>
                 <ul className="space-y-2 text-white/70">
                   {comp.eligibilityDetails.canParticipate.map((item, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <span className="text-emerald-400 mt-1">•</span>
+                      <span className="textmint mt-1">•</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -472,9 +472,9 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
               <div>
                 <h4 className="font-bold text-white mb-3">Scoring System</h4>
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center">
+                  <div className="p-4 rounded-xl bgmint/10 border bordermint/30 text-center">
                     <p className="text-xs text-white/50 uppercase">Correct</p>
-                    <p className="text-2xl font-bold text-emerald-400">{comp.eliminationPhase.scoring.correct}</p>
+                    <p className="text-2xl font-bold textmint">{comp.eliminationPhase.scoring.correct}</p>
                   </div>
                   <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
                     <p className="text-xs text-white/50 uppercase">Incorrect</p>
@@ -539,7 +539,7 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
                   {stage.cost && (
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                       stage.cost.toLowerCase().includes('free')
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        ? 'bgmint/20 textmint border bordermint/30'
                         : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                     }`}>
                       {stage.cost}

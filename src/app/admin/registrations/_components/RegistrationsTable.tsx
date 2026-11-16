@@ -45,8 +45,8 @@ interface RegistrationsTableProps {
 
 const statusColors: Record<RegistrationStatus, string> = {
   PENDING_DOCS: 'bg-yellow-500/10 text-yellow-400',
-  DOCUMENT_SUBMITTED: 'bg-blue-500/10 text-blue-400',
-  DOCUMENT_APPROVED: 'bg-emerald-500/10 text-emerald-400',
+  DOCUMENT_SUBMITTED: 'bgroyal-500/10 textroyal-400',
+  DOCUMENT_APPROVED: 'bgmint/10 textmint',
   DOCUMENT_REJECTED: 'bg-red-500/10 text-red-400',
   REGISTERED: 'bg-green-500/10 text-green-400',
 };
@@ -157,7 +157,7 @@ export function RegistrationsTable({ registrations }: RegistrationsTableProps) {
                         <div key={i} className="text-xs text-white/60">
                           {m.name} ({m.email})
                           {m.studentProofUrl && (
-                            <a href={m.studentProofUrl} target="_blank" rel="noreferrer" className="ml-1 text-purple-400 hover:underline">
+                            <a href={m.studentProofUrl} target="_blank" rel="noreferrer" className="ml-1 text-royal-400 hover:underline">
                               [KTM]
                             </a>
                           )}
@@ -169,12 +169,12 @@ export function RegistrationsTable({ registrations }: RegistrationsTableProps) {
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
                       {reg.ktmUrl && (
-                        <a href={reg.ktmUrl} target="_blank" rel="noreferrer" className="text-xs text-purple-400 hover:underline">
+                        <a href={reg.ktmUrl} target="_blank" rel="noreferrer" className="text-xs text-royal-400 hover:underline">
                           Chairman KTM
                         </a>
                       )}
                       {reg.pdfMergeUrl && (
-                        <a href={reg.pdfMergeUrl} target="_blank" rel="noreferrer" className="text-xs text-purple-400 hover:underline">
+                        <a href={reg.pdfMergeUrl} target="_blank" rel="noreferrer" className="text-xs text-royal-400 hover:underline">
                           Merged PDF
                         </a>
                       )}
@@ -182,7 +182,7 @@ export function RegistrationsTable({ registrations }: RegistrationsTableProps) {
                   </td>
                   <td className="px-4 py-3">
                     {reg.paymentProofUrl ? (
-                      <a href={reg.paymentProofUrl} target="_blank" rel="noreferrer" className="text-xs text-purple-400 hover:underline">
+                      <a href={reg.paymentProofUrl} target="_blank" rel="noreferrer" className="text-xs text-royal-400 hover:underline">
                         View Proof
                       </a>
                     ) : (
@@ -201,7 +201,7 @@ export function RegistrationsTable({ registrations }: RegistrationsTableProps) {
                           type="button"
                           disabled={loadingId === reg.id}
                           onClick={() => handleApprove(reg.id)}
-                          className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs rounded"
+                          className="px-3 py-1 bgmint-deep hover:bgmint disabled:opacity-50 text-white text-xs rounded"
                         >
                           Approve
                         </button>

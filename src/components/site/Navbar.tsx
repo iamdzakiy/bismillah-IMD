@@ -14,9 +14,11 @@ const competitions = [
 ];
 
 const events = [
-  { name: 'Petri Dish Art workshop', date: '7 Nov 2026' },
-  { name: 'Opening ceremony & finals', date: '14 Nov 2026' },
-  { name: 'Exhibition, symposium & awarding', date: '15 Nov 2026' },
+  { name: 'Petri Dish Art Workshop', date: '7 Nov 2026 · SITH ITB' },
+  { name: 'Opening Ceremony & Grand Finals', date: '14 Nov 2026 · ITB Ganesha' },
+  { name: 'Exhibition', date: '15 Nov 2026 · CADL Design Centre' },
+  { name: 'Symposium: Microbes, Gut, & Our Health', date: '15 Nov 2026 · Auditorium SBM Freeport' },
+  { name: 'Gala Dinner & Awarding Night', date: '15 Nov 2026 · evening' },
 ];
 
 const authPaths = ['/login', '/register', '/verify-email', '/reset-password', '/request-password-reset'];

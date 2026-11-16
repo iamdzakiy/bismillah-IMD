@@ -102,8 +102,8 @@ export const TIMELINE_DATA: TimelineEntry[] = [
     start: '2026-11-15',
     end: '2026-11-15',
     date: '15 Nov 2026',
-    title: 'Exhibition and awarding',
-    desc: 'SPC prototypes and NEC posters on display, then the awarding night.',
+    title: 'Exhibition, symposium and awarding',
+    desc: 'Exhibition at CADL Design Centre, the gut microbiome symposium at SBM Freeport, then the gala dinner and awarding night.',
     branch: 'All',
   },
 ];
@@ -143,4 +143,105 @@ export const MASCOTS = [
   { id: 'mascot-2', name: 'Microbe Beta', image: '/2.svg', color: '#a777e3' },
   { id: 'mascot-3', name: 'Microbe Gamma', image: '/3.svg', color: '#f093fb' },
   { id: 'mascot-4', name: 'Microbe Delta', image: '/4.svg', color: '#4facfe' },
+];
+
+// ---------------------------------------------------------------------------
+// Main events. Venues and times follow the IMD 2026 KIT and Town Hall deck.
+// ---------------------------------------------------------------------------
+
+export type EventKind = 'workshop' | 'ceremony' | 'finals' | 'exhibition' | 'symposium' | 'gala';
+
+export interface ImdEvent {
+  id: string;
+  kind: EventKind;
+  name: string;
+  /** ISO date, used to mark past and upcoming events */
+  iso: string;
+  day: string;
+  time: string;
+  venue: string;
+  desc: string;
+  open: string;
+}
+
+export const EVENTS: ImdEvent[] = [
+  {
+    id: 'pda',
+    kind: 'workshop',
+    name: 'Petri Dish Art Workshop',
+    iso: '2026-11-07',
+    day: 'Sat, 7 Nov 2026',
+    time: 'Session 1: 10.00–12.00 · Session 2: 13.00–15.00 WIB',
+    venue: 'Lab Instruksional Timur, SITH ITB',
+    desc: 'Paint with living cultures. Participants streak pigmented bacteria and yeast onto agar with sterile loops, then watch the design appear as the colonies grow.',
+    open: 'Public, limited seats per session',
+  },
+  {
+    id: 'opening',
+    kind: 'ceremony',
+    name: 'Opening Ceremony',
+    iso: '2026-11-14',
+    day: 'Sat, 14 Nov 2026',
+    time: '07.30–09.30 WIB',
+    venue: 'West Hall (Aula Barat), ITB Ganesha',
+    desc: 'The official start of IMD 2026 with remarks from SITH ITB leadership and a symbolic opening for all finalists.',
+    open: 'Finalists and invited guests',
+  },
+  {
+    id: 'finals',
+    kind: 'finals',
+    name: 'Grand Finals: MO, SPC & NEC',
+    iso: '2026-11-14',
+    day: 'Sat, 14 Nov 2026',
+    time: '10.00–15.45 WIB',
+    venue: 'SITH ITB: Lab Instruksional Barat, R. Seminar, R. Sidang',
+    desc: 'MO finalists sit a theory paper and a two-hour wet-lab practical. SPC and NEC finalists pitch to the jury.',
+    open: 'Finalists',
+  },
+  {
+    id: 'exhibition',
+    kind: 'exhibition',
+    name: 'Exhibition',
+    iso: '2026-11-15',
+    day: 'Sun, 15 Nov 2026',
+    time: '10.00–12.10 WIB',
+    venue: 'CADL Design Centre, ITB Ganesha',
+    desc: 'SPC prototypes and NEC posters on show. Jury booth judging plus visitor voting decide the Best Booth award.',
+    open: 'Open to the public',
+  },
+  {
+    id: 'symposium',
+    kind: 'symposium',
+    name: 'Symposium: Microbes, Gut, & Our Health',
+    iso: '2026-11-15',
+    day: 'Sun, 15 Nov 2026',
+    time: '13.00–15.00 WIB · in English',
+    venue: 'Auditorium SBM Freeport, 6th Floor, ITB Ganesha',
+    desc: 'Three experts on how the trillions of microbes in our gut shape digestion, immunity and disease, followed by an open Q&A.',
+    open: 'Open to the public',
+  },
+  {
+    id: 'gala',
+    kind: 'gala',
+    name: 'Gala Dinner & Awarding Night',
+    iso: '2026-11-15',
+    day: 'Sun, 15 Nov 2026',
+    time: '18.30–22.00 WIB',
+    venue: 'Auditorium SBM Freeport, 6th Floor, ITB Ganesha',
+    desc: 'The closing ceremony: dinner, performances, and the awards for MO, SPC, NEC and Best Booth.',
+    open: 'Finalists and invited guests',
+  },
+];
+
+export interface Speaker {
+  name: string;
+  role: 'Speaker' | 'Moderator';
+  initials: string;
+}
+
+export const SYMPOSIUM_SPEAKERS: Speaker[] = [
+  { name: 'Dr. Eng. Kamarisima', role: 'Speaker', initials: 'K' },
+  { name: 'Prof. Dr. Ir. Endang Sutriswati Rahayu', role: 'Speaker', initials: 'ESR' },
+  { name: 'Prof. Dr. Ida Parwati, dr., Sp.PK(K), PhD', role: 'Speaker', initials: 'IP' },
+  { name: 'Jayen Aris Kriswantoro, S.Si., M.Si., Ph.D.', role: 'Moderator', initials: 'JAK' },
 ];

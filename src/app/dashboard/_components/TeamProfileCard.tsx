@@ -19,9 +19,9 @@ export function TeamProfileCard({ team }: TeamProfileCardProps) {
   };
 
   const phaseColors = {
-    PRELIMINARY: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
-    SEMIFINAL: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-    FINAL: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+    PRELIMINARY: 'bgmint/10 textmint bordermint/30',
+    SEMIFINAL: 'bgmint/10 textmint bordermint/30',
+    FINAL: 'bg-royal-500/10 text-royal-400 border-royal-500/30',
   };
 
   const statusLabels = {
@@ -88,7 +88,7 @@ export function TeamProfileCard({ team }: TeamProfileCardProps) {
                       {member.user.name || member.user.email}
                     </span>
                     {member.user.role === 'CHAIRMAN' && (
-                      <span className="text-xs text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/30">
+                      <span className="text-xs text-royal-400 bg-royal-500/10 px-2 py-0.5 rounded-full border border-royal-500/30">
                         Chairman
                       </span>
                     )}
@@ -123,7 +123,7 @@ export function TeamProfileCard({ team }: TeamProfileCardProps) {
                       href={member.user.studentProofUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-purple-400 hover:text-purple-300 underline"
+                      className="text-xs text-royal-400 hover:text-royal-300 underline"
                     >
                       View Student Proof / KTM
                     </a>

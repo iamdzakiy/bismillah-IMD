@@ -103,10 +103,10 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
     <div className="glass-dark rounded-2xl p-6 sm:p-8 space-y-6">
       <SuccessPopup isOpen={showSuccess} onClose={() => setShowSuccess(false)} message="Full paper submitted! Our team will review it soon." />
 
-      <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-5">
+      <div className="rounded-xl bgmint/10 border bordermint/30 p-5">
         <div className="flex items-center gap-3 mb-2">
           <span className="text-2xl">🔓</span>
-          <h4 className="text-lg font-bold text-emerald-400">Full Paper Submission — Now Unlocked</h4>
+          <h4 className="text-lg font-bold textmint">Full Paper Submission — Now Unlocked</h4>
         </div>
         <p className="text-sm text-white/70">
           Your semifinal re-registration was approved. You may now submit your full paper for the semifinal phase.
@@ -143,17 +143,17 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
           onUpload={(url) => setFullPaperUrl(url)}
         />
         {fullPaperUrl && (
-          <p className="text-xs text-emerald-300 break-all">
+          <p className="text-xs textmint break-all">
             ✅ Full Paper uploaded: <a href={fullPaperUrl} target="_blank" rel="noopener noreferrer" className="underline">{fullPaperUrl}</a>
           </p>
         )}
 
         {/* === Elevator Pitch: HANYA untuk SPC (kondisional) === */}
         {isSPC && (
-          <div className="rounded-xl border border-fuchsia-400/25 bg-fuchsia-500/5 p-4 space-y-4">
+          <div className="rounded-xl border border-royal-400/25 bg-royal-500/5 p-4 space-y-4">
             <div className="flex items-center gap-2">
               <span className="text-lg">🎤</span>
-              <h5 className="text-sm font-bold text-fuchsia-300">Elevator Pitch (SPC only — required)</h5>
+              <h5 className="text-sm font-bold text-royal-300">Elevator Pitch (SPC only — required)</h5>
             </div>
             <p className="text-xs text-white/50">
               2.5 -- 3 minute pitch. Paste an <strong>post on instagram as public and tag @imd.itb</strong>, {' '}
@@ -163,14 +163,14 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
               <button
                 type="button"
                 onClick={() => setPitchMode('link')}
-                className={`flex-1 rounded-lg px-3 py-2 font-semibold transition ${pitchMode === 'link' ? 'bg-fuchsia-500/30 text-fuchsia-200 border border-fuchsia-400/40' : 'bg-white/5 text-white/50 border border-white/10 hover:bg-white/10'}`}
+                className={`flex-1 rounded-lg px-3 py-2 font-semibold transition ${pitchMode === 'link' ? 'bg-royal-500/30 text-royal-200 border border-royal-400/40' : 'bg-white/5 text-white/50 border border-white/10 hover:bg-white/10'}`}
               >
                 🔗 Video Link
               </button>
               <button
                 type="button"
                 onClick={() => setPitchMode('upload')}
-                className={`flex-1 rounded-lg px-3 py-2 font-semibold transition ${pitchMode === 'upload' ? 'bg-fuchsia-500/30 text-fuchsia-200 border border-fuchsia-400/40' : 'bg-white/5 text-white/50 border border-white/10 hover:bg-white/10'}`}
+                className={`flex-1 rounded-lg px-3 py-2 font-semibold transition ${pitchMode === 'upload' ? 'bg-royal-500/30 text-royal-200 border border-royal-400/40' : 'bg-white/5 text-white/50 border border-white/10 hover:bg-white/10'}`}
               >
                 📤 Upload Video
               </button>
@@ -183,7 +183,7 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
                   value={elevatorPitchUrl}
                   onChange={(e) => setElevatorPitchUrl(e.target.value)}
                   placeholder="https://instagram.com/..."
-                  className="w-full rounded-xl border border-white/15 bg-black/30 px-4 py-3 text-sm text-white placeholder:text-white/25 focus:border-fuchsia-400/60 focus:outline-none"
+                  className="w-full rounded-xl border border-white/15 bg-black/30 px-4 py-3 text-sm text-white placeholder:text-white/25 focus:border-royal-400/60 focus:outline-none"
                 />
                 <p className="mt-1 text-[11px] text-white/35">Accepted: instagram.com (Public).</p>
               </div>
@@ -199,7 +199,7 @@ export function FullPaperSubmissionForm({ team }: FullPaperSubmissionFormProps) 
               />
             )}
             {elevatorPitchUrl && (
-              <p className="text-xs text-emerald-300 break-all">
+              <p className="text-xs textmint break-all">
                 ✅ Elevator Pitch ready: <a href={elevatorPitchUrl} target="_blank" rel="noopener noreferrer" className="underline">{elevatorPitchUrl}</a>
               </p>
             )}

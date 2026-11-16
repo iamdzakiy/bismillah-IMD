@@ -35,12 +35,12 @@ export function TechnicalMeetingCard() {
       initial={{ opacity: 0, y: 24, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: 'spring', stiffness: 120, damping: 16 }}
-      className="glass p-5 sm:p-7 rounded-2xl mb-6 sm:mb-8 relative overflow-hidden border-sky-500/20"
+      className="glass p-5 sm:p-7 rounded-2xl mb-6 sm:mb-8 relative overflow-hidden borderroyal-500/20"
     >
       {/* Decorative accents */}
       <div
         aria-hidden
-        className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-sky-500/10 blur-3xl animate-pulse-glow"
+        className="absolute -top-16 -right-16 w-48 h-48 rounded-full bgroyal-500/10 blur-3xl animate-pulse-glow"
       />
       <div
         aria-hidden
@@ -49,7 +49,7 @@ export function TechnicalMeetingCard() {
 
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="relative mb-5">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 glass rounded-full text-sky-300 text-[11px] font-bold uppercase tracking-wider mb-3">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 glass rounded-full textroyal-300 text-[11px] font-bold uppercase tracking-wider mb-3">
           <span>🎙️</span>
           Technical Meeting Preliminary
         </div>
@@ -69,10 +69,10 @@ export function TechnicalMeetingCard() {
         {RESOURCES.map((resource) => (
           <div
             key={resource.key}
-            className="glass-dark rounded-2xl p-5 border border-sky-500/15 flex flex-col"
+            className="glass-dark rounded-2xl p-5 border borderroyal-500/15 flex flex-col"
           >
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-sm shadow-[0_0_15px_rgba(56,189,248,0.35)]">
+              <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br fromroyal-400 toroyal-600 flex items-center justify-center text-sm shadow-[0_0_15px_rgba(56,189,248,0.35)]">
                 {resource.icon}
               </div>
               <h4 className="text-base font-bold text-white">{resource.title}</h4>

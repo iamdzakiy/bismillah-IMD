@@ -9,40 +9,67 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Older pages use `space`; mapped onto the GDV ink blues.
         space: {
-          900: '#0a0514',
-          800: '#120a2e',
-          700: '#1a1040',
-          600: '#2d1b69',
+          900: '#0C1440',
+          800: '#121C55',
+          700: '#1A276E',
+          600: '#24348C',
         },
-        // IMD 2026 palette: ink background, paper text, agar orange from the IMD logo.
+        // IMD 2026 GDV palette: royal blue #344CC5, mint #62F2BD, cream #F1F9C8.
+        // `ink` is a deep shade of the GDV blue used as the page base,
+        // `paper` is the GDV cream, `agar` is kept as an alias of the GDV mint.
+        royal: {
+          DEFAULT: '#344CC5',
+          50: '#eef1fc',
+          100: '#d9dff8',
+          200: '#b3bff1',
+          300: '#8497e6',
+          400: '#5a70d8',
+          500: '#344CC5',
+          600: '#2a3ea6',
+          700: '#223285',
+        },
+        mint: {
+          DEFAULT: '#62F2BD',
+          soft: '#9BF7D5',
+          deep: '#22C98D',
+          ink: '#0B6B4B',
+        },
+        cream: {
+          DEFAULT: '#F1F9C8',
+          soft: '#F8FCE4',
+          deep: '#DDEB9A',
+        },
         ink: {
-          950: '#07060b',
-          900: '#0b0a10',
-          800: '#131119',
-          700: '#1c1924',
-          600: '#2a2633',
+          950: '#070C2B',
+          900: '#0C1440',
+          800: '#121C55',
+          700: '#1A276E',
+          600: '#24348C',
         },
-        paper: '#f3efe6',
+        paper: '#F1F9C8',
         agar: {
-          DEFAULT: '#ff9327',
-          soft: '#ffb066',
-          deep: '#d9701a',
+          DEFAULT: '#62F2BD',
+          soft: '#9BF7D5',
+          deep: '#22C98D',
         },
+        // Legacy accent names, retuned to sit inside the GDV palette.
         bio: {
-          cyan: '#22d3ee',
-          emerald: '#34d399',
-          teal: '#2dd4bf',
-          purple: '#a855f7',
-          pink: '#ec4899',
-          blue: '#3b82f6',
-          green: '#10b981',
+          cyan: '#8FF5D1',
+          emerald: '#62F2BD',
+          teal: '#62F2BD',
+          purple: '#B3BFF1',
+          pink: '#F1F9C8',
+          blue: '#8497E6',
+          green: '#62F2BD',
         },
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
-        display: ['var(--font-display)', 'Space Grotesk', 'sans-serif'],
-        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        // GDV typography: Poppins for headings and labels, Lato for body copy.
+        sans: ['var(--font-lato)', 'Lato', 'system-ui', 'sans-serif'],
+        display: ['var(--font-poppins)', 'Poppins', 'sans-serif'],
+        mono: ['var(--font-poppins)', 'Poppins', 'sans-serif'],
       },
       animation: {
         float: 'float 6s ease-in-out infinite',

@@ -79,20 +79,20 @@ return (
 
       <div
         id="semifinal-module"
-        className="relative mb-2 overflow-hidden rounded-3xl border border-purple-400/25 border-t-white/15 bg-white/5 backdrop-blur-2xl shadow-[0_20px_50px_rgba(168,85,247,0.15)]"
+        className="relative mb-2 overflow-hidden rounded-3xl border border-royal-400/25 border-t-white/15 bg-white/5 backdrop-blur-2xl shadow-[0_20px_50px_rgba(52,76,197,0.15)]"
       >
-        <div className="pointer-events-none absolute -left-10 -top-10 h-56 w-56 rounded-full bg-purple-500/15 blur-3xl" />
-        <div className="pointer-events-none absolute -right-10 -bottom-10 h-56 w-56 rounded-full bg-fuchsia-500/12 blur-3xl" />
+        <div className="pointer-events-none absolute -left-10 -top-10 h-56 w-56 rounded-full bg-royal-500/15 blur-3xl" />
+        <div className="pointer-events-none absolute -right-10 -bottom-10 h-56 w-56 rounded-full bg-royal-500/12 blur-3xl" />
 
         {/* Warm, prestigious hero banner */}
-        <div className="relative bg-gradient-to-r from-purple-600/20 via-fuchsia-500/10 to-sky-500/15 px-6 py-9 sm:px-10">
+        <div className="relative bg-gradient-to-r from-royal-600/20 via-royal-500/10 toroyal-500/15 px-6 py-9 sm:px-10">
           <div className="flex flex-wrap items-center justify-center gap-6">
             <SemifinalMascots />
           </div>
 
           <div className="mb-3 flex justify-center">
-            <span className="relative inline-flex h-20 w-20 items-center justify-center rounded-full border border-purple-400/40 bg-gradient-to-br from-purple-500/25 to-fuchsia-500/20 shadow-[0_0_30px_rgba(168,85,247,0.35)] backdrop-blur-xl">
-              <span className="relative z-10 text-4xl drop-shadow-[0_0_18px_rgba(217,70,239,0.4)]">🏆</span>
+            <span className="relative inline-flex h-20 w-20 items-center justify-center rounded-full border border-royal-400/40 bg-gradient-to-br from-royal-500/25 to-royal-500/20 shadow-[0_0_30px_rgba(52,76,197,0.35)] backdrop-blur-xl">
+              <span className="relative z-10 text-4xl drop-shadow-[0_0_18px_rgba(98,242,189,0.4)]">🏆</span>
               <Sparkles className="absolute -right-1 -top-1 h-5 w-5 animate-twinkle text-amber-400" />
             </span>
           </div>
@@ -102,7 +102,7 @@ return (
             className="mx-auto max-w-3xl animate-gradient text-center text-2xl font-black leading-tight text-transparent sm:text-4xl"
             style={{
               background:
-                'linear-gradient(100deg, #fbbf24 0%, #ffffff 25%, #a855f7 50%, #d946ef 70%, #38bdf8 100%)',
+                'linear-gradient(100deg, #62F2BD 0%, #F1F9C8 35%, #8497E6 70%, #62F2BD 100%)',
               backgroundSize: '300% 100%',
             }}
           >
@@ -118,7 +118,7 @@ return (
               <Trophy className="h-4 w-4 text-amber-400" />
               {team.teamName}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1.5 text-xs font-semibold text-fuchsia-300">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-royal-400/30 bg-royal-500/10 px-3 py-1.5 text-xs font-semibold text-royal-300">
               {track.emoji} {track.label} Track
             </span>
           </div>
@@ -133,15 +133,15 @@ return (
                 <div
                   className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur-xl transition-all duration-300 ${
                     s === 'done'
-                      ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-200 shadow-[0_0_16px_rgba(16,185,129,0.25)]'
+                      ? 'bordermint/40 bgmint/15 textmint shadow-[0_0_16px_rgba(16,185,129,0.25)]'
                       : s === 'current'
-                        ? 'border-purple-400/50 bg-purple-500/15 text-white shadow-[0_0_16px_rgba(168,85,247,0.4)]'
+                        ? 'border-royal-400/50 bg-royal-500/15 text-white shadow-[0_0_16px_rgba(52,76,197,0.4)]'
                         : 'border-white/10 bg-white/5 text-white/40'
                   }`}
                 >
                   <span className="relative flex items-center justify-center">
                     {s === 'done' ? (
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
+                      <CheckCircle2 className="h-3.5 w-3.5 textmint" />
                     ) : s === 'current' ? (
                       <span className="relative flex h-2.5 w-2.5">
                         <span className="absolute h-full w-full animate-ping rounded-full bg-white/60" />
@@ -163,7 +163,7 @@ return (
         <div className="px-4 py-6 sm:px-6">
           {status === 'LOADING' ? (
             <div className="glass rounded-2xl p-8 text-center">
-              <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-purple-400/30 border-t-fuchsia-400" />
+              <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-royal-400/30 border-t-mint" />
               <p className="mt-4 text-sm text-white/60">Checking your semifinal status…</p>
             </div>
           ) : status === 'NONE' ? (

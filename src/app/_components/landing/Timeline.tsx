@@ -6,11 +6,11 @@ import { TIMELINE_DATA, type TimelineEntry } from '@/lib/constants';
 import { useToday } from '@/lib/hooks/useToday';
 
 const BRANCH_STYLE: Record<TimelineEntry['branch'], string> = {
-  MO: 'text-bio-blue',
-  SPC: 'text-bio-pink',
-  NEC: 'text-bio-green',
-  'SPC & NEC': 'text-bio-pink',
-  All: 'text-agar',
+  MO: 'text-mint',
+  SPC: 'text-cream',
+  NEC: 'text-royal-300',
+  'SPC & NEC': 'text-cream',
+  All: 'text-mint',
 };
 
 function statusOf(entry: TimelineEntry, today: string | null) {
@@ -42,7 +42,7 @@ export function Timeline() {
         <div ref={ref} className="relative pl-8 sm:pl-10">
           <div className="absolute left-[7px] top-2 bottom-2 w-px bg-white/10 sm:left-[9px]" aria-hidden="true" />
           <motion.div
-            className="absolute left-[7px] top-2 bottom-2 w-px origin-top bg-agar sm:left-[9px]"
+            className="absolute left-[7px] top-2 bottom-2 w-px origin-top bg-mint sm:left-[9px]"
             style={{ scaleY: fill }}
             aria-hidden="true"
           />
@@ -62,16 +62,16 @@ export function Timeline() {
                     aria-hidden="true"
                     className={`absolute -left-8 top-1.5 h-3.5 w-3.5 rounded-full border-2 sm:-left-10 sm:h-[18px] sm:w-[18px] ${
                       status === 'done'
-                        ? 'border-agar bg-agar'
+                        ? 'border-mint bg-mint'
                         : status === 'now'
-                          ? 'border-agar bg-ink-900 ring-4 ring-agar/25'
+                          ? 'border-mint bg-ink-900 ring-4 ring-mint/25'
                           : 'border-white/30 bg-ink-900'
                     }`}
                   />
                   <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
                     <p className="font-mono text-sm text-white/55">{item.date}</p>
                     <p className={`tag-mono ${BRANCH_STYLE[item.branch]}`}>{item.branch}</p>
-                    {status === 'now' && <p className="tag-mono text-agar">Happening now</p>}
+                    {status === 'now' && <p className="tag-mono text-mint">Happening now</p>}
                   </div>
                   <h3
                     className={`mt-1 text-xl font-semibold tracking-tight sm:text-2xl ${
