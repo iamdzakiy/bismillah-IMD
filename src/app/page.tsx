@@ -1,6 +1,8 @@
 import { Hero } from './_components/landing/Hero';
 import { DarkMatter } from './_components/landing/DarkMatter';
 import { Competitions } from './_components/landing/Competitions';
+import { GutDecoder } from './_components/landing/GutDecoder';
+import { Events } from './_components/landing/Events';
 import { Timeline } from './_components/landing/Timeline';
 import { FAQSection } from './_components/FAQSection';
 import { MemoriesGallery } from '@/components/ui/MemoriesGallery';
@@ -17,7 +19,9 @@ export default function HomePage() {
       <RoadshowPopup />
       <Hero />
       <DarkMatter />
+      <GutDecoder />
       <Competitions />
+      <Events />
       <Timeline />
 
       <section className="py-24 md:py-32" aria-labelledby="gallery-title">
@@ -46,7 +50,7 @@ export default function HomePage() {
       <FAQSection />
 
       <section className="px-4 pb-28 pt-8 sm:px-6">
-        <div className="mx-auto flex max-w-7xl flex-col items-start gap-8 rounded-3xl bg-agar p-8 text-ink-950 sm:p-12 md:flex-row md:items-end md:justify-between">
+        <div className="mx-auto flex max-w-7xl flex-col items-start gap-8 rounded-3xl bg-mint p-8 text-ink-950 sm:p-12 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-950/60">Guidebook</p>
             <p className="mt-3 max-w-2xl font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">

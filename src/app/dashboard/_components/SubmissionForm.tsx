@@ -212,8 +212,8 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
         
         <SuccessPopup isOpen={showSuccess} onClose={() => setShowSuccess(false)} message={successMessage} />
         
-        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
-          <h4 className="text-emerald-400 font-semibold mb-2">📋 Informasi Akses Edmodo</h4>
+        <div className="bgmint/10 border bordermint/30 rounded-xl p-4">
+          <h4 className="textmint font-semibold mb-2">📋 Informasi Akses Edmodo</h4>
           <p className="text-white/70 text-sm mb-3">
             Babak penyisihan MO dilakukan melalui <strong>Edmodo</strong>. 
             Kredensial akun Anda akan dikirim ke email terdaftar.
@@ -234,11 +234,11 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
           </div>
         </div>
 
-        <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
-          <h4 className="text-blue-400 font-semibold mb-2">📖 Panduan Edmodo 101</h4>
+        <div className="bgroyal-500/10 border borderroyal-500/30 rounded-xl p-4">
+          <h4 className="textroyal-400 font-semibold mb-2">📖 Panduan Edmodo 101</h4>
           <ol className="text-white/70 text-sm space-y-2 list-decimal list-inside">
             <li>Periksa email untuk kredensial login Edmodo (username & password)</li>
-            <li>Kunjungi <a href="https://edmodo.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">edmodo.com</a> dan masuk</li>
+            <li>Kunjungi <a href="https://edmodo.com" target="_blank" rel="noopener noreferrer" className="textroyal-400 underline">edmodo.com</a> dan masuk</li>
             <li>Gabungkan grup MO 2026 menggunakan kode yang diberikan di email</li>
             <li>Ujian akan tersedia di bagian &ldquo;Assignments&rdquo;</li>
             <li>Kirim jawaban sebelum waktu habis</li>
@@ -376,8 +376,8 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
           <p className="text-white/70">Tim Anda berhasil lolos ke babak semifinal.</p>
         </div>
         
-        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 space-y-3">
-          <h4 className="text-emerald-400 font-semibold">📋 Langkah Selanjutnya</h4>
+        <div className="bgmint/10 border bordermint/30 rounded-xl p-4 space-y-3">
+          <h4 className="textmint font-semibold">📋 Langkah Selanjutnya</h4>
           <ol className="text-white/70 text-sm space-y-2 list-decimal list-inside">
             <li>Lakukan re-registrasi untuk babak semifinal</li>
             <li>Siap untuk pengumpulan full paper/submission semifinal</li>
@@ -466,7 +466,7 @@ export function SubmissionForm({ team }: SubmissionFormProps) {
             
             {templateLink && (
               <a href={templateLink} target="_blank" rel="noopener noreferrer" 
-                 className="text-xs text-bio-emerald hover:text-emerald-300 underline mb-3 inline-block">
+                 className="text-xs text-bio-emerald hover:textmint underline mb-3 inline-block">
                 📋 Buat salinan dari template →
               </a>
             )}

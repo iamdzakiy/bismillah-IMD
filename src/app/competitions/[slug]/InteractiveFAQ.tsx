@@ -30,7 +30,7 @@ export function InteractiveFAQ({ faqs, glowColor = 'blue' }: InteractiveFAQProps
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: index * 0.05 }}
-          className="glass-dark rounded-xl overflow-hidden transition-all duration-300 hover:border-purple-500/20"
+          className="glass-dark rounded-xl overflow-hidden transition-all duration-300 hover:border-royal-500/20"
         >
           <button
             onClick={() => setOpenIndex(openIndex === index ? null : index)}
@@ -38,7 +38,7 @@ export function InteractiveFAQ({ faqs, glowColor = 'blue' }: InteractiveFAQProps
           >
             <span className="text-white/80 font-medium pr-4">{faq.q}</span>
             <svg
-              className={`w-5 h-5 text-purple-400 flex-shrink-0 transition-transform duration-300 ${
+              className={`w-5 h-5 text-royal-400 flex-shrink-0 transition-transform duration-300 ${
                 openIndex === index ? 'rotate-180' : ''
               }`}
               fill="none"

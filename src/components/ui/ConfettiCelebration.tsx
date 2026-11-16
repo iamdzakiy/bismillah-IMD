@@ -116,7 +116,7 @@ export function ConfettiCelebration({
           onClick={handleReplay}
           aria-label="Replay celebration confetti"
           title="Replay Celebration"
-          className="pointer-events-auto fixed bottom-5 right-5 z-[9990] flex cursor-pointer items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_20px_50px_rgba(168,85,247,0.15)] backdrop-blur-2xl transition-all duration-300 hover:scale-105 hover:border-purple-400/50 hover:bg-purple-500/20 hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] active:scale-95"
+          className="pointer-events-auto fixed bottom-5 right-5 z-[9990] flex cursor-pointer items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_20px_50px_rgba(52,76,197,0.15)] backdrop-blur-2xl transition-all duration-300 hover:scale-105 hover:border-royal-400/50 hover:bg-royal-500/20 hover:shadow-[0_0_30px_rgba(52,76,197,0.4)] active:scale-95"
         >
           <span className="animate-twinkle text-base">🎉</span>
           <span>Replay Celebration</span>

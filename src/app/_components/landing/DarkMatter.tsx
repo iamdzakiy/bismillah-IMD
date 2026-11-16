@@ -35,14 +35,14 @@ export function DarkMatter() {
           </h2>
           <motion.p
             aria-label="99 percent"
-            className="font-display text-[clamp(6rem,20vw,15rem)] font-bold leading-none tracking-[-0.05em] text-agar"
+            className="font-display text-[clamp(6rem,20vw,15rem)] font-bold leading-none tracking-[-0.05em] text-mint"
           >
             {reduce ? '99%' : <motion.span>{pctText}</motion.span>}
           </motion.p>
           <p className="mt-4 max-w-xs text-sm text-white/50">
             of microbial species are still uncultured. Source: IMD 2026 Handbook.
           </p>
-          <motion.div style={{ y: mascotY, rotate: mascotRotate }} className="mt-10 hidden w-36 lg:block">
+          <motion.div style={{ y: mascotY, rotate: mascotRotate }} className="mt-24 hidden w-36 lg:block">
             <Image src="/mascot-archaea.webp" alt="The Archaea ITB mascot" width={482} height={608} className="h-auto w-full" />
           </motion.div>
         </div>

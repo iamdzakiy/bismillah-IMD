@@ -219,10 +219,10 @@ export function FinalModule({ team }: { team: DashboardTeam }) {
         className="relative mb-2 overflow-hidden rounded-3xl border border-amber-400/25 border-t-white/15 bg-white/5 backdrop-blur-2xl shadow-[0_20px_50px_rgba(251,191,36,0.12)]"
       >
         <div className="pointer-events-none absolute -left-10 -top-10 h-56 w-56 rounded-full bg-amber-500/15 blur-3xl" />
-        <div className="pointer-events-none absolute -right-10 -bottom-10 h-56 w-56 rounded-full bg-purple-500/12 blur-3xl" />
+        <div className="pointer-events-none absolute -right-10 -bottom-10 h-56 w-56 rounded-full bg-royal-500/12 blur-3xl" />
 
         {/* Hero */}
-        <div className="relative bg-gradient-to-r from-amber-600/25 via-fuchsia-500/10 to-purple-500/15 px-4 py-6 sm:px-6 sm:py-8">
+        <div className="relative bg-gradient-to-r from-amber-600/25 via-royal-500/10 to-royal-500/15 px-4 py-6 sm:px-6 sm:py-8">
           <div className="flex items-start gap-4">
             <div className="hidden sm:flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-amber-400/15 border border-amber-300/30">
               <Trophy className="h-7 w-7 text-amber-300" />
@@ -267,7 +267,7 @@ export function FinalModule({ team }: { team: DashboardTeam }) {
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm font-bold ${
                     step.done
-                      ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                      ? 'bgmint/20 bordermint/50 textmint'
                       : step.current
                         ? 'bg-amber-500/20 border-amber-400/60 text-amber-300'
                         : 'bg-white/5 border-white/20 text-white/50'
@@ -292,8 +292,8 @@ export function FinalModule({ team }: { team: DashboardTeam }) {
         <div className="px-4 py-6 sm:px-6 space-y-4">
           {/* Submission window notice (mirrors the server-side gate) */}
           {!submissionOpen && (
-            <div className="rounded-xl border border-sky-400/30 bg-sky-500/10 p-4">
-              <p className="text-sm text-sky-200 flex items-start gap-2">
+            <div className="rounded-xl border borderroyal-400/30 bgroyal-500/10 p-4">
+              <p className="text-sm textroyal-200 flex items-start gap-2">
                 <Clock3 className="h-4 w-4 mt-0.5 shrink-0" />
                 <span>
                   The final submission window is{' '}
@@ -384,7 +384,7 @@ export function FinalModule({ team }: { team: DashboardTeam }) {
                     onUpload={(url) => setField(f.key, url)}
                   />
                   {values[f.key] && (
-                    <p className="text-xs text-emerald-300 break-all mt-2">
+                    <p className="text-xs textmint break-all mt-2">
                       ✅ {FIELD_TITLES[f.key]} ready:{' '}
                       <a
                         href={values[f.key]}
@@ -495,8 +495,8 @@ export function FinalModule({ team }: { team: DashboardTeam }) {
           </li>
         </ol>
         <p className="mt-4 text-xs text-white/40 flex items-center gap-1.5">
-          <BadgeCheck className="h-4 w-4 text-emerald-400" />
-          Your current phase: <strong className="text-emerald-300">FINAL</strong>
+          <BadgeCheck className="h-4 w-4 textmint" />
+          Your current phase: <strong className="textmint">FINAL</strong>
         </p>
       </div>
     </>

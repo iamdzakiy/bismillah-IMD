@@ -214,13 +214,13 @@ export function SemifinalRegistrationForm({ team }: SemifinalRegistrationFormPro
   };
 
 return (
-    <div className="glass relative overflow-hidden rounded-3xl border border-white/12 border-t-white/20 bg-gradient-to-br from-white/8 via-white/4 to-purple-500/5 p-6 backdrop-blur-2xl shadow-[0_20px_50px_rgba(168,85,247,0.15)] sm:p-8 space-y-6">
-      <div className="pointer-events-none absolute -left-8 -top-8 h-44 w-44 rounded-full bg-purple-500/15 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-8 -right-8 h-44 w-44 rounded-full bg-fuchsia-500/15 blur-3xl" />
+    <div className="glass relative overflow-hidden rounded-3xl border border-white/12 border-t-white/20 bg-gradient-to-br from-white/8 via-white/4 to-royal-500/5 p-6 backdrop-blur-2xl shadow-[0_20px_50px_rgba(52,76,197,0.15)] sm:p-8 space-y-6">
+      <div className="pointer-events-none absolute -left-8 -top-8 h-44 w-44 rounded-full bg-royal-500/15 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-8 -right-8 h-44 w-44 rounded-full bg-royal-500/15 blur-3xl" />
 
       <div className="relative">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-purple-400/30 bg-purple-500/15 text-2xl shadow-[0_0_20px_rgba(168,85,247,0.3)] backdrop-blur-xl">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-royal-400/30 bg-royal-500/15 text-2xl shadow-[0_0_20px_rgba(52,76,197,0.3)] backdrop-blur-xl">
             💳
           </div>
           <div>
@@ -231,7 +231,7 @@ return (
           </div>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+          <span className="inline-flex items-center gap-1.5 rounded-full border bordermint/30 bgmint/10 px-3 py-1 text-xs font-semibold textmint">
             <Check className="h-3.5 w-3.5" /> Fee: {SEMIFINAL_PAYMENT.amountLabel}
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-3 py-1 text-xs font-semibold text-white/70">
@@ -245,13 +245,13 @@ return (
       <div className="relative">
         <p className="text-[11px] uppercase tracking-wider text-white/40">Step 1 — Pay the exact fee</p>
         <p className="mt-1 text-xs leading-relaxed text-white/60">
-          Transfer <strong className="text-emerald-300">{SEMIFINAL_PAYMENT.amountLabel}</strong> to{' '}
+          Transfer <strong className="textmint">{SEMIFINAL_PAYMENT.amountLabel}</strong> to{' '}
           <strong className="text-white/90">{SEMIFINAL_PAYMENT.bank}</strong> ({SEMIFINAL_PAYMENT.accountHolder}).
           Use your <strong>team name as the reference</strong> so we can match your payment.
         </p>
       </div>
 
-<ol className="relative list-decimal list-inside space-y-1.5 border-l border-purple-400/20 pl-4 text-xs text-white/55">
+<ol className="relative list-decimal list-inside space-y-1.5 border-l border-royal-400/20 pl-4 text-xs text-white/55">
         {SEMIFINAL_PAYMENT.procedure.map((step) => (
           <li key={step}>{step}</li>
         ))}
@@ -261,7 +261,7 @@ return (
       <div className="relative">
         <p className="text-[11px] uppercase tracking-wider text-white/40">Step 2 — Upload payment receipt</p>
         {receipt ? (
-          <div className="mt-2 overflow-hidden rounded-2xl border border-emerald-400/30 bg-black/25 p-4">
+          <div className="mt-2 overflow-hidden rounded-2xl border bordermint/30 bg-black/25 p-4">
             <div className="flex items-center gap-3">
               {receipt.previewUrl ? (
                 <img
@@ -270,8 +270,8 @@ return (
                   className="h-16 w-16 shrink-0 rounded-xl border border-white/10 object-cover"
                 />
               ) : (
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-purple-500/15">
-                  <FileText className="h-7 w-7 text-purple-300" />
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-royal-500/15">
+                  <FileText className="h-7 w-7 text-royal-300" />
                 </div>
               )}
               <div className="min-w-0 flex-1">
@@ -304,19 +304,19 @@ return (
             onDrop={handleDrop}
             className={`mt-2 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-8 text-center transition-all duration-300 ${
               dragging
-                ? 'border-purple-400/70 bg-purple-500/15 shadow-[0_0_25px_rgba(168,85,247,0.35)] scale-[1.02]'
-                : 'border-white/15 bg-white/5 hover:border-purple-400/40 hover:bg-purple-500/10'
+                ? 'border-royal-400/70 bg-royal-500/15 shadow-[0_0_25px_rgba(52,76,197,0.35)] scale-[1.02]'
+                : 'border-white/15 bg-white/5 hover:border-royal-400/40 hover:bg-royal-500/10'
             }`}
           >
-            <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-white/5 ${dragging ? 'animate-bounce text-purple-300' : 'text-purple-300'}`}>
+            <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-white/5 ${dragging ? 'animate-bounce text-royal-300' : 'text-royal-300'}`}>
               {stage === 'UPLOADING' ? <LoaderCircle className="h-7 w-7 animate-spin" /> : <UploadCloud className="h-7 w-7" />}
             </div>
             {stage === 'UPLOADING' ? (
-              <p className="text-sm font-semibold text-purple-200">Uploading receipt…</p>
+              <p className="text-sm font-semibold text-royal-200">Uploading receipt…</p>
             ) : (
               <p className="text-sm font-semibold text-white/80">
-                <span className="text-purple-300">Drag &amp; drop</span> your receipt here, or{' '}
-                <span className="text-purple-300 underline">browse</span>
+                <span className="text-royal-300">Drag &amp; drop</span> your receipt here, or{' '}
+                <span className="text-royal-300 underline">browse</span>
               </p>
             )}
             <p className="text-xs text-white/45">JPG · PNG · PDF — max 5MB</p>
@@ -336,11 +336,11 @@ return (
           <div className="mt-2 flex items-center gap-2">
             <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-400 transition-all duration-200"
+                className="h-full rounded-full bg-gradient-to-r from-royal-500 via-royal-500 to-royal-400 transition-all duration-200"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span className="w-10 text-right text-[11px] font-semibold text-purple-200">{progress}%</span>
+            <span className="w-10 text-right text-[11px] font-semibold text-royal-200">{progress}%</span>
           </div>
         )}
       </div>
@@ -348,7 +348,7 @@ return (
 {/* Integrity consent */}
       <div className="relative">
         <p className="text-[11px] uppercase tracking-wider text-white/40">Step 3 — Confirm &amp; submit</p>
-        <label className="mt-2 flex cursor-pointer select-none items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5 transition-colors hover:border-purple-400/30">
+        <label className="mt-2 flex cursor-pointer select-none items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5 transition-colors hover:border-royal-400/30">
           <input
             type="checkbox"
             checked={agreed}
@@ -359,14 +359,14 @@ return (
           <span
             className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition-all duration-300 ${
               agreed
-                ? 'border-emerald-400 bg-gradient-to-br from-emerald-400 to-teal-400 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
+                ? 'bordermint bg-gradient-to-br frommint tomint shadow-[0_0_12px_rgba(16,185,129,0.4)]'
                 : 'border-white/30 bg-white/5'
             }`}
           >
             {agreed && <Check className="h-4 w-4 text-black" strokeWidth={3} />}
           </span>
           <span className="text-[13px] leading-snug text-white/75">
-            I confirm I have transferred <strong className="text-emerald-300">{SEMIFINAL_PAYMENT.amountLabel}</strong> to{' '}
+            I confirm I have transferred <strong className="textmint">{SEMIFINAL_PAYMENT.amountLabel}</strong> to{' '}
             <strong className="text-white">{SEMIFINAL_PAYMENT.bank}</strong> ({SEMIFINAL_PAYMENT.accountHolder}), that the
             receipt above is accurate, and I agree to abide by the <strong>competition rules &amp; timeline schedule</strong>.
           </span>
@@ -377,7 +377,7 @@ return (
         <div
           className={`flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm ${
             message.type === 'success'
-              ? 'border border-emerald-400/40 bg-emerald-500/10 text-emerald-300'
+              ? 'border bordermint/40 bgmint/10 textmint'
               : 'border border-red-400/40 bg-red-500/10 text-red-300'
           }`}
         >
@@ -413,14 +413,14 @@ return (
         href={SEMIFINAL_WHATSAPP_LINK}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-3 rounded-xl border border-emerald-400/25 bg-emerald-500/10 p-4 transition hover:bg-emerald-500/15"
+        className="flex items-center gap-3 rounded-xl border bordermint/25 bgmint/10 p-4 transition hover:bgmint/15"
       >
         <span className="text-2xl">💬</span>
         <span className="min-w-0 flex-1">
-          <span className="block font-semibold text-emerald-300">Join {SEMIFINAL_WHATSAPP_LABEL}</span>
+          <span className="block font-semibold textmint">Join {SEMIFINAL_WHATSAPP_LABEL}</span>
           <span className="block text-xs text-white/60">Official invitation for participant queries &amp; updates.</span>
         </span>
-        <span className="text-emerald-300">→</span>
+        <span className="textmint">→</span>
       </a>
 
       {SEMIFINAL_TEMPLATE_LINK && (

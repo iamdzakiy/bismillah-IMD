@@ -25,7 +25,7 @@ interface Props {
 
 const statusColors: Record<Status, string> = {
   PENDING: 'bg-yellow-500/10 text-yellow-400',
-  APPROVED: 'bg-emerald-500/10 text-emerald-400',
+  APPROVED: 'bgmint/10 textmint',
   REJECTED: 'bg-red-500/10 text-red-400',
 };
 
@@ -108,7 +108,7 @@ export function SemifinalRegistrationsTable({ registrations }: Props) {
                 </td>
                 <td className="px-4 py-3">
                   {row.paymentProofUrl ? (
-                    <a href={row.paymentProofUrl} target="_blank" rel="noreferrer" className="text-xs text-purple-400 hover:underline">
+                    <a href={row.paymentProofUrl} target="_blank" rel="noreferrer" className="text-xs text-royal-400 hover:underline">
                       View Proof
                     </a>
                   ) : (
@@ -125,7 +125,7 @@ export function SemifinalRegistrationsTable({ registrations }: Props) {
                         type="button"
                         disabled={loadingId === row.id}
                         onClick={() => handleApprove(row.id)}
-                        className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs rounded"
+                        className="px-3 py-1 bgmint-deep hover:bgmint disabled:opacity-50 text-white text-xs rounded"
                       >
                         Approve
                       </button>

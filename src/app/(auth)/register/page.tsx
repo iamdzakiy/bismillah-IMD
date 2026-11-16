@@ -78,11 +78,11 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Emerald Green Gradient Mesh with Process Steps */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-emerald-900 via-teal-800 to-emerald-950">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-royal-600 via-royal-700 to-ink-900">
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-emerald-500 rounded-full filter blur-3xl animate-pulse" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-teal-500 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-          <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-cyan-500 rounded-full filter blur-2xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-0 left-0 w-96 h-96 bg-mint rounded-full filter blur-3xl animate-pulse" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-mint rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-mint rounded-full filter blur-2xl animate-pulse" style={{ animationDelay: '1s' }} />
         </div>
         <div className="relative z-10 flex flex-col items-center justify-center p-12 text-center">
           <h1 className="text-5xl font-bold text-white mb-12">Get Started with Us</h1>
@@ -91,10 +91,10 @@ export default function RegisterPage() {
           <div className="flex flex-col gap-4 w-full max-w-xs">
             {/* Step 1 - Active */}
             <div className="flex items-center gap-4 bg-white rounded-2xl px-6 py-4 shadow-2xl">
-              <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-ink-950 rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold">1</span>
               </div>
-              <span className="text-black font-medium">Sign up your account</span>
+              <span className="text-ink-950 font-medium">Sign up your account</span>
             </div>
             
             {/* Step 2 - Outline */}
@@ -117,7 +117,7 @@ export default function RegisterPage() {
       </div>
 
       {/* Right Side - Pitch Black Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 bg-black relative overflow-hidden">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 bg-ink-950 relative overflow-hidden">
         <div className="w-full max-w-md space-y-6">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-white mb-2">Sign Up Account</h2>
@@ -139,7 +139,7 @@ export default function RegisterPage() {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-emerald-500/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm"
+                className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-mint/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(98,242,189,0.2)] text-sm"
                 placeholder="John Doe"
               />
             </div>
@@ -152,7 +152,7 @@ export default function RegisterPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-emerald-500/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm"
+                className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-mint/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(98,242,189,0.2)] text-sm"
                 placeholder="you@example.com"
               />
             </div>
@@ -165,7 +165,7 @@ export default function RegisterPage() {
                 required
                 value={formData.institution}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-emerald-500/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm"
+                className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-mint/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(98,242,189,0.2)] text-sm"
                 placeholder="e.g. SMA N 1 Bandung / Universitas Indonesia (UI) / Institut Teknologi Bandung (ITB)"
               />
             </div>
@@ -177,11 +177,11 @@ export default function RegisterPage() {
                 required
                 value={formData.educationLevel}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white outline-none transition-all duration-300 focus:border-emerald-500/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(16,185,129,0.2)] appearance-none cursor-pointer text-sm"
+                className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white outline-none transition-all duration-300 focus:border-mint/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(98,242,189,0.2)] appearance-none cursor-pointer text-sm"
                 style={{ colorScheme: 'dark' }}
               >
-                <option value="SMA" className="bg-gray-900 text-white">SMA / MA / SMK / Sederajat</option>
-                <option value="S1 / Diploma" className="bg-gray-900 text-white">S1 / D3 / D4 / Diploma</option>
+                <option value="SMA" className="bg-ink-900 text-white">SMA / MA / SMK / Sederajat</option>
+                <option value="S1 / Diploma" className="bg-ink-900 text-white">S1 / D3 / D4 / Diploma</option>
               </select>
             </div>
 
@@ -195,7 +195,7 @@ export default function RegisterPage() {
                   minLength={8}
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-emerald-500/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm pr-12"
+                  className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-mint/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(98,242,189,0.2)] text-sm pr-12"
                   placeholder="Minimum 8 characters"
                 />
                 <button
@@ -228,7 +228,7 @@ export default function RegisterPage() {
                   minLength={8}
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-emerald-500/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm pr-12"
+                  className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-mint/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(98,242,189,0.2)] text-sm pr-12"
                   placeholder="Re-enter password"
                 />
                 <button
@@ -254,7 +254,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-full transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+              className="w-full px-8 py-3 bg-mint text-ink-950 font-bold rounded-full transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(98,242,189,0.5)] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               {loading ? 'Creating Account...' : 'Sign Up'}
             </button>
@@ -262,7 +262,7 @@ export default function RegisterPage() {
 
           <p className="text-center text-white/50 text-xs sm:text-sm mt-6">
             Already have an account?{' '}
-            <Link href="/login" className="text-emerald-400 hover:text-teal-400 font-medium transition-colors">
+            <Link href="/login" className="text-mint hover:text-mint font-medium transition-colors">
               Log in
             </Link>
           </p>

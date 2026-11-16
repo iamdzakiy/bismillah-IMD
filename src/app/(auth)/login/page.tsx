@@ -64,32 +64,32 @@ function LoginContent() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Emerald Green Gradient Mesh */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-emerald-900 via-teal-800 to-emerald-950">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-royal-600 via-royal-700 to-ink-900">
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-emerald-500 rounded-full filter blur-3xl animate-pulse" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-teal-500 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cyan-500 rounded-full filter blur-2xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-0 left-0 w-96 h-96 bg-mint rounded-full filter blur-3xl animate-pulse" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-mint rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-mint rounded-full filter blur-2xl animate-pulse" style={{ animationDelay: '1s' }} />
         </div>
         <div className="relative z-10 flex flex-col items-center justify-center p-12 text-center">
           <h1 className="text-5xl font-bold text-white mb-8">Welcome Back</h1>
           <div className="w-64 h-64 relative">
-            <div className="absolute inset-0 border-2 border-emerald-400/30 rounded-full flex items-center justify-center">
-              <div className="w-48 h-48 border-2 border-teal-400/40 rounded-full flex items-center justify-center">
-                <div className="w-32 h-32 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center shadow-2xl shadow-emerald-500/30">
+            <div className="absolute inset-0 border-2 border-mint/30 rounded-full flex items-center justify-center">
+              <div className="w-48 h-48 border-2 border-mint/40 rounded-full flex items-center justify-center">
+                <div className="w-32 h-32 bg-gradient-to-br from-mint to-mint rounded-full flex items-center justify-center shadow-2xl shadow-mint/30">
                   <svg className="w-16 h-16 text-white" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19 11H15V19H9V11H5V7H11V3H13V7H19V11M19 13V19H15V13H19M9 13V19H5V13H9Z"/>
                   </svg>
                 </div>
               </div>
             </div>
-            <div className="absolute inset-0 border border-emerald-400/20 rounded-full animate-ping" style={{ animationDuration: '4s' }} />
-            <div className="absolute inset-0 border border-teal-400/15 rounded-full animate-ping" style={{ animationDuration: '5s', animationDelay: '1s' }} />
+            <div className="absolute inset-0 border border-mint/20 rounded-full animate-ping" style={{ animationDuration: '4s' }} />
+            <div className="absolute inset-0 border border-mint/15 rounded-full animate-ping" style={{ animationDuration: '5s', animationDelay: '1s' }} />
           </div>
         </div>
       </div>
 
       {/* Right Side - Pitch Black Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 bg-black relative overflow-hidden">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 bg-ink-950 relative overflow-hidden">
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -102,7 +102,7 @@ function LoginContent() {
           </div>
 
           {verified && (
-            <div className="mb-6 bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 rounded-lg text-sm text-center">
+            <div className="mb-6 bg-mint/10 border border-mint/30 text-mint px-4 py-3 rounded-lg text-sm text-center">
               ✅ Email verified! You can now log in.
             </div>
           )}
@@ -121,7 +121,7 @@ function LoginContent() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-emerald-500/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm"
+                className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-mint/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(98,242,189,0.2)] text-sm"
                 placeholder="you@example.com"
               />
             </div>
@@ -133,7 +133,7 @@ function LoginContent() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-emerald-500/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm pr-12"
+                  className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-xl text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-mint/50 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(98,242,189,0.2)] text-sm pr-12"
                   placeholder="••••••••"
                 />
                 <button
@@ -157,7 +157,7 @@ function LoginContent() {
             </div>
 
             <div className="flex justify-end">
-              <Link href="/request-password-reset" className="text-xs text-emerald-400 hover:text-teal-400 font-medium transition-colors">
+              <Link href="/request-password-reset" className="text-xs text-mint hover:text-mint font-medium transition-colors">
                 Forgot password?
               </Link>
             </div>
@@ -165,7 +165,7 @@ function LoginContent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-full transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+              className="w-full px-8 py-3 bg-mint text-ink-950 font-bold rounded-full transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(98,242,189,0.5)] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               {loading ? 'Logging in...' : 'Log In'}
             </button>
@@ -173,7 +173,7 @@ function LoginContent() {
 
           <p className="text-center text-xs sm:text-sm text-white/50 mt-4">
             Don&rsquo;t have an account?{' '}
-            <Link href="/register" className="text-emerald-400 hover:text-teal-400 font-medium transition-colors">
+            <Link href="/register" className="text-mint hover:text-mint font-medium transition-colors">
               Sign Up
             </Link>
           </p>

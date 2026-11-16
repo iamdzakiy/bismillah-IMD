@@ -12,24 +12,24 @@ const META: Record<
   { accent: string; ring: string; mascot: string; who: string; fee: string; stages: string[] }
 > = {
   olympiad: {
-    accent: 'text-bio-blue',
-    ring: 'border-bio-blue/40',
+    accent: 'text-mint',
+    ring: 'border-mint/40',
     mascot: '/4.svg',
     who: 'SMA/MA · individual',
     fee: 'IDR 75,000 early bird, IDR 85,000 normal',
     stages: ['Online elimination: 35 true/false questions', 'Final at ITB: theory paper + lab practical'],
   },
   spc: {
-    accent: 'text-bio-pink',
-    ring: 'border-bio-pink/40',
+    accent: 'text-cream',
+    ring: 'border-cream/40',
     mascot: '/2.svg',
     who: 'SMA/SMK/MA · 3 students + 1 teacher',
     fee: 'Free abstract round, IDR 150,000 semifinal',
     stages: ['Abstract', 'Proposal + 2.5-minute elevator pitch video', 'Prototype pitch and exhibition at ITB'],
   },
   nec: {
-    accent: 'text-bio-green',
-    ring: 'border-bio-green/40',
+    accent: 'text-royal-300',
+    ring: 'border-royal-300/50',
     mascot: '/5.svg',
     who: 'S1/D4 · teams of 2–3',
     fee: 'Free abstract round, IDR 150,000 semifinal (includes paper coaching)',
@@ -50,7 +50,7 @@ export function Competitions() {
           </div>
           <p className="max-w-md text-white/60">
             Two for high school students, one for undergraduates. Every competition ends at ITB Ganesha on 14–15
-            November 2026, and the prizes below are exactly what the guidebook lists.
+            November 2026, and the awards below are exactly what the guidebook lists.
           </p>
         </div>
 
@@ -98,7 +98,7 @@ export function Competitions() {
                     <div className="mt-auto pt-10">
                       <Link
                         href={`/competitions/${comp.id}`}
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-paper underline decoration-white/30 underline-offset-[6px] transition-colors hover:decoration-agar"
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-paper underline decoration-white/30 underline-offset-[6px] transition-colors hover:decoration-mint"
                       >
                         Full rules and guidebook
                         <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>

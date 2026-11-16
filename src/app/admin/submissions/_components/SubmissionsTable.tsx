@@ -33,7 +33,7 @@ interface SubmissionsTableProps {
 
 const statusColors: Record<SubmissionStatus, string> = {
   PENDING: 'bg-yellow-500/10 text-yellow-400',
-  APPROVED: 'bg-emerald-500/10 text-emerald-400',
+  APPROVED: 'bgmint/10 textmint',
   REJECTED: 'bg-red-500/10 text-red-400',
 };
 
@@ -166,7 +166,7 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleApprove(sub.id)}
-                        className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded"
+                        className="px-3 py-1 bgmint-deep hover:bgmint text-white text-xs rounded"
                       >
                         Approve
                       </button>
